@@ -1,0 +1,69 @@
+/* Tailwind v4 base */
+@import "tailwindcss";
+
+/* Skeleton v4 — cerberus theme as the working base */
+@import "@skeletonlabs/skeleton/themes/cerberus.css";
+
+/* Skeleton v4 base styles */
+@import "@skeletonlabs/skeleton";
+
+/* ------------------------------------------------------------------ */
+/* Comedy Connector custom theme overrides                             */
+/* Applied when data-theme="comedy-connector" on <body>               */
+/* Full custom theme implemented in Phase 9; cerberus used until then */
+/* ------------------------------------------------------------------ */
+@layer theme {
+	[data-theme='comedy-connector'] {
+		/* Primary — vibrant purple */
+		--color-primary-50: oklch(97% 0.017 292);
+		--color-primary-100: oklch(93% 0.044 292);
+		--color-primary-200: oklch(87% 0.09 292);
+		--color-primary-300: oklch(79% 0.16 292);
+		--color-primary-400: oklch(68% 0.24 292);
+		--color-primary-500: oklch(55% 0.29 292);
+		--color-primary-600: oklch(46% 0.26 292);
+		--color-primary-700: oklch(39% 0.22 292);
+		--color-primary-800: oklch(32% 0.18 292);
+		--color-primary-900: oklch(25% 0.14 292);
+		--color-primary-950: oklch(17% 0.1 292);
+		--color-primary-contrast-dark: oklch(17% 0.1 292);
+		--color-primary-contrast-light: oklch(97% 0.017 292);
+
+		/* Secondary — hot pink */
+		--color-secondary-50: oklch(97% 0.018 340);
+		--color-secondary-100: oklch(93% 0.045 340);
+		--color-secondary-200: oklch(87% 0.09 340);
+		--color-secondary-300: oklch(79% 0.17 340);
+		--color-secondary-400: oklch(68% 0.25 340);
+		--color-secondary-500: oklch(60% 0.3 340);
+		--color-secondary-600: oklch(50% 0.27 340);
+		--color-secondary-700: oklch(42% 0.23 340);
+		--color-secondary-800: oklch(34% 0.19 340);
+		--color-secondary-900: oklch(26% 0.14 340);
+		--color-secondary-950: oklch(17% 0.1 340);
+		--color-secondary-contrast-dark: oklch(17% 0.1 340);
+		--color-secondary-contrast-light: oklch(97% 0.018 340);
+
+		/* Tertiary — teal */
+		--color-tertiary-50: oklch(97% 0.015 180);
+		--color-tertiary-100: oklch(93% 0.04 180);
+		--color-tertiary-200: oklch(87% 0.08 180);
+		--color-tertiary-300: oklch(79% 0.14 180);
+		--color-tertiary-400: oklch(70% 0.19 180);
+		--color-tertiary-500: oklch(60% 0.22 180);
+		--color-tertiary-600: oklch(50% 0.19 180);
+		--color-tertiary-700: oklch(41% 0.16 180);
+		--color-tertiary-800: oklch(33% 0.13 180);
+		--color-tertiary-900: oklch(25% 0.1 180);
+		--color-tertiary-950: oklch(17% 0.07 180);
+		--color-tertiary-contrast-dark: oklch(17% 0.07 180);
+		--color-tertiary-contrast-light: oklch(97% 0.015 180);
+	}
+}
+
+/* Global base styles */
+@layer base {
+	html {
+		@apply scroll-smooth;
+	}
+}
