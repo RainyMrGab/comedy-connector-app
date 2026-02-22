@@ -1,0 +1,52 @@
+{
+  "model": "opusplan",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "includeCoAuthoredBy": false,
+  "enabledPlugins": {
+    "planning-with-files@planning-with-files": true,
+    "fullstack-dev-skills@fullstack-dev-skills": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Bash(bash:*)",
+      "Bash(git *)",
+      "Bash(npx eslint:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm run:*)",
+      "Edit",
+      "List",
+      "MultiEdit",
+      "NotebookEdit",
+      "Read",
+      "Skill(code-reviewer)",
+      "Skill(code-reviewer:*)",
+      "WebFetch",
+      "WebSearch",
+      "Write"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Write(*.env)",
+      "Write(.env*)"
+    ],
+    "ask": [],
+    "defaultMode": "plan"
+  },
+  "ignore_patterns": [
+    "node_modules/",
+    "target/",
+    "build/",
+    "dist/",
+    ".env*",
+    "pnpm-lock.yaml",
+    ".DS_Store",
+    "thumbs.db"
+  ]
+}
