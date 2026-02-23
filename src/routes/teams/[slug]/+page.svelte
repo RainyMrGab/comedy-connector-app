@@ -4,12 +4,15 @@
 	import { Users, UserCheck, Mail, Pencil, Video } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
+	import ContactDialog from '$components/contact/ContactDialog.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let team = $derived(data.team);
 	let members = $derived(data.members);
 	let coaches = $derived(data.coaches);
 	let isTeamMember = $derived(data.isTeamMember);
+
+	let contactOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -66,13 +69,22 @@
 				</a>
 			{/if}
 			{#if authStore.isAuthenticated && team.primaryContactProfileId}
-				<a href="/connect?recipient={team.id}&type=team" class="btn preset-filled-primary-500 btn-sm gap-1">
+				<button onclick={() => (contactOpen = true)} class="btn preset-filled-primary-500 btn-sm gap-1">
 					<Mail size={14} />
 					Contact
-				</a>
+				</button>
 			{/if}
 		</div>
 	</div>
+
+	{#if team.primaryContactProfileId}
+		<ContactDialog
+			bind:open={contactOpen}
+			recipientId={team.id}
+			recipientType="team"
+			recipientName={team.name}
+		/>
+	{/if}
 
 	<!-- Stub call-to-action -->
 	{#if team.status === 'stub'}

@@ -4,11 +4,14 @@
 	import { UserCheck, Mail, Globe, Users } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
+	import ContactDialog from '$components/contact/ContactDialog.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
 	let coach = $derived(data.coach);
 	let coachingRoles = $derived(data.coachingRoles);
+
+	let contactOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -58,14 +61,23 @@
 		</div>
 
 		{#if authStore.isAuthenticated}
-			<a href="/connect?recipient={profile.id}&type=personal_profile" class="btn preset-filled-secondary-500 shrink-0">
+			<button onclick={() => (contactOpen = true)} class="btn preset-filled-secondary-500 shrink-0 gap-1">
 				<Mail size={16} />
 				Contact
-			</a>
+			</button>
 		{:else}
-			<a href="/" class="btn preset-tonal-surface shrink-0 text-sm">Log in to contact</a>
+			<button onclick={() => {const m = import('netlify-identity-widget'); m.then(i => i.default.open('login'));}} class="btn preset-tonal-surface shrink-0 text-sm">
+				Log in to contact
+			</button>
 		{/if}
 	</div>
+
+	<ContactDialog
+		bind:open={contactOpen}
+		recipientId={profile.id}
+		recipientType="personal_profile"
+		recipientName={profile.name}
+	/>
 
 	{#if coach.coachingBio}
 		<section class="mb-6">

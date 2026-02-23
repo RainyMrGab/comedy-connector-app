@@ -4,11 +4,14 @@
 	import { Mic2, Mail, Instagram, Youtube, Globe, Users } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
+	import ContactDialog from '$components/contact/ContactDialog.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
 	let performer = $derived(data.performer);
 	let memberships = $derived(data.memberships);
+
+	let contactOpen = $state(false);
 
 	const socialIcons: Record<string, typeof Mail> = {
 		instagram: Instagram,
@@ -75,16 +78,23 @@
 
 		<!-- Contact button (logged-in users only) -->
 		{#if authStore.isAuthenticated}
-			<a href="/connect?recipient={profile.id}&type=personal_profile" class="btn preset-filled-primary-500 shrink-0">
+			<button onclick={() => (contactOpen = true)} class="btn preset-filled-primary-500 shrink-0 gap-1">
 				<Mail size={16} />
 				Contact
-			</a>
+			</button>
 		{:else}
-			<a href="/" class="btn preset-tonal-surface shrink-0 text-sm">
+			<button onclick={() => {const m = import('netlify-identity-widget'); m.then(i => i.default.open('login'));}} class="btn preset-tonal-surface shrink-0 text-sm">
 				Log in to contact
-			</a>
+			</button>
 		{/if}
 	</div>
+
+	<ContactDialog
+		bind:open={contactOpen}
+		recipientId={profile.id}
+		recipientType="personal_profile"
+		recipientName={profile.name}
+	/>
 
 	<!-- Bio -->
 	{#if profile.bio}
