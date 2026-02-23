@@ -1,11 +1,10 @@
 /* Tailwind v4 base */
 @import "tailwindcss";
 
-/* Skeleton v4 — cerberus theme as the working base */
-@import "@skeletonlabs/skeleton/themes/cerberus.css";
-
-/* Skeleton v4 base styles */
+/* Skeleton v4 — base styles + cerberus theme */
 @import "@skeletonlabs/skeleton";
+@import "@skeletonlabs/skeleton-svelte";
+@import "@skeletonlabs/skeleton/themes/cerberus";
 
 /* ------------------------------------------------------------------ */
 /* Comedy Connector custom theme overrides                             */

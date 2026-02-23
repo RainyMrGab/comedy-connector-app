@@ -1,6 +1,6 @@
 import { db } from '$server/db';
 import { personalProfiles, performerProfiles, coachProfiles, teams, teamMembers } from '$server/db/schema';
-import { sql, eq, and, inArray } from 'drizzle-orm';
+import { sql, eq, and } from 'drizzle-orm';
 
 export interface SearchResult {
 	id: string;

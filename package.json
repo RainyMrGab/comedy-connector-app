@@ -6,6 +6,7 @@
 	"packageManager": "pnpm@10.30.1",
 	"scripts": {
 		"dev": "vite dev",
+		"predev:netlify": "rm -rf build",
 		"dev:netlify": "netlify dev",
 		"build": "vite build",
 		"preview": "vite preview",
