@@ -8,6 +8,10 @@ import { eq } from 'drizzle-orm';
  * Netlify Identity event trigger — fires after email confirmation.
  * Creates a users row linking Netlify Identity to the app database.
  *
+ * ALWAYS uses production database so user IDs are consistent across all environments.
+ * This allows the same Identity users to exist in both prod and staging databases,
+ * with different profile/team data in each environment.
+ *
  * https://docs.netlify.com/visitor-access/identity/registration-login/#registration
  */
 export const handler: Handler = async (event) => {
@@ -28,7 +32,16 @@ export const handler: Handler = async (event) => {
 	}
 
 	try {
-		const sql = neon(process.env.NETLIFY_DATABASE_URL!);
+		// Always use identity database for users table
+		// This ensures consistent user IDs across all environments
+		const dbUrl = process.env.NETLIFY_DATABASE_URL_IDENTITY || process.env.NETLIFY_DATABASE_URL;
+
+		if (!dbUrl) {
+			console.error('No database URL configured for user creation');
+			return { statusCode: 500, body: 'Database configuration error' };
+		}
+
+		const sql = neon(dbUrl);
 		const db = drizzle(sql);
 
 		// Upsert — idempotent in case the function fires more than once

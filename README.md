@@ -93,21 +93,49 @@ pnpm db:studio     # open Drizzle Studio (DB GUI)
 ### Netlify (Recommended — Free Tier)
 
 1. Fork this repo
-2. **New site → Import from Git** on Netlify
-3. **Enable Netlify DB**: Site settings → Database → Enable (auto-provisions Neon Postgres)
+2. **Create two Neon projects** (free tier on [neon.tech](https://neon.tech)):
+    - One for production (e.g., `comedy-connector-prod`)
+    - One for staging (e.g., `comedy-connector-staging`)
+    - Copy the connection strings for each
+3. **New site → Import from Git** on Netlify
 4. **Enable Netlify Identity**: Site settings → Identity → Enable
 5. Set environment variables in Site settings → Environment variables:
-    - `RESEND_API_KEY` — from [resend.com](https://resend.com)
-    - `PUBLIC_CITY_NAME` — your city (e.g., `Chicago`)
-    - `PUBLIC_CITY_DOMAIN` — your domain
-    - `PUBLIC_SITE_URL` — `https://your-domain.com`
-6. After first deploy, run all migrations:
+    - Set these **per deploy context** (different values per context):
+        - `NETLIFY_DATABASE_URL`:
+            - **Production**: `<production-db-url>`
+            - **Deploy preview**: `<staging-db-url>`
+            - **Branch deploy**: `<staging-db-url>`
+    - Set these **for all contexts** (same value everywhere):
+        - `NETLIFY_DATABASE_URL_IDENTITY`: `<production-db-url>` (used by Identity signup for shared users)
+        - `RESEND_API_KEY` — from [resend.com](https://resend.com)
+        - `PUBLIC_CITY_NAME` — your city (e.g., `Chicago`)
+        - `PUBLIC_CITY_DOMAIN` — your domain
+        - `PUBLIC_SITE_URL` — `https://your-domain.com`
+    
+6. After first deploy, run migrations against **each database**:
    ```bash
-   NETLIFY_DATABASE_URL=<your-db-url> pnpm db:setup
+   # Production database
+   NETLIFY_DATABASE_URL=<prod-db-url> pnpm db:setup
+   
+   # Staging database
+   NETLIFY_DATABASE_URL=<staging-db-url> pnpm db:setup
    ```
-   (then run `pnpm db:setup`)
 
-Pushes to `main` auto-deploy. Netlify Identity handles user registration.
+7. **(Optional) Copy existing users to staging** if you already have production users:
+   ```sql
+   -- Connect to your staging database and run:
+   INSERT INTO users (id, identity_id, email, created_at, updated_at)
+   SELECT id, identity_id, email, created_at, updated_at
+   FROM <production_db>.users
+   ON CONFLICT (identity_id) DO NOTHING;
+   ```
+
+Pushes to `main` auto-deploy to production. Pull requests create deploy previews using the staging database.
+
+**How it works:** 
+- **Shared users**: Identity signups always write to the production database, so user IDs are consistent across environments
+- **Separate data**: All other tables (profiles, teams, etc.) are environment-specific
+- **Benefits**: Same users can log in to both prod and staging, but with different profile/team data for testing
 
 ## Customizing for Your City
 
