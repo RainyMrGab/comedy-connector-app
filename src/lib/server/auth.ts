@@ -1,4 +1,4 @@
-import { db } from '$server/db';
+import { identityDb } from '$server/db';
 import { users } from '$server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { IdentityPayload, DbUser } from '$types/auth';
@@ -24,9 +24,12 @@ export function extractBearerToken(authHeader: string | null): string | null {
 	return authHeader.slice(7);
 }
 
-/** Look up or return the DB user by their Netlify Identity sub (identity_id). */
+/**
+ * Look up the DB user by their Netlify Identity sub (identity_id).
+ * Uses identityDb which points to the shared users database.
+ */
 export async function getUserByIdentityId(identityId: string): Promise<DbUser | null> {
-	const result = await db
+	const result = await identityDb
 		.select()
 		.from(users)
 		.where(eq(users.identityId, identityId))
