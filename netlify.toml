@@ -23,3 +23,17 @@
   port = 8888
   targetPort = 5173
   autoLaunch = false
+
+# Per-context deploy labels (non-secret, safe to commit)
+# NETLIFY_DATABASE_URL must be set per-context in the Netlify dashboard (contains credentials)
+[context.production.environment]
+  PUBLIC_DEPLOY_CONTEXT = "production"
+
+[context.deploy-preview.environment]
+  PUBLIC_DEPLOY_CONTEXT = "deploy-preview"
+
+[context.branch-deploy.environment]
+  PUBLIC_DEPLOY_CONTEXT = "branch-deploy"
+
+[context.dev.environment]
+  PUBLIC_DEPLOY_CONTEXT = "dev"

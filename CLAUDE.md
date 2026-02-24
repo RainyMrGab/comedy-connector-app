@@ -2,10 +2,14 @@
 
 Social platform for local comedy communities (performers, coaches, teams). Deploys free on Netlify; configurable per city via env vars.
 
+## Claude Instructions
+
+- DO NOT COMMIT unless told specifically to do so
+
 ## Commands
 
 ```bash
-pnpm dev:netlify   # dev server (required for Identity + DB env vars)
+pnpm dev:netlify   # dev server (required for DB env vars, but auth won't work locally)
 pnpm build         # production build
 pnpm check         # TypeScript + Svelte type checking (run after changes)
 pnpm db:setup      # push schema + run all migrations (first-time / after migrations added)
@@ -14,6 +18,9 @@ pnpm db:migrate    # apply SQL migration files only
 pnpm db:studio     # Drizzle Studio GUI
 pnpm env:pull      # pull Netlify env vars into .env
 ```
+
+**⚠️ Local Development Limitation:**
+Netlify Identity authentication does NOT work in local development (the `nf_jwt` cookie is domain-specific). For testing authentication features, always use deploy previews. See `TROUBLESHOOTING_AUTH.md` for details.
 
 ## Tech Stack
 
@@ -74,8 +81,57 @@ pnpm env:pull      # pull Netlify env vars into .env
 
 | Variable | Scope | Notes |
 |----------|-------|-------|
-| `NETLIFY_DATABASE_URL` | Server | Neon Postgres, auto-provisioned by Netlify DB |
+| `NETLIFY_DATABASE_URL` | Server | Neon Postgres — set per deploy context in Netlify dashboard (see Database Environments below) |
+| `NETLIFY_DATABASE_URL_IDENTITY` | Server | Identity/users database URL — set for **all contexts**. Used by identity-signup function to keep users consistent across environments. |
 | `RESEND_API_KEY` | Server | Resend dashboard |
 | `PUBLIC_CITY_NAME` | Public | Defaults to `Pittsburgh` |
 | `PUBLIC_CITY_DOMAIN` | Public | Defaults to `pittsburgh.comedyconnector.app` |
 | `PUBLIC_SITE_URL` | Public | Full URL for email links |
+| `PUBLIC_DEPLOY_CONTEXT` | Public | `production` / `deploy-preview` / `branch-deploy` / `dev` — drives the env banner |
+
+## Database Environments
+
+**Shared Users, Separate Data**: The `users` table is shared across all environments (always in production DB), while all other tables (profiles, teams, etc.) are separate per environment. This allows:
+- Same Identity users to log in to production and staging
+- Consistent user IDs across environments
+- Independent profile/team data for testing
+
+Two Neon projects: one for production, one for staging.
+
+### Environment Variable Setup
+
+| Variable | Set in Netlify | Value |
+|----------|----------------|-------|
+| `NETLIFY_DATABASE_URL` | Per-context | Production DB for prod context, Staging DB for other contexts |
+| `NETLIFY_DATABASE_URL_IDENTITY` | All contexts (same value) | Production DB URL (for identity-signup function to maintain shared users) |
+
+### How It Works
+
+| Deploy context | App uses (SvelteKit) | identity-signup uses | Result |
+|----------------|----------------------|----------------------|--------|
+| Production | Production DB | Production DB | Users + data in production |
+| Deploy preview | Staging DB | Production DB | Shared users, staging data |
+| Branch deploy | Staging DB | Production DB | Shared users, staging data |
+| Local dev | Staging DB (from `.env`) | Production DB (from `.env`) | Shared users, staging data |
+
+### Initial Setup
+
+1. Run migrations on **both** databases:
+   ```bash
+   # Production database
+   NETLIFY_DATABASE_URL="<prod-url>" pnpm db:setup
+   
+   # Staging database
+   NETLIFY_DATABASE_URL="<staging-url>" pnpm db:setup
+   ```
+
+2. Copy users from production to staging (one-time):
+   ```sql
+   -- Connect to staging DB
+   INSERT INTO users (id, identity_id, email, created_at, updated_at)
+   SELECT id, identity_id, email, created_at, updated_at
+   FROM production_users_table
+   ON CONFLICT (identity_id) DO NOTHING;
+   ```
+
+`PUBLIC_DEPLOY_CONTEXT` is set per context in `netlify.toml` (non-secret label). The `EnvironmentBanner` component in `src/lib/components/layout/EnvironmentBanner.svelte` reads it and shows a banner on all non-production deploys.

@@ -1,4 +1,4 @@
-import { db } from '$server/db';
+import { identityDb } from '$server/db';
 import { users } from '$server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { IdentityPayload, DbUser } from '$types/auth';
@@ -24,9 +24,12 @@ export function extractBearerToken(authHeader: string | null): string | null {
 	return authHeader.slice(7);
 }
 
-/** Look up or return the DB user by their Netlify Identity sub (identity_id). */
+/**
+ * Look up the DB user by their Netlify Identity sub (identity_id).
+ * Uses identityDb which points to the shared users database.
+ */
 export async function getUserByIdentityId(identityId: string): Promise<DbUser | null> {
-	const result = await db
+	const result = await identityDb
 		.select()
 		.from(users)
 		.where(eq(users.identityId, identityId))
@@ -44,13 +47,23 @@ export async function resolveUser(
 	authHeader: string | null
 ): Promise<DbUser | null> {
 	const token = cookieToken ?? extractBearerToken(authHeader);
-	if (!token) return null;
+	if (!token) {
+		console.log('[auth] No JWT token found in cookie or header');
+		return null;
+	}
 
 	const payload = decodeJwt(token);
-	if (!payload) return null;
+	if (!payload) {
+		console.warn('[auth] Failed to decode JWT token');
+		return null;
+	}
 
 	// Reject expired tokens
-	if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+	if (payload.exp && Date.now() / 1000 > payload.exp) {
+		console.warn('[auth] JWT token expired');
+		return null;
+	}
 
+	console.log(`[auth] Resolved JWT for identity_id: ${payload.sub}, email: ${payload.email}`);
 	return getUserByIdentityId(payload.sub);
 }
