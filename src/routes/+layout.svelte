@@ -5,6 +5,7 @@
 	import { toastStore } from '$stores/toast.svelte';
 	import Header from '$components/layout/Header.svelte';
 	import Footer from '$components/layout/Footer.svelte';
+	import EnvironmentBanner from '$components/layout/EnvironmentBanner.svelte';
 	import Toast from '$components/ui/Toast.svelte';
 	import type { LayoutData } from './$types';
 
@@ -29,10 +30,13 @@
 			identity.init();
 
 			identity.on('init', (user: User | null) => {
+				console.log('[layout] Identity init event, user:', user?.email || 'null');
 				if (user) {
 					const token = identity.currentUser()?.token?.access_token ?? null;
+					console.log('[layout] Setting user from Identity widget');
 					authStore.setUser({ id: user.id, email: user.email, name: user.user_metadata?.full_name }, token);
 				} else {
+					console.log('[layout] Identity widget: no user logged in');
 					authStore.setLoading(false);
 				}
 			});
@@ -61,6 +65,7 @@
 </script>
 
 <div class="flex min-h-screen flex-col">
+	<EnvironmentBanner />
 	<Header />
 	<main class="flex-1">
 		{@render children()}
