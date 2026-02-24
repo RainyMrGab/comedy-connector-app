@@ -23,8 +23,11 @@ function getIdentityDb() {
 	if (!_identityDb) {
 		const NETLIFY_DATABASE_URL_IDENTITY = process.env.NETLIFY_DATABASE_URL_IDENTITY || process.env.NETLIFY_DATABASE_URL;
 		if (!NETLIFY_DATABASE_URL_IDENTITY) {
+			console.error('[db] NETLIFY_DATABASE_URL_IDENTITY environment variable is not set');
 			throw new Error('NETLIFY_DATABASE_URL_IDENTITY environment variable is not set');
 		}
+		console.log('[db] Initializing identity database connection');
+		console.log('[db] Using NETLIFY_DATABASE_URL_IDENTITY:', NETLIFY_DATABASE_URL_IDENTITY.substring(0, 40) + '...');
 		const sql = neon(NETLIFY_DATABASE_URL_IDENTITY);
 		_identityDb = drizzle(sql, { schema });
 	}

@@ -30,10 +30,13 @@
 			identity.init();
 
 			identity.on('init', (user: User | null) => {
+				console.log('[layout] Identity init event, user:', user?.email || 'null');
 				if (user) {
 					const token = identity.currentUser()?.token?.access_token ?? null;
+					console.log('[layout] Setting user from Identity widget');
 					authStore.setUser({ id: user.id, email: user.email, name: user.user_metadata?.full_name }, token);
 				} else {
+					console.log('[layout] Identity widget: no user logged in');
 					authStore.setLoading(false);
 				}
 			});

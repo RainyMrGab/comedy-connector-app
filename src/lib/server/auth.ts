@@ -47,13 +47,23 @@ export async function resolveUser(
 	authHeader: string | null
 ): Promise<DbUser | null> {
 	const token = cookieToken ?? extractBearerToken(authHeader);
-	if (!token) return null;
+	if (!token) {
+		console.log('[auth] No JWT token found in cookie or header');
+		return null;
+	}
 
 	const payload = decodeJwt(token);
-	if (!payload) return null;
+	if (!payload) {
+		console.warn('[auth] Failed to decode JWT token');
+		return null;
+	}
 
 	// Reject expired tokens
-	if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+	if (payload.exp && Date.now() / 1000 > payload.exp) {
+		console.warn('[auth] JWT token expired');
+		return null;
+	}
 
+	console.log(`[auth] Resolved JWT for identity_id: ${payload.sub}, email: ${payload.email}`);
 	return getUserByIdentityId(payload.sub);
 }
