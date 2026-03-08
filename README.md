@@ -27,7 +27,7 @@ Built as an open-source template that any city's comedy scene can deploy for fre
 | Frontend        | SvelteKit 2 + Svelte 5 (runes)           |
 | Styles          | Tailwind v4 + Skeleton UI v4             |
 | Icons           | Lucide Svelte                            |
-| Database        | Netlify DB (Neon Postgres) + Drizzle ORM |
+| Database        | PGLite (local dev) / Neon Postgres (production) + Drizzle ORM |
 | Auth            | Netlify Identity                         |
 | Email           | Resend                                   |
 | Deploy          | Netlify (free tier)                      |
@@ -46,46 +46,57 @@ Built as an open-source template that any city's comedy scene can deploy for fre
 # Install dependencies (includes netlify-cli as a devDependency)
 pnpm install
 
-# Copy environment file
+# Copy environment file (leave NETLIFY_DATABASE_URL commented out)
 cp .env.example .env
-# Fill in NETLIFY_DATABASE_URL (see below)
 
-# Push schema + run all migrations
-pnpm db:setup
-
-# Start dev server (netlify dev enables Identity + DB env vars)
-pnpm dev:netlify
+# Start local dev server — PGLite auto-initializes on first request
+pnpm dev
 ```
+
+On first startup, the app creates `.local-db/` (a local Postgres-compatible file database powered by [PGLite](https://pglite.dev)) and seeds 3 test users. Navigate to `http://localhost:5173/dev-login` to select a test user and start exploring.
+
+> **No database account or external service needed** for local development.
+
+### Local Auth
+
+Since Netlify Identity cookies are domain-specific and won't work on `localhost`, a simple dev login page is provided:
+
+- `http://localhost:5173/dev-login` — pick from 3 seeded test users
+- **Dev Performer** — has a full performer profile
+- **Dev Coach** — has a full coach profile
+- **New User** — no profile (tests the onboarding flow)
+- This page automatically redirects to `/` in production (not exploitable remotely)
 
 ### Environment Variables
 
-| Variable               | Required             | Description                                        |
+| Variable               | Required locally     | Description                                        |
 |------------------------|----------------------|----------------------------------------------------|
-| `NETLIFY_DATABASE_URL` | Yes                  | Neon Postgres connection string                    |
-| `RESEND_API_KEY`       | Yes (email features) | Resend API key for contact + reminder emails       |
+| `NETLIFY_DATABASE_URL` | **No** — uses PGLite | Neon Postgres. Leave unset to use local PGLite.    |
+| `RESEND_API_KEY`       | No (email features)  | Resend API key for contact + reminder emails       |
 | `PUBLIC_CITY_NAME`     | No                   | City name (default: `Pittsburgh`)                  |
 | `PUBLIC_CITY_DOMAIN`   | No                   | Domain (default: `pittsburgh.comedyconnector.app`) |
 | `PUBLIC_SITE_URL`      | No                   | Full site URL for email links                      |
 
-**Getting your database URL locally:**
-
-```bash
-pnpm netlify login
-pnpm netlify link   # link to your Netlify site
-```
-
 ### Useful Scripts
 
 ```bash
-pnpm dev:netlify   # dev server with Netlify Identity + DB env vars
-pnpm dev           # vite dev server only (no Identity/DB)
-pnpm build         # production build
-pnpm check         # TypeScript + Svelte type checking
-pnpm db:setup      # push schema + run all migrations (first-time setup)
-pnpm db:push       # push schema to DB (schema changes only, no migration files)
-pnpm db:migrate    # run pending SQL migration files
-pnpm db:generate   # generate SQL migration files from schema diff
-pnpm db:studio     # open Drizzle Studio (DB GUI)
+pnpm dev               # local dev — PGLite file DB, /dev-login auth
+pnpm dev:netlify       # dev via Netlify CLI — uses production Neon DB + Identity auth
+pnpm build             # production build
+pnpm check             # TypeScript + Svelte type checking
+pnpm db:setup          # push schema + run all migrations (production Neon DB)
+pnpm db:push           # push schema to production DB (no migration files)
+pnpm db:migrate        # run pending SQL migration files on production DB
+pnpm db:generate       # generate SQL migration files from schema diff
+pnpm db:studio         # Drizzle Studio GUI (production Neon DB)
+pnpm db:studio:local   # Drizzle Studio GUI (local PGLite at .local-db/)
+```
+
+### Resetting local data
+
+```bash
+rm -rf .local-db/
+pnpm dev   # PGLite recreates and re-seeds automatically on first request
 ```
 
 ## Deployment

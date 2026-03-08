@@ -9,6 +9,8 @@ export default defineConfig({
 		sveltekit()
 	],
 	optimizeDeps: {
-		include: ['netlify-identity-widget']
+		include: ['netlify-identity-widget'],
+		// PGLite is a WASM package — Vite's pre-bundler can't handle it
+		exclude: ['@electric-sql/pglite']
 	}
 });

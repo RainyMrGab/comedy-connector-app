@@ -17,6 +17,10 @@ build/
 .env.local
 .env.*.local
 
+# Local PGLite database — developer-specific, do not commit
+.local-db/
+
 # OS
 .DS_Store
 Thumbs.db
+/.claude/launch.json

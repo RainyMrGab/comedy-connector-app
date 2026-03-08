@@ -3,6 +3,7 @@
 	import { cityConfig } from '$config/city';
 	import { Menu, X, Mic2, Users, UserCheck } from 'lucide-svelte';
 
+	let { isLocal = false }: { isLocal?: boolean } = $props();
 	let mobileMenuOpen = $state(false);
 
 	const navLinks = [
@@ -52,23 +53,21 @@
 
 		<!-- Desktop auth -->
 		<div class="hidden md:flex items-center gap-3">
-			{#if authStore.loading}
+			{#if authStore.loading && !isLocal}
 				<div class="w-20 h-8 bg-surface-700 animate-pulse rounded"></div>
 			{:else if authStore.isAuthenticated}
 				<a href="/profile" class="text-sm hover:text-primary-300 transition-colors">
 					My Profile
 				</a>
-				<button
-					onclick={handleLogout}
-					class="btn btn-sm preset-tonal-surface"
-				>
-					Sign Out
-				</button>
+				{#if isLocal}
+					<a href="/dev-login" class="btn btn-sm preset-tonal-surface">Switch User</a>
+				{:else}
+					<button onclick={handleLogout} class="btn btn-sm preset-tonal-surface">Sign Out</button>
+				{/if}
+			{:else if isLocal}
+				<a href="/dev-login" class="btn btn-sm preset-filled-primary-500">Dev Login</a>
 			{:else}
-				<button
-					onclick={openLogin}
-					class="btn btn-sm preset-filled-primary-500"
-				>
+				<button onclick={openLogin} class="btn btn-sm preset-filled-primary-500">
 					Sign In / Register
 				</button>
 			{/if}
@@ -119,9 +118,15 @@
 					>
 						My Profile
 					</a>
-					<button onclick={handleLogout} class="btn btn-sm preset-tonal-surface w-full">
-						Sign Out
-					</button>
+					{#if isLocal}
+						<a href="/dev-login" class="btn btn-sm preset-tonal-surface w-full">Switch User</a>
+					{:else}
+						<button onclick={handleLogout} class="btn btn-sm preset-tonal-surface w-full">Sign Out</button>
+					{/if}
+				{:else if isLocal}
+					<a href="/dev-login" onclick={closeMobileMenu} class="btn btn-sm preset-filled-primary-500 w-full">
+						Dev Login
+					</a>
 				{:else}
 					<button onclick={openLogin} class="btn btn-sm preset-filled-primary-500 w-full">
 						Sign In / Register

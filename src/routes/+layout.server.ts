@@ -1,8 +1,9 @@
 import type { LayoutServerLoad } from './$types';
+import { IS_LOCAL } from '$server/db';
 
 export const load: LayoutServerLoad = ({ locals }) => {
-	// Pass the resolved DB user to all pages via PageData
 	return {
-		user: locals.user
+		user: locals.user,
+		isLocal: IS_LOCAL
 	};
 };

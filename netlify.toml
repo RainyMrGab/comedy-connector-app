@@ -23,3 +23,13 @@
   port = 8888
   targetPort = 5173
   autoLaunch = false
+
+# Non-secret deploy context labels — read by EnvironmentBanner component
+[context.production.environment]
+  PUBLIC_DEPLOY_CONTEXT = "production"
+
+[context.deploy-preview.environment]
+  PUBLIC_DEPLOY_CONTEXT = "deploy-preview"
+
+[context.branch-deploy.environment]
+  PUBLIC_DEPLOY_CONTEXT = "branch-deploy"
