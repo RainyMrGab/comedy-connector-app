@@ -1,6 +1,6 @@
 import { db } from '$server/db';
 import { personalProfiles, performerProfiles, coachProfiles, teams, teamMembers } from '$server/db/schema';
-import { sql, eq, and } from 'drizzle-orm';
+import { sql, eq, and, desc } from 'drizzle-orm';
 
 export interface SearchResult {
 	id: string;
@@ -85,7 +85,10 @@ export async function searchPerformers(
 					: undefined
 			)
 		)
-		.orderBy(sql`rank DESC, ${personalProfiles}.id DESC`)
+		.orderBy(
+			...(tsQuery ? [sql`ts_rank(${personalProfiles}.search_vector, ${tsQuery}) DESC`] : []),
+			desc(personalProfiles.id)
+		)
 		.limit(limit + 1);
 
 	const hasMore = rows.length > limit;
@@ -136,7 +139,10 @@ export async function searchCoaches(
 					: undefined
 			)
 		)
-		.orderBy(sql`rank DESC, ${personalProfiles}.id DESC`)
+		.orderBy(
+			...(tsQuery ? [sql`ts_rank(${coachProfiles}.search_vector, ${tsQuery}) DESC`] : []),
+			desc(personalProfiles.id)
+		)
 		.limit(limit + 1);
 
 	const hasMore = rows.length > limit;
@@ -195,7 +201,10 @@ export async function searchTeams(
 					: undefined
 			)
 		)
-		.orderBy(sql`rank DESC, ${teams}.id DESC`)
+		.orderBy(
+			...(tsQuery ? [sql`ts_rank(${teams}.search_vector, ${tsQuery}) DESC`] : []),
+			desc(teams.id)
+		)
 		.limit(limit + 1);
 
 	const hasMore = rows.length > limit;

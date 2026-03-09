@@ -1,5 +1,5 @@
 -- Full-text search: generated tsvector columns + GIN indexes
--- Run via: pnpm db:migrate (Drizzle Kit) or manually via psql
+-- Run via: pnpm db:migrate (Drizzle Kit) or automatically via PGLite on local dev
 
 -- personal_profiles search vector
 ALTER TABLE personal_profiles
@@ -12,10 +12,10 @@ ALTER TABLE personal_profiles
       coalesce(looking_for, '')
     )
   ) STORED;
-
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS idx_personal_profiles_search
   ON personal_profiles USING GIN (search_vector);
-
+--> statement-breakpoint
 -- teams search vector (active teams only filtered at query time)
 ALTER TABLE teams
   ADD COLUMN IF NOT EXISTS search_vector tsvector
@@ -27,10 +27,10 @@ ALTER TABLE teams
       coalesce(looking_for, '')
     )
   ) STORED;
-
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS idx_teams_search
   ON teams USING GIN (search_vector);
-
+--> statement-breakpoint
 -- coach_profiles search vector
 ALTER TABLE coach_profiles
   ADD COLUMN IF NOT EXISTS search_vector tsvector
@@ -40,6 +40,6 @@ ALTER TABLE coach_profiles
       coalesce(availability, '')
     )
   ) STORED;
-
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS idx_coach_profiles_search
   ON coach_profiles USING GIN (search_vector);
