@@ -3,27 +3,51 @@
 	import { cityConfig } from '$config/city';
 	import { Mic2, Users, UserCheck, ArrowRight } from 'lucide-svelte';
 
-	const features = [
+	const connectCards = [
+		{
+			emoji: '🎤',
+			label: 'BOOK AN OPENER',
+			tag: 'BOOKING',
+			desc: 'Find performers available to open for your show.',
+			href: '/connect/book-opener'
+		},
+		{
+			emoji: '📚',
+			label: 'FIND A COACH',
+			tag: 'COACHING',
+			desc: 'Browse coaches by style, availability, and focus area.',
+			href: '/connect/find-coach'
+		},
+		{
+			emoji: '🤝',
+			label: 'JOIN A TEAM',
+			tag: 'TEAMS',
+			desc: 'Find teams actively looking for new members.',
+			href: '/connect/join-team'
+		}
+	];
+
+	const browseCards = [
 		{
 			icon: Mic2,
-			title: 'Performers',
-			description: 'Create a performer profile, showcase your training, and let the community know what you\'re looking for.',
-			href: '/performers',
-			color: 'text-primary-400'
+			label: 'PERFORMERS',
+			tag: 'BROWSE',
+			desc: 'Create a profile, showcase your training, and let the community know what you\'re looking for.',
+			href: '/performers'
 		},
 		{
 			icon: UserCheck,
-			title: 'Coaches',
-			description: 'Find a coach that fits your style, or list yourself as available for private sessions, teams, and workshops.',
-			href: '/coaches',
-			color: 'text-secondary-400'
+			label: 'COACHES',
+			tag: 'BROWSE',
+			desc: 'Find a coach that fits your style, or list yourself as available for sessions and workshops.',
+			href: '/coaches'
 		},
 		{
 			icon: Users,
-			title: 'Teams',
-			description: 'Discover local teams, see who\'s on them, and find groups that are open to new members.',
-			href: '/teams',
-			color: 'text-tertiary-400'
+			label: 'TEAMS',
+			tag: 'BROWSE',
+			desc: 'Discover local teams, see who\'s on them, and find groups open to new members.',
+			href: '/teams'
 		}
 	];
 
@@ -38,84 +62,326 @@
 	<meta name="description" content="Connect with {cityConfig.name}'s improv and comedy community. Find performers, coaches, and teams." />
 </svelte:head>
 
-<!-- Hero -->
-<section class="bg-gradient-to-br from-surface-900 via-primary-950 to-surface-900 text-surface-50 py-20 px-4">
-	<div class="mx-auto max-w-3xl text-center">
-		<h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-			{cityConfig.name}'s Comedy Community,
-			<span class="text-primary-400">Connected</span>
-		</h1>
-		<p class="text-lg text-surface-300 mb-8 max-w-xl mx-auto">
-			Find performers to work with, coaches to learn from, and teams to join — all in one place.
-			No cold DMs, no gatekeeping.
+<!-- HERO -->
+<section class="hero">
+	<div class="hero-inner">
+		<div class="hero-headline" aria-label="Your scene. Your people.">
+			<h1 class="headline-line">YOUR SCENE.</h1>
+			<h1 class="headline-line indent">YOUR PEOPLE.</h1>
+		</div>
+		<p class="hero-sub">
+			{cityConfig.name}'s open directory for improv performers, coaches, and teams.<br />
+			Find your crew. Build your scene.
 		</p>
-		<div class="flex flex-col sm:flex-row gap-4 justify-center">
+		<div class="hero-actions">
 			{#if authStore.isAuthenticated}
-				<a href="/profile/edit" class="btn preset-filled-primary-500 text-base px-6 py-3">
-					Set Up Your Profile
-					<ArrowRight size={18} />
+				<a href="/profile/edit" class="btn-accent">
+					SET UP YOUR PROFILE <ArrowRight size={18} />
 				</a>
-				<a href="/performers" class="btn preset-tonal-surface text-base px-6 py-3">
-					Browse Community
-				</a>
+				<a href="/performers" class="btn-outline">BROWSE</a>
 			{:else}
-				<button onclick={openSignup} class="btn preset-filled-primary-500 text-base px-6 py-3">
-					Join the Community
-					<ArrowRight size={18} />
+				<button onclick={openSignup} class="btn-accent">
+					JOIN THE SCENE <ArrowRight size={18} />
 				</button>
-				<a href="/performers" class="btn preset-tonal-surface text-base px-6 py-3">
-					Browse Performers
-				</a>
+				<a href="/performers" class="btn-outline">BROWSE THE SCENE</a>
 			{/if}
 		</div>
 	</div>
-</section>
-
-<!-- Connect section -->
-<section class="py-12 px-4 bg-surface-100 dark:bg-surface-800">
-	<div class="mx-auto max-w-4xl text-center">
-		<h2 class="text-2xl font-bold text-surface-900 dark:text-surface-50 mb-2">Looking for something specific?</h2>
-		<p class="text-surface-600 dark:text-surface-300 mb-8">Use our connect features to find exactly who you need.</p>
-		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-			<a href="/connect/book-opener" class="card bg-surface-50 dark:bg-surface-700 p-5 rounded-xl hover:ring-2 hover:ring-primary-500 transition-all text-left group">
-				<p class="font-semibold text-surface-900 dark:text-surface-50 group-hover:text-primary-500 transition-colors">🎤 Book an Opener</p>
-				<p class="text-sm text-surface-500 dark:text-surface-400 mt-1">Find performers available to open for your show.</p>
-			</a>
-			<a href="/connect/join-team" class="card bg-surface-50 dark:bg-surface-700 p-5 rounded-xl hover:ring-2 hover:ring-secondary-500 transition-all text-left group">
-				<p class="font-semibold text-surface-900 dark:text-surface-50 group-hover:text-secondary-500 transition-colors">🤝 Join a Team</p>
-				<p class="text-sm text-surface-500 dark:text-surface-400 mt-1">Find teams that are actively looking for new members.</p>
-			</a>
-			<a href="/connect/find-coach" class="card bg-surface-50 dark:bg-surface-700 p-5 rounded-xl hover:ring-2 hover:ring-tertiary-500 transition-all text-left group">
-				<p class="font-semibold text-surface-900 dark:text-surface-50 group-hover:text-tertiary-500 transition-colors">📚 Find a Coach</p>
-				<p class="text-sm text-surface-500 dark:text-surface-400 mt-1">Browse coaches available for private lessons or team coaching.</p>
-			</a>
-		</div>
+	<div class="hero-deco" aria-hidden="true">
+		<span class="stamp">EST.<br />{cityConfig.name.toUpperCase()}</span>
 	</div>
 </section>
 
-<!-- Feature cards -->
-<section class="py-16 px-4">
-	<div class="mx-auto max-w-5xl">
-		<h2 class="text-2xl font-bold text-center text-surface-900 dark:text-surface-50 mb-10">
-			Everything the {cityConfig.name} comedy scene needs
-		</h2>
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-			{#each features as feature}
-				<a
-					href={feature.href}
-					class="group rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 p-6 hover:border-primary-500 dark:hover:border-primary-500 transition-all hover:shadow-lg"
-				>
-					<feature.icon size={32} class="{feature.color} mb-4" />
-					<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 mb-2 group-hover:text-primary-500 transition-colors">
-						{feature.title}
-					</h3>
-					<p class="text-sm text-surface-500 dark:text-surface-400">{feature.description}</p>
-					<span class="mt-4 inline-flex items-center gap-1 text-sm text-primary-500 font-medium">
-						Browse {feature.title}
-						<ArrowRight size={14} />
-					</span>
-				</a>
-			{/each}
-		</div>
+<!-- RULE -->
+<div class="section-rule" aria-hidden="true">
+	★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★
+</div>
+
+<!-- CONNECT -->
+<section class="content-section">
+	<h2 class="section-heading">WHAT DO YOU NEED?</h2>
+	<div class="connect-grid">
+		{#each connectCards as card}
+			<a href={card.href} class="zine-card connect-card">
+				<div class="card-tag">{card.tag}</div>
+				<div class="card-emoji">{card.emoji}</div>
+				<h3 class="card-label">{card.label}</h3>
+				<p class="card-desc">{card.desc}</p>
+				<span class="card-go">→ GO</span>
+			</a>
+		{/each}
 	</div>
 </section>
+
+<!-- FEATURES -->
+<section class="content-section features-section">
+	<h2 class="section-heading">WHO'S HERE?</h2>
+	<div class="features-grid">
+		{#each browseCards as card}
+			<a href={card.href} class="zine-card">
+				<div class="card-tag">{card.tag}</div>
+				<div class="card-icon">
+					<card.icon size={28} />
+				</div>
+				<h3 class="card-label">{card.label}</h3>
+				<p class="card-desc">{card.desc}</p>
+			</a>
+		{/each}
+	</div>
+</section>
+
+<!-- CTA STRIP (logged out only) -->
+{#if !authStore.isAuthenticated && !authStore.loading}
+	<section class="cta-strip">
+		<div class="cta-inner">
+			<p class="cta-eyebrow">— IT'S FREE, FOREVER —</p>
+      <h2 class="cta-heading">READY TO BE GET INVOLVED?</h2>
+      <button onclick={openSignup} class="btn-accent">
+        CREATE YOUR PROFILE <ArrowRight size={18} />
+			</button>
+		</div>
+	</section>
+{/if}
+
+<style>
+	/* HERO */
+	.hero {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 80px 64px;
+		border-bottom: var(--zine-border);
+		gap: 48px;
+		overflow: hidden;
+	}
+
+	.hero-inner {
+		flex: 1;
+		max-width: 640px;
+	}
+
+	.hero-headline {
+		transform: rotate(-2deg);
+		transform-origin: left center;
+		margin-bottom: 32px;
+	}
+
+	.headline-line {
+		font-family: var(--font-heading);
+		font-size: clamp(48px, 8vw, 88px);
+		line-height: 1.05;
+		color: var(--zine-primary);
+		display: block;
+		margin: 0;
+	}
+
+	.headline-line.indent {
+		margin-left: 24px;
+	}
+
+	.hero-sub {
+		font-size: 16px;
+		line-height: 1.7;
+		color: var(--zine-primary);
+		margin-bottom: 32px;
+		max-width: 480px;
+		opacity: 0.85;
+	}
+
+	.hero-actions {
+		display: flex;
+		gap: 16px;
+		flex-wrap: wrap;
+	}
+
+	.hero-deco {
+		flex-shrink: 0;
+	}
+
+	.stamp {
+		display: block;
+		font-family: var(--font-heading);
+		font-size: 22px;
+		line-height: 1.3;
+		text-align: center;
+		color: var(--zine-accent);
+		border: 4px solid var(--zine-accent);
+		padding: 20px 28px;
+		transform: rotate(8deg);
+		opacity: 0.65;
+		letter-spacing: 0.05em;
+	}
+
+	/* RULE */
+	.section-rule {
+		text-align: center;
+		padding: 12px 0;
+		font-size: 13px;
+		letter-spacing: 0.15em;
+		color: var(--zine-muted);
+		border-bottom: var(--zine-border);
+		background: var(--zine-surface);
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	/* SECTIONS */
+	.content-section {
+		padding: 64px 48px;
+	}
+
+	.features-section {
+		background: var(--zine-surface);
+		border-top: var(--zine-border);
+	}
+
+	.section-heading {
+		font-family: var(--font-heading);
+		font-size: 36px;
+		margin-bottom: 40px;
+		color: var(--zine-primary);
+		transform: rotate(-1deg);
+		display: inline-block;
+	}
+
+	/* CARDS */
+	.connect-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+	}
+
+	.features-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+	}
+
+	.zine-card {
+		background: var(--zine-bg);
+		border: var(--zine-border);
+		box-shadow: var(--zine-shadow);
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		text-decoration: none;
+		color: var(--zine-primary);
+		transition:
+			transform 0.1s,
+			box-shadow 0.1s;
+	}
+
+	.zine-card:hover {
+		transform: translate(-2px, -2px);
+		box-shadow: 6px 6px 0px var(--zine-primary);
+	}
+
+	.connect-card {
+		padding: 32px;
+		background: var(--zine-surface);
+	}
+
+	.features-section .zine-card {
+		background: var(--zine-bg);
+	}
+
+	.card-tag {
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		color: var(--zine-muted);
+		border: 1px solid var(--zine-muted);
+		display: inline-block;
+		padding: 2px 8px;
+		width: fit-content;
+	}
+
+	.card-emoji {
+		font-size: 32px;
+		margin-top: 4px;
+	}
+
+	.card-icon {
+		color: var(--zine-accent);
+		margin-top: 4px;
+	}
+
+	.card-label {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--zine-primary);
+		margin: 0;
+	}
+
+	.card-desc {
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--zine-primary);
+		opacity: 0.8;
+		margin: 0;
+	}
+
+	.card-go {
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--zine-muted);
+		margin-top: 4px;
+	}
+
+	/* CTA STRIP */
+	.cta-strip {
+		background: var(--zine-highlight);
+		border-top: var(--zine-border);
+		padding: 64px 48px;
+	}
+
+	.cta-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+		text-align: center;
+	}
+
+	.cta-eyebrow {
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		color: var(--zine-primary);
+		opacity: 0.7;
+		margin: 0;
+	}
+
+	.cta-heading {
+		font-family: var(--font-heading);
+		font-size: 42px;
+		color: var(--zine-primary);
+		margin: 0;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.hero {
+			flex-direction: column;
+			padding: 48px 24px;
+		}
+
+		.hero-deco {
+			display: none;
+		}
+
+		.connect-grid,
+		.features-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.content-section {
+			padding: 48px 24px;
+		}
+	}
+</style>

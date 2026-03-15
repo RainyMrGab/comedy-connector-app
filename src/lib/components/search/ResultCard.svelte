@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SearchResult } from '$server/search';
-	import { Mic2, UserCheck, Users } from 'lucide-svelte';
+	import { Users } from 'lucide-svelte';
 
 	interface Props {
 		result: SearchResult;
@@ -16,97 +16,78 @@
 				? `/coaches/${result.slug}`
 				: `/teams/${result.slug}`
 	);
+
+	const typeLabel = $derived(
+		type === 'performers' ? 'PERFORMER' : type === 'coaches' ? 'COACH' : 'TEAM'
+	);
 </script>
 
-<a
-	{href}
-	class="card bg-surface-50 dark:bg-surface-800 rounded-xl p-5 border border-surface-200 dark:border-surface-700 transition-all hover:shadow-md group block
-		{type === 'performers'
-		? 'hover:border-primary-500 dark:hover:border-primary-500'
-		: type === 'coaches'
-			? 'hover:border-secondary-500 dark:hover:border-secondary-500'
-			: 'hover:border-tertiary-500 dark:hover:border-tertiary-500'}"
->
-	<div class="flex items-center gap-3 mb-3">
+<a {href} class="result-card">
+	<span class="type-tag">{typeLabel}</span>
+
+	<div class="card-header">
 		{#if result.photoUrl}
-			<img
-				src={result.photoUrl}
-				alt={result.name}
-				class="w-12 h-12 object-cover {type === 'teams' ? 'rounded-xl' : 'rounded-full'}"
-			/>
+			<img src={result.photoUrl} alt={result.name} class="avatar" />
 		{:else}
-			<div
-				class="w-12 h-12 flex items-center justify-center text-white font-bold
-					{type === 'teams' ? 'rounded-xl' : 'rounded-full'}
-					{type === 'performers'
-					? 'bg-primary-500'
-					: type === 'coaches'
-						? 'bg-secondary-500'
-						: 'bg-tertiary-500'}"
-			>
+			<div class="avatar-placeholder">
 				{#if type === 'teams'}
-					<Users size={20} />
+					<Users size={18} />
 				{:else}
 					{result.name[0]?.toUpperCase() ?? '?'}
 				{/if}
 			</div>
 		{/if}
-		<div>
-			<p
-				class="font-semibold text-surface-900 dark:text-surface-50 transition-colors
-					{type === 'performers'
-					? 'group-hover:text-primary-500'
-					: type === 'coaches'
-						? 'group-hover:text-secondary-500'
-						: 'group-hover:text-tertiary-500'}"
-			>
-				{result.name}
-			</p>
-			{#if type === 'performers'}
-				<span class="chip preset-tonal-primary text-xs"><Mic2 size={10} /> Performer</span>
-			{:else if type === 'coaches'}
-				<span class="chip preset-tonal-secondary text-xs"><UserCheck size={10} /> Coach</span>
-			{:else}
-				<div class="flex gap-1 flex-wrap mt-1">
-					{#if result.form}
-						<span class="chip preset-tonal-tertiary text-xs">{result.form}</span>
-					{/if}
-					{#if result.status === 'stub'}
-						<span class="chip preset-tonal-warning text-xs">Unclaimed</span>
-					{/if}
-				</div>
-			{/if}
-		</div>
+		<p class="card-name">{result.name}</p>
 	</div>
 
 	{#if result.bio}
-		<p class="text-sm text-surface-500 dark:text-surface-400 line-clamp-2">{result.bio}</p>
+		<p class="card-bio">{result.bio}</p>
 	{/if}
 
-	<div class="flex flex-wrap gap-1 mt-3">
+	<div class="card-tags">
+		{#if result.status === 'stub'}
+			<span class="ztag stub">UNCLAIMED</span>
+		{/if}
+		{#if result.form}
+			<span class="ztag">{result.form}</span>
+		{/if}
 		{#if result.openToBookOpeners}
-			<span class="chip preset-tonal-secondary text-xs">Open to Book Openers</span>
+			<span class="ztag">BOOK OPENERS</span>
 		{/if}
 		{#if result.lookingForTeam}
-			<span class="chip preset-tonal-tertiary text-xs">Looking for Team</span>
+			<span class="ztag">SEEKING TEAM</span>
 		{/if}
 		{#if result.lookingForCoach}
-			<span class="chip preset-tonal-surface text-xs">Seeking Coach</span>
+			<span class="ztag">SEEKING COACH</span>
 		{/if}
 		{#if result.availableForPrivate}
-			<span class="chip preset-tonal-secondary text-xs">Private Sessions</span>
+			<span class="ztag">PRIVATE SESSIONS</span>
 		{/if}
 		{#if result.availableForTeams}
-			<span class="chip preset-tonal-tertiary text-xs">Team Coaching</span>
+			<span class="ztag">TEAM COACHING</span>
 		{/if}
 		{#if result.availableForWorkshops}
-			<span class="chip preset-tonal-surface text-xs">Workshops</span>
+			<span class="ztag">WORKSHOPS</span>
 		{/if}
 		{#if result.openToNewMembers}
-			<span class="chip preset-tonal-primary text-xs">Open to Members</span>
+			<span class="ztag">OPEN TO MEMBERS</span>
 		{/if}
 		{#if result.seekingCoach}
-			<span class="chip preset-tonal-secondary text-xs">Seeking Coach</span>
+			<span class="ztag">SEEKING COACH</span>
 		{/if}
 	</div>
 </a>
+
+<style>
+	.result-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; background: var(--zine-surface); border: var(--zine-border); text-decoration: none; color: var(--zine-primary); transition: transform 0.1s, box-shadow 0.1s; }
+	.result-card:hover { transform: translate(-2px, -2px); box-shadow: var(--zine-shadow); }
+	.type-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: var(--zine-muted); border: 1px solid var(--zine-muted); padding: 2px 6px; align-self: flex-start; }
+	.card-header { display: flex; align-items: center; gap: 10px; }
+	.avatar { width: 40px; height: 40px; object-fit: cover; border: 1px solid var(--zine-primary); flex-shrink: 0; }
+	.avatar-placeholder { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--zine-primary); color: var(--zine-bg); font-weight: 700; font-size: 16px; flex-shrink: 0; }
+	.card-name { font-weight: 700; font-size: 15px; line-height: 1.2; }
+	.card-bio { font-size: 12px; opacity: 0.7; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+	.card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+	.ztag { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; border: 1px solid var(--zine-muted); color: var(--zine-muted); padding: 2px 6px; }
+	.ztag.stub { border-color: var(--zine-accent); color: var(--zine-accent); }
+</style>

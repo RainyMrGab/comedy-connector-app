@@ -1,3 +1,12 @@
+<svelte:head>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Permanent+Marker&display=swap"
+		rel="stylesheet"
+	/>
+</svelte:head>
+
 <script lang="ts">
 	import '../app.css';
 	import { invalidateAll } from '$app/navigation';

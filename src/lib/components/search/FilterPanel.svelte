@@ -16,84 +16,27 @@
 </script>
 
 {#if type === 'performers'}
-	<div class="flex flex-wrap gap-2">
-		<button
-			type="button"
-			onclick={() => toggle('openToBookOpeners')}
-			class="chip cursor-pointer text-sm {filters.openToBookOpeners
-				? 'preset-filled-secondary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Open to Book Openers
-		</button>
-		<button
-			type="button"
-			onclick={() => toggle('lookingForTeam')}
-			class="chip cursor-pointer text-sm {filters.lookingForTeam
-				? 'preset-filled-tertiary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Looking for Team
-		</button>
-		<button
-			type="button"
-			onclick={() => toggle('lookingForCoach')}
-			class="chip cursor-pointer text-sm {filters.lookingForCoach
-				? 'preset-filled-primary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Seeking Coach
-		</button>
+	<div class="filter-row">
+		<button type="button" onclick={() => toggle('openToBookOpeners')} class={filters.openToBookOpeners ? 'filter-chip active' : 'filter-chip'}>Open to Book Openers</button>
+		<button type="button" onclick={() => toggle('lookingForTeam')} class={filters.lookingForTeam ? 'filter-chip active' : 'filter-chip'}>Looking for Team</button>
+		<button type="button" onclick={() => toggle('lookingForCoach')} class={filters.lookingForCoach ? 'filter-chip active' : 'filter-chip'}>Seeking Coach</button>
 	</div>
 {:else if type === 'coaches'}
-	<div class="flex flex-wrap gap-2">
-		<button
-			type="button"
-			onclick={() => toggle('availableForPrivate')}
-			class="chip cursor-pointer text-sm {filters.availableForPrivate
-				? 'preset-filled-secondary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Private Sessions
-		</button>
-		<button
-			type="button"
-			onclick={() => toggle('availableForTeams')}
-			class="chip cursor-pointer text-sm {filters.availableForTeams
-				? 'preset-filled-tertiary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Team Coaching
-		</button>
-		<button
-			type="button"
-			onclick={() => toggle('availableForWorkshops')}
-			class="chip cursor-pointer text-sm {filters.availableForWorkshops
-				? 'preset-filled-primary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Workshops
-		</button>
+	<div class="filter-row">
+		<button type="button" onclick={() => toggle('availableForPrivate')} class={filters.availableForPrivate ? 'filter-chip active' : 'filter-chip'}>Private Sessions</button>
+		<button type="button" onclick={() => toggle('availableForTeams')} class={filters.availableForTeams ? 'filter-chip active' : 'filter-chip'}>Team Coaching</button>
+		<button type="button" onclick={() => toggle('availableForWorkshops')} class={filters.availableForWorkshops ? 'filter-chip active' : 'filter-chip'}>Workshops</button>
 	</div>
 {:else if type === 'teams'}
-	<div class="flex flex-wrap gap-2">
-		<button
-			type="button"
-			onclick={() => toggle('openToNewMembers')}
-			class="chip cursor-pointer text-sm {filters.openToNewMembers
-				? 'preset-filled-primary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Open to New Members
-		</button>
-		<button
-			type="button"
-			onclick={() => toggle('seekingCoach')}
-			class="chip cursor-pointer text-sm {filters.seekingCoach
-				? 'preset-filled-secondary-500'
-				: 'preset-tonal-surface'}"
-		>
-			Seeking Coach
-		</button>
+	<div class="filter-row">
+		<button type="button" onclick={() => toggle('openToNewMembers')} class={filters.openToNewMembers ? 'filter-chip active' : 'filter-chip'}>Open to New Members</button>
+		<button type="button" onclick={() => toggle('seekingCoach')} class={filters.seekingCoach ? 'filter-chip active' : 'filter-chip'}>Seeking Coach</button>
 	</div>
 {/if}
+
+<style>
+	.filter-row { display: flex; flex-wrap: wrap; gap: 8px; }
+	.filter-chip { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 12px; border: 1px solid var(--zine-primary); background: transparent; color: var(--zine-primary); cursor: pointer; transition: background 0.1s, color 0.1s; }
+	.filter-chip:hover { background: var(--zine-surface); }
+	.filter-chip.active { background: var(--zine-muted); border-color: var(--zine-muted); color: #fff; }
+</style>

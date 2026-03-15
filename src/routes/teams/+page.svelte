@@ -19,18 +19,18 @@
 	<meta name="description" content="Browse improv and comedy teams in {cityConfig.name}." />
 </svelte:head>
 
-<div class="mx-auto max-w-6xl px-4 py-10">
-	<div class="mb-6">
-		<div class="flex items-center justify-between mb-4">
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-50">Teams</h1>
+<div class="list-page">
+	<div class="page-header">
+		<div class="title-row">
+			<h1 class="page-title">TEAMS</h1>
 			{#if authStore.isAuthenticated}
-				<a href="/teams/create" class="btn preset-filled-tertiary-500 gap-1">
+				<a href="/teams/create" class="btn-outline">
 					<Plus size={16} />
-					Create Team
+					CREATE TEAM
 				</a>
 			{/if}
 		</div>
-		<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-wrap">
+		<div class="search-row">
 			<SearchBar placeholder="Search teams..." onchange={(q) => (query = q)} />
 			<FilterPanel type="teams" {filters} onchange={(f) => (filters = f)} />
 		</div>
@@ -44,3 +44,12 @@
 		initialNextCursor={data.initialNextCursor}
 	/>
 </div>
+
+<style>
+	.list-page { max-width: 1152px; margin: 0 auto; padding: 48px 32px; }
+	.page-header { margin-bottom: 32px; }
+	.title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+	.page-title { font-family: var(--font-heading); font-size: 48px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }
+	.search-row { display: flex; flex-direction: column; gap: 12px; }
+	@media (min-width: 640px) { .search-row { flex-direction: row; align-items: center; flex-wrap: wrap; } }
+</style>

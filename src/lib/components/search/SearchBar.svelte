@@ -23,27 +23,34 @@
 	}
 </script>
 
-<div class="relative flex-1 max-w-md">
-	<Search
-		size={16}
-		class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none"
-	/>
+<div class="search-wrap">
+	<Search size={15} class="search-icon" />
 	<input
 		type="search"
 		bind:value={inputValue}
 		{placeholder}
 		oninput={handleInput}
-		class="input pl-9 pr-9 w-full"
+		class="search-input"
 		aria-label="Search"
 	/>
 	{#if inputValue}
 		<button
 			type="button"
 			onclick={clear}
-			class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+			class="search-clear"
 			aria-label="Clear search"
 		>
-			<X size={14} />
+			<X size={13} />
 		</button>
 	{/if}
 </div>
+
+<style>
+	.search-wrap { position: relative; flex: 1; max-width: 380px; }
+	.search-input { width: 100%; padding: 8px 32px 8px 34px; font-family: var(--font-body); font-size: 13px; background: var(--zine-bg); color: var(--zine-primary); border: var(--zine-border); outline: none; }
+	.search-input::placeholder { opacity: 0.5; }
+	.search-input:focus { outline: 2px solid var(--zine-accent); outline-offset: -2px; }
+	:global(.search-icon) { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--zine-primary); opacity: 0.4; pointer-events: none; }
+	.search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--zine-primary); opacity: 0.5; padding: 2px; }
+	.search-clear:hover { opacity: 1; }
+</style>

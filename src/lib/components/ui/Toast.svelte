@@ -9,35 +9,44 @@
 		info: Info
 	};
 
-	const styles: Record<Toast['type'], string> = {
-		success: 'bg-success-500 text-white',
-		error: 'bg-error-500 text-white',
-		warning: 'bg-warning-500 text-white',
-		info: 'bg-tertiary-600 text-white'
+	const accentColors: Record<Toast['type'], string> = {
+		success: '#2e7d7d',
+		error: '#d93b2b',
+		warning: '#f2c84b',
+		info: '#2e7d7d'
 	};
 </script>
 
 <div
-	class="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+	class="toast-container"
 	aria-live="polite"
 	aria-label="Notifications"
 >
 	{#each toastStore.toasts as toast (toast.id)}
 		{@const Icon = icons[toast.type]}
-		{@const styleClass = styles[toast.type]}
+		{@const accent = accentColors[toast.type]}
 		<div
-			class="pointer-events-auto flex items-start gap-3 rounded-lg px-4 py-3 shadow-lg {styleClass}"
+			class="toast-item"
+			style="border-left-color: {accent};"
 			role="alert"
 		>
-			<Icon size={20} class="mt-0.5 shrink-0" />
-			<p class="flex-1 text-sm">{toast.message}</p>
+			<Icon size={18} style="color: {accent}; flex-shrink: 0;" />
+			<p class="toast-msg">{toast.message}</p>
 			<button
 				onclick={() => toastStore.remove(toast.id)}
-				class="shrink-0 opacity-80 hover:opacity-100 transition-opacity"
+				class="toast-close"
 				aria-label="Dismiss notification"
 			>
-				<X size={16} />
+				<X size={14} />
 			</button>
 		</div>
 	{/each}
 </div>
+
+<style>
+	.toast-container { position: fixed; bottom: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; max-width: 360px; width: 100%; pointer-events: none; }
+	.toast-item { pointer-events: auto; display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: var(--zine-primary); color: var(--zine-bg); border: 2px solid var(--zine-primary); border-left-width: 4px; box-shadow: var(--zine-shadow); font-family: var(--font-body); font-size: 13px; }
+	.toast-msg { flex: 1; line-height: 1.4; }
+	.toast-close { background: none; border: none; cursor: pointer; color: var(--zine-bg); opacity: 0.7; padding: 0; flex-shrink: 0; }
+	.toast-close:hover { opacity: 1; }
+</style>

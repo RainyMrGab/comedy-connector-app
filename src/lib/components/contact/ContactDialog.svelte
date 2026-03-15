@@ -78,59 +78,42 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if open}
-	<!-- Backdrop button (click outside to close) -->
 	<button
-		class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm cursor-default w-full"
+		class="backdrop"
 		onclick={close}
 		tabindex="-1"
 		aria-label="Close dialog"
 	></button>
-	<!-- Dialog panel -->
-	<div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+	<div class="dialog-wrap">
 		<div
-			class="bg-surface-50 dark:bg-surface-800 rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto"
+			class="dialog-panel"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="contact-dialog-title"
 		>
-			<!-- Header -->
-			<div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700">
-				<h2 id="contact-dialog-title" class="text-lg font-semibold text-surface-900 dark:text-surface-50">
-					{sent ? 'Message Sent' : `Contact ${recipientName}`}
+			<div class="dialog-header">
+				<h2 id="contact-dialog-title" class="dialog-title">
+					{sent ? 'MESSAGE SENT' : `CONTACT ${recipientName.toUpperCase()}`}
 				</h2>
-				<button
-					onclick={close}
-					class="p-1 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
-					aria-label="Close"
-				>
-					<X size={20} />
+				<button onclick={close} class="close-btn" aria-label="Close">
+					<X size={18} />
 				</button>
 			</div>
 
 			{#if sent}
-				<!-- Success state -->
-				<div class="px-6 py-8 text-center">
-					<div class="w-14 h-14 rounded-full bg-success-500 flex items-center justify-center text-white text-2xl mx-auto mb-4">
-						✓
-					</div>
-					<p class="text-surface-700 dark:text-surface-300 mb-2">
-						Your message has been sent to <strong>{recipientName}</strong>.
-					</p>
-					<p class="text-sm text-surface-500">
-						They'll reply directly to your email address.
-					</p>
-					<button onclick={close} class="btn preset-filled-primary-500 mt-6">
-						Done
-					</button>
+				<div class="sent-state">
+					<span class="sent-icon">★</span>
+					<p class="sent-msg">Your message has been sent to <strong>{recipientName}</strong>.</p>
+					<p class="sent-sub">They'll reply directly to your email address.</p>
+					<button onclick={close} class="btn-accent">DONE</button>
 				</div>
 			{:else}
-				<!-- Form -->
-				<form onsubmit={handleSubmit} class="px-6 py-5 flex flex-col gap-4">
-					<div class="label">
-						<span class="label-text text-sm font-medium">Subject</span>
+				<form onsubmit={handleSubmit} class="dialog-form zine-form">
+					<div class="form-field">
+						<label for="contact-subject">SUBJECT</label>
 						<input
+							id="contact-subject"
 							type="text"
-							class="input mt-1"
 							bind:value={subject}
 							placeholder="e.g. Interested in booking you as an opener"
 							maxlength="200"
@@ -139,41 +122,35 @@
 						/>
 					</div>
 
-					<div class="label">
-						<span class="label-text text-sm font-medium">Message</span>
+					<div class="form-field">
+						<label for="contact-message">MESSAGE</label>
 						<textarea
-							class="textarea mt-1 min-h-32 resize-y"
+							id="contact-message"
 							bind:value={message}
 							placeholder="Introduce yourself and explain what you're looking for..."
 							maxlength="5000"
+							rows="6"
 							required
 							disabled={submitting}
 						></textarea>
-						<p class="text-xs text-surface-400 mt-1 text-right">{message.length}/5000</p>
+						<p class="char-count">{message.length}/5000</p>
 					</div>
 
-					<p class="text-xs text-surface-500">
+					<p class="privacy-note">
 						Your email will be shared with {recipientName} as the reply address so they can respond directly.
 					</p>
 
-					<div class="flex gap-3 justify-end pt-2">
-						<button
-							type="button"
-							onclick={close}
-							class="btn preset-tonal-surface"
-							disabled={submitting}
-						>
-							Cancel
-						</button>
+					<div class="dialog-actions">
+						<button type="button" onclick={close} class="btn-outline" disabled={submitting}>CANCEL</button>
 						<button
 							type="submit"
-							class="btn preset-filled-primary-500 gap-2"
+							class="btn-accent"
 							disabled={submitting || !subject.trim() || !message.trim()}
 						>
 							{#if submitting}
-								<span class="animate-spin">⏳</span> Sending...
+								SENDING…
 							{:else}
-								<Send size={16} /> Send Message
+								<Send size={14} /> SEND
 							{/if}
 						</button>
 					</div>
@@ -182,3 +159,21 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(28, 28, 28, 0.8); cursor: default; width: 100%; border: none; }
+	.dialog-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none; }
+	.dialog-panel { background: var(--zine-bg); border: var(--zine-border); box-shadow: var(--zine-shadow); max-width: 520px; width: 100%; pointer-events: auto; }
+	.dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: var(--zine-border); }
+	.dialog-title { font-family: var(--font-heading); font-size: 18px; color: var(--zine-primary); margin: 0; }
+	.close-btn { background: none; border: none; cursor: pointer; color: var(--zine-primary); padding: 4px; opacity: 0.6; }
+	.close-btn:hover { opacity: 1; }
+	.dialog-form { padding: 20px; }
+	.char-count { font-size: 10px; opacity: 0.5; text-align: right; margin-top: 4px; }
+	.privacy-note { font-size: 11px; opacity: 0.55; line-height: 1.5; }
+	.dialog-actions { display: flex; gap: 10px; justify-content: flex-end; padding-top: 4px; }
+	.sent-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 24px; text-align: center; }
+	.sent-icon { font-size: 40px; color: var(--zine-muted); }
+	.sent-msg { font-size: 14px; margin: 0; }
+	.sent-sub { font-size: 12px; opacity: 0.6; margin: 0; }
+</style>

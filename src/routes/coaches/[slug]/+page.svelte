@@ -19,57 +19,58 @@
 	<meta name="description" content="{profile.name} — improv coach in {cityConfig.name}." />
 </svelte:head>
 
-<div class="mx-auto max-w-3xl px-4 py-10">
-	<div class="flex items-start gap-6 mb-8">
-		{#if profile.photoUrl}
-			<img src={profile.photoUrl} alt={profile.name} class="w-24 h-24 rounded-full object-cover shadow-md" />
-		{:else}
-			<div class="w-24 h-24 rounded-full bg-secondary-500 flex items-center justify-center text-white text-3xl font-bold shadow-md">
-				{profile.name[0].toUpperCase()}
-			</div>
-		{/if}
-		<div class="flex-1">
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-50">{profile.name}</h1>
-			<div class="flex flex-wrap gap-2 mt-2">
-				<span class="chip preset-filled-secondary-500"><UserCheck size={12} /> Coach</span>
-				{#if coach.availableForPrivate}
-					<span class="chip preset-tonal-secondary">Private Sessions</span>
-				{/if}
-				{#if coach.availableForTeams}
-					<span class="chip preset-tonal-tertiary">Team Coaching</span>
-				{/if}
-				{#if coach.availableForWorkshops}
-					<span class="chip preset-tonal-surface">Workshops</span>
-				{/if}
-			</div>
-			{#if coach.availability}
-				<p class="text-sm text-surface-400 mt-2">{coach.availability}</p>
-			{/if}
-
-			{#if profile.socialLinks && Object.keys(profile.socialLinks).length > 0}
-				<div class="flex flex-wrap gap-2 mt-3">
-					{#each Object.entries(profile.socialLinks) as [platform, url]}
-						{#if url}
-							<a href={url} target="_blank" rel="noopener noreferrer" class="chip preset-tonal-surface hover:preset-filled-surface transition-all text-xs">
-								<Globe size={12} />
-								<span class="capitalize">{platform}</span>
-							</a>
-						{/if}
-					{/each}
+<div class="detail-page">
+	<div class="profile-header">
+		<div class="avatar-name">
+			{#if profile.photoUrl}
+				<img src={profile.photoUrl} alt={profile.name} class="avatar" />
+			{:else}
+				<div class="avatar avatar-placeholder">
+					{profile.name[0].toUpperCase()}
 				</div>
 			{/if}
+			<div class="name-block">
+				<h1 class="profile-name">{profile.name}</h1>
+				<div class="tag-row">
+					<span class="zine-tag tag-accent"><UserCheck size={10} /> COACH</span>
+					{#if coach.availableForPrivate}
+						<span class="zine-tag">PRIVATE SESSIONS</span>
+					{/if}
+					{#if coach.availableForTeams}
+						<span class="zine-tag">TEAM COACHING</span>
+					{/if}
+					{#if coach.availableForWorkshops}
+						<span class="zine-tag">WORKSHOPS</span>
+					{/if}
+				</div>
+				{#if coach.availability}
+					<p class="availability">{coach.availability}</p>
+				{/if}
+				{#if profile.socialLinks && Object.keys(profile.socialLinks).length > 0}
+					<div class="tag-row">
+						{#each Object.entries(profile.socialLinks) as [platform, url]}
+							{#if url}
+								<a href={url} target="_blank" rel="noopener noreferrer" class="social-link" aria-label={platform}>
+									<Globe size={12} />
+									<span class="capitalize">{platform}</span>
+								</a>
+							{/if}
+						{/each}
+					</div>
+				{/if}
+			</div>
 		</div>
-
-		{#if authStore.isAuthenticated}
-			<button onclick={() => (contactOpen = true)} class="btn preset-filled-secondary-500 shrink-0 gap-1">
-				<Mail size={16} />
-				Contact
-			</button>
-		{:else}
-			<button onclick={() => {const m = import('netlify-identity-widget'); m.then(i => i.default.open('login'));}} class="btn preset-tonal-surface shrink-0 text-sm">
-				Log in to contact
-			</button>
-		{/if}
+		<div class="header-actions">
+			{#if authStore.isAuthenticated}
+				<button onclick={() => (contactOpen = true)} class="btn-accent">
+					<Mail size={16} /> CONTACT
+				</button>
+			{:else}
+				<button onclick={() => {const m = import('netlify-identity-widget'); m.then(i => i.default.open('login'));}} class="btn-outline">
+					LOG IN TO CONTACT
+				</button>
+			{/if}
+		</div>
 	</div>
 
 	<ContactDialog
@@ -80,37 +81,37 @@
 	/>
 
 	{#if coach.coachingBio}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-2">Coaching Approach</h2>
-			<p class="text-surface-700 dark:text-surface-300 whitespace-pre-line">{coach.coachingBio}</p>
+		<section class="detail-section">
+			<h2 class="section-label">COACHING APPROACH</h2>
+			<p class="section-body">{coach.coachingBio}</p>
 		</section>
 	{/if}
 
 	{#if profile.bio}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-2">About</h2>
-			<p class="text-surface-700 dark:text-surface-300 whitespace-pre-line">{profile.bio}</p>
+		<section class="detail-section">
+			<h2 class="section-label">ABOUT</h2>
+			<p class="section-body">{profile.bio}</p>
 		</section>
 	{/if}
 
 	{#if profile.training}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-2">Training & Experience</h2>
-			<p class="text-surface-700 dark:text-surface-300 whitespace-pre-line">{profile.training}</p>
+		<section class="detail-section">
+			<h2 class="section-label">TRAINING &amp; EXPERIENCE</h2>
+			<p class="section-body">{profile.training}</p>
 		</section>
 	{/if}
 
 	{#if coachingRoles.length > 0}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-3">Teams Coached</h2>
-			<div class="flex flex-col gap-2">
+		<section class="detail-section">
+			<h2 class="section-label">TEAMS COACHED</h2>
+			<div class="member-list">
 				{#each coachingRoles as r}
-					<a href="/teams/{r.teamSlug}" class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:border-secondary-500 transition-colors">
-						<Users size={18} class="text-surface-400" />
+					<a href="/teams/{r.teamSlug}" class="member-row">
+						<Users size={16} />
 						<div>
-							<p class="font-medium text-surface-900 dark:text-surface-50">{r.teamName}</p>
+							<p class="member-name">{r.teamName}</p>
 							{#if r.startYear}
-								<p class="text-xs text-surface-400">
+								<p class="member-date">
 									{formatDateRange(r.startYear, r.startMonth, r.endYear, r.endMonth, r.isCurrent)}
 								</p>
 							{/if}
@@ -121,3 +122,113 @@
 		</section>
 	{/if}
 </div>
+
+<style>
+	.detail-page { max-width: 768px; margin: 0 auto; padding: 48px 32px; }
+
+	.profile-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 24px;
+		padding: 24px;
+		background: var(--zine-surface);
+		border: var(--zine-border);
+		box-shadow: var(--zine-shadow);
+		margin-bottom: 32px;
+		flex-wrap: wrap;
+	}
+
+	.avatar-name { display: flex; align-items: flex-start; gap: 20px; flex: 1; }
+
+	.avatar { width: 80px; height: 80px; object-fit: cover; border: var(--zine-border); flex-shrink: 0; }
+
+	.avatar-placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--zine-muted);
+		color: #fff;
+		font-size: 28px;
+		font-weight: 700;
+		font-family: var(--font-body);
+	}
+
+	.name-block { flex: 1; }
+	.profile-name { font-family: var(--font-heading); font-size: 32px; color: var(--zine-primary); margin-bottom: 8px; }
+
+	.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+	.zine-tag {
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: var(--zine-muted);
+		border: 1px solid var(--zine-muted);
+		padding: 2px 8px;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.tag-accent { color: var(--zine-accent); border-color: var(--zine-accent); }
+
+	.availability { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
+
+	.social-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--zine-primary);
+		text-decoration: none;
+		border: 1px solid var(--zine-primary);
+		padding: 2px 8px;
+		opacity: 0.7;
+	}
+
+	.social-link:hover { opacity: 1; color: var(--zine-muted); border-color: var(--zine-muted); }
+
+	.header-actions { flex-shrink: 0; }
+
+	.detail-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--zine-surface); }
+
+	.section-label {
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		color: var(--zine-muted);
+		margin-bottom: 8px;
+	}
+
+	.section-body { font-size: 15px; line-height: 1.7; white-space: pre-line; }
+
+	.member-list { display: flex; flex-direction: column; gap: 8px; }
+
+	.member-row {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 12px;
+		border: var(--zine-border);
+		background: var(--zine-surface);
+		text-decoration: none;
+		color: var(--zine-primary);
+		transition: box-shadow 0.1s, transform 0.1s;
+	}
+
+	.member-row:hover { box-shadow: var(--zine-shadow); transform: translate(-1px, -1px); }
+
+	.member-name { font-size: 14px; font-weight: 700; }
+	.member-date { font-size: 11px; opacity: 0.6; }
+
+	@media (max-width: 640px) {
+		.detail-page { padding: 24px 16px; }
+		.profile-header { flex-direction: column; }
+		.avatar-name { flex-direction: column; }
+	}
+</style>
