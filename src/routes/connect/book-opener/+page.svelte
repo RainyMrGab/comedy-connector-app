@@ -4,7 +4,7 @@
 	import SearchBar from '$components/search/SearchBar.svelte';
 	import ResultsList from '$components/search/ResultsList.svelte';
 	import { cityConfig } from '$config/city';
-	import { Mic2, ArrowLeft } from 'lucide-svelte';
+	import { Sparkles, ArrowLeft } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -25,7 +25,7 @@
 	<div class="page-header">
 		<a href="/connect" class="back-link"><ArrowLeft size={14} /> CONNECT</a>
 		<div class="title-row">
-			<span class="title-icon"><Mic2 size={20} /></span>
+			<span class="title-icon"><Sparkles size={20} /></span>
 			<h1 class="page-title">BOOK AN OPENER</h1>
 		</div>
 		<p class="page-desc">Performers available to open shows in {cityConfig.name}. Search by name to narrow results.</p>

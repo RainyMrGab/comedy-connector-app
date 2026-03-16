@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Pencil, Mic2, UserCheck } from 'lucide-svelte';
+	import { Pencil, Sparkles, UserCheck } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
@@ -26,7 +26,7 @@
 				<h1 class="profile-name">{profile.name}</h1>
 				<div class="tag-row">
 					{#if performer}
-						<span class="zine-tag tag-accent"><Mic2 size={10} /> PERFORMER</span>
+						<span class="zine-tag tag-accent"><Sparkles size={10} /> PERFORMER</span>
 					{/if}
 					{#if coach}
 						<span class="zine-tag tag-muted"><UserCheck size={10} /> COACH</span>
@@ -87,9 +87,9 @@
 	.name-block { flex: 1; }
 	.profile-name { font-family: var(--font-heading); font-size: 28px; color: var(--zine-primary); margin-bottom: 8px; }
 	.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
-	.zine-tag { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid; }
-	.tag-accent { color: var(--zine-accent); border-color: var(--zine-accent); }
-	.tag-muted { color: var(--zine-muted); border-color: var(--zine-muted); }
+	.zine-tag { font-family: var(--font-body); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--zine-primary); color: var(--zine-bg); padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
+	.tag-accent { background: var(--zine-muted); color: #fff; }
+	.tag-muted { background: var(--zine-muted); color: #fff; }
 	.detail-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--zine-surface); }
 	.section-label { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); margin-bottom: 8px; }
 	.section-body { font-size: 15px; line-height: 1.7; white-space: pre-line; }

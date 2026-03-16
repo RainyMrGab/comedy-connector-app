@@ -161,18 +161,19 @@
 
 	.zine-tag {
 		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 9px;
 		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: var(--zine-muted);
-		border: 1px solid var(--zine-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		background: var(--zine-primary);
+		color: var(--zine-bg);
 		padding: 2px 8px;
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
 	}
 
-	.tag-accent { color: var(--zine-accent); border-color: var(--zine-accent); }
+	.tag-accent { background: var(--zine-muted); color: #fff; }
 
 	.availability { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
 

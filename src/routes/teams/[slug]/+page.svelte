@@ -236,19 +236,20 @@
 
 	.zine-tag {
 		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 9px;
 		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: var(--zine-muted);
-		border: 1px solid var(--zine-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		background: var(--zine-primary);
+		color: var(--zine-bg);
 		padding: 2px 8px;
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
 	}
 
-	.tag-muted { color: var(--zine-muted); border-color: var(--zine-muted); }
-	.tag-warning { color: #b45309; border-color: #b45309; }
+	.tag-muted { background: var(--zine-muted); color: #fff; }
+	.tag-warning { background: var(--zine-accent); color: #fff; }
 
 	.header-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 

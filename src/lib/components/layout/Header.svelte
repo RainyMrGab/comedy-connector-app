@@ -24,7 +24,14 @@
 <header class="zine-header">
 	<div class="header-inner">
 		<!-- Wordmark -->
-		<a href="/" class="wordmark">{cityConfig.name} Comedy Connector</a>
+		<a href="/" class="wordmark">
+			<svg class="wm-mark" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<rect x="3" y="3" width="34" height="34" fill="#1c1c1c"/>
+				<rect x="0" y="0" width="34" height="34" fill="#1c1c1c"/>
+				<text x="17" y="25" font-family="'Courier Prime',monospace" font-weight="700" font-size="19" fill="#f4efe6" text-anchor="middle" letter-spacing="-1">CC</text>
+			</svg>
+			<span class="wm-text">Comedy Connector</span>
+		</a>
 
 		<!-- Desktop nav -->
 		<nav class="desktop-nav" aria-label="Main navigation">
@@ -77,7 +84,14 @@
 		<button class="mobile-backdrop" onclick={closeMobileMenu} aria-label="Close menu"></button>
 		<div class="mobile-menu">
 			<div class="mobile-top">
-				<a href="/" class="wordmark" onclick={closeMobileMenu}>{cityConfig.name} Comedy Connector</a>
+				<a href="/" class="wordmark" onclick={closeMobileMenu}>
+				<svg class="wm-mark" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<rect x="3" y="3" width="34" height="34" fill="#1c1c1c"/>
+					<rect x="0" y="0" width="34" height="34" fill="#1c1c1c"/>
+					<text x="17" y="25" font-family="'Courier Prime',monospace" font-weight="700" font-size="19" fill="#f4efe6" text-anchor="middle" letter-spacing="-1">CC</text>
+				</svg>
+				<span class="wm-text">{cityConfig.name} Comedy Connector</span>
+			</a>
 				<button class="mobile-close" onclick={closeMobileMenu} aria-label="Close menu">
 					<X size={24} />
 				</button>
@@ -128,12 +142,26 @@
 	}
 
 	.wordmark {
-		font-family: var(--font-heading);
-		font-size: 18px;
-		color: var(--zine-primary);
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
 		text-decoration: none;
 		white-space: nowrap;
 		flex-shrink: 0;
+	}
+
+	.wm-mark {
+		width: 30px;
+		height: 30px;
+		transform: rotate(-2deg);
+		flex-shrink: 0;
+	}
+
+	.wm-text {
+		font-family: var(--font-heading);
+		font-size: 18px;
+		line-height: 1;
+		color: var(--zine-primary);
 	}
 
 	/* Desktop nav */
@@ -141,6 +169,7 @@
 		display: none;
 		align-items: center;
 		gap: 20px;
+    margin-top: 3px;
 		flex: 1;
 	}
 
@@ -188,6 +217,12 @@
 	@keyframes pulse {
 		0%, 100% { opacity: 1; }
 		50% { opacity: 0.4; }
+	}
+
+	/* Normalize btn-accent height in header to match btn-outline */
+	.header-inner :global(.btn-accent) {
+		padding: 8px 16px;
+		font-size: 12px;
 	}
 
 	/* Mobile toggle */

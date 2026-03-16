@@ -1,25 +1,25 @@
 <script lang="ts">
 	import { authStore } from '$stores/auth.svelte';
 	import { cityConfig } from '$config/city';
-	import { Mic2, Users, UserCheck, ArrowRight } from 'lucide-svelte';
+	import { Sparkles, GraduationCap, Handshake, Users, UserCheck, ArrowRight } from 'lucide-svelte';
 
 	const connectCards = [
 		{
-			emoji: '🎤',
+			icon: Sparkles,
 			label: 'BOOK AN OPENER',
 			tag: 'BOOKING',
 			desc: 'Find performers available to open for your show.',
 			href: '/connect/book-opener'
 		},
 		{
-			emoji: '📚',
+			icon: GraduationCap,
 			label: 'FIND A COACH',
 			tag: 'COACHING',
 			desc: 'Browse coaches by style, availability, and focus area.',
 			href: '/connect/find-coach'
 		},
 		{
-			emoji: '🤝',
+			icon: Handshake,
 			label: 'JOIN A TEAM',
 			tag: 'TEAMS',
 			desc: 'Find teams actively looking for new members.',
@@ -29,7 +29,7 @@
 
 	const browseCards = [
 		{
-			icon: Mic2,
+			icon: Sparkles,
 			label: 'PERFORMERS',
 			tag: 'BROWSE',
 			desc: 'Create a profile, showcase your training, and let the community know what you\'re looking for.',
@@ -104,7 +104,7 @@
 		{#each connectCards as card}
 			<a href={card.href} class="zine-card connect-card">
 				<div class="card-tag">{card.tag}</div>
-				<div class="card-emoji">{card.emoji}</div>
+				<div class="card-icon"><card.icon size={24} /></div>
 				<h3 class="card-label">{card.label}</h3>
 				<p class="card-desc">{card.desc}</p>
 				<span class="card-go">→ GO</span>
@@ -149,7 +149,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 80px 64px;
+		padding: 56px 48px;
 		border-bottom: var(--zine-border);
 		gap: 48px;
 		overflow: hidden;
@@ -163,7 +163,7 @@
 	.hero-headline {
 		transform: rotate(-2deg);
 		transform-origin: left center;
-		margin-bottom: 32px;
+		margin-bottom: 20px;
 	}
 
 	.headline-line {
@@ -227,7 +227,7 @@
 
 	/* SECTIONS */
 	.content-section {
-		padding: 64px 48px;
+		padding: 48px 32px;
 	}
 
 	.features-section {
@@ -238,7 +238,7 @@
 	.section-heading {
 		font-family: var(--font-heading);
 		font-size: 36px;
-		margin-bottom: 40px;
+		margin-bottom: 24px;
 		color: var(--zine-primary);
 		transform: rotate(-1deg);
 		display: inline-block;
@@ -248,23 +248,23 @@
 	.connect-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 24px;
+		gap: 16px;
 	}
 
 	.features-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 24px;
+		gap: 16px;
 	}
 
 	.zine-card {
 		background: var(--zine-bg);
 		border: var(--zine-border);
 		box-shadow: var(--zine-shadow);
-		padding: 24px;
+		padding: 18px 20px;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 8px;
 		text-decoration: none;
 		color: var(--zine-primary);
 		transition:
@@ -278,7 +278,7 @@
 	}
 
 	.connect-card {
-		padding: 32px;
+		padding: 20px 24px;
 		background: var(--zine-surface);
 	}
 
@@ -287,19 +287,15 @@
 	}
 
 	.card-tag {
-		font-size: 10px;
+		font-size: 9px;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: var(--zine-muted);
-		border: 1px solid var(--zine-muted);
+		text-transform: uppercase;
+		background: var(--zine-muted);
+		color: #fff;
 		display: inline-block;
 		padding: 2px 8px;
 		width: fit-content;
-	}
-
-	.card-emoji {
-		font-size: 32px;
-		margin-top: 4px;
 	}
 
 	.card-icon {
@@ -337,7 +333,7 @@
 	.cta-strip {
 		background: var(--zine-highlight);
 		border-top: var(--zine-border);
-		padding: 64px 48px;
+		padding: 48px 32px;
 	}
 
 	.cta-inner {
@@ -368,7 +364,7 @@
 	@media (max-width: 768px) {
 		.hero {
 			flex-direction: column;
-			padding: 48px 24px;
+			padding: 36px 24px;
 		}
 
 		.hero-deco {

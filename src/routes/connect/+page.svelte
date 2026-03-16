@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cityConfig } from '$config/city';
-	import { Mic2, Users, UserCheck } from 'lucide-svelte';
+	import { Sparkles, Users, UserCheck } from 'lucide-svelte';
 </script>
 
 <svelte:head>
@@ -16,7 +16,7 @@
 	<div class="connect-grid">
 		<a href="/connect/book-opener" class="zine-card">
 			<div class="card-tag">BOOKING</div>
-			<div class="card-icon"><Mic2 size={28} /></div>
+			<div class="card-icon"><Sparkles size={28} /></div>
 			<h2 class="card-label">BOOK AN OPENER</h2>
 			<p class="card-desc">Discover performers available to open your show or headline as a book opener.</p>
 			<span class="card-go">→ GO</span>
@@ -44,7 +44,7 @@
 	.connect-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 	.zine-card { background: var(--zine-surface); border: var(--zine-border); box-shadow: var(--zine-shadow); padding: 32px; display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: var(--zine-primary); transition: transform 0.1s, box-shadow 0.1s; }
 	.zine-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--zine-primary); }
-	.card-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); border: 1px solid var(--zine-muted); display: inline-block; padding: 2px 8px; width: fit-content; }
+	.card-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--zine-muted); color: #fff; display: inline-block; padding: 2px 8px; width: fit-content; }
 	.card-icon { color: var(--zine-accent); }
 	.card-label { font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: 0.06em; margin: 0; }
 	.card-desc { font-size: 13px; line-height: 1.6; opacity: 0.8; margin: 0; }

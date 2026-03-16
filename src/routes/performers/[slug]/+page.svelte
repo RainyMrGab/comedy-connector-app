@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { Mic2, Mail, Instagram, Youtube, Globe, Users } from 'lucide-svelte';
+	import { Sparkles, Mail, Instagram, Youtube, Globe, Users } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
@@ -40,7 +40,7 @@
 				<h1 class="profile-name">{profile.name}</h1>
 				<div class="tag-row">
 					{#if performer}
-						<span class="zine-tag tag-accent"><Mic2 size={10} /> PERFORMER</span>
+						<span class="zine-tag tag-accent"><Sparkles size={10} /> PERFORMER</span>
 					{/if}
 					{#if performer?.openToBookOpeners}
 						<span class="zine-tag">OPEN TO BOOK OPENERS</span>
@@ -214,21 +214,20 @@
 
 	.zine-tag {
 		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 9px;
 		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: var(--zine-muted);
-		border: 1px solid var(--zine-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		background: var(--zine-primary);
+		color: var(--zine-bg);
 		padding: 2px 8px;
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
 	}
 
-	.tag-accent {
-		color: var(--zine-accent);
-		border-color: var(--zine-accent);
-	}
+	.tag-accent { background: var(--zine-muted); color: #fff; }
+	.tag-warning { background: var(--zine-accent); color: #fff; }
 
 	.tag-warning {
 		color: #b45309;

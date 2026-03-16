@@ -36,7 +36,7 @@
 
 <style>
 	.filter-row { display: flex; flex-wrap: wrap; gap: 8px; }
-	.filter-chip { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 12px; border: 1px solid var(--zine-primary); background: transparent; color: var(--zine-primary); cursor: pointer; transition: background 0.1s, color 0.1s; }
+	.filter-chip { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border: 2px solid var(--zine-primary); background: transparent; color: var(--zine-primary); cursor: pointer; transition: background 0.1s, color 0.1s; }
 	.filter-chip:hover { background: var(--zine-surface); }
-	.filter-chip.active { background: var(--zine-muted); border-color: var(--zine-muted); color: #fff; }
+	.filter-chip.active { background: var(--zine-primary); color: var(--zine-bg); border-color: var(--zine-primary); }
 </style>
