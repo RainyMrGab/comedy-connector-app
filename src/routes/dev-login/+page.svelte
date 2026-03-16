@@ -8,34 +8,32 @@
 	<title>Dev Login — Comedy Connector</title>
 </svelte:head>
 
-<div class="flex min-h-[80vh] items-center justify-center p-4">
-	<div class="card bg-surface-100-900 w-full max-w-sm space-y-6 p-8">
-		<div class="text-center">
-			<h1 class="h3">Local Dev Login</h1>
-			<p class="text-surface-500 mt-1 text-sm">
-				Select a test user. Only available in local development.
-			</p>
-		</div>
+<div class="login-wrap">
+	<div class="login-card">
+		<h1 class="login-title">LOCAL DEV LOGIN</h1>
+		<p class="login-sub">Select a test user. Only available in local development.</p>
 
-		<form method="POST" action="?/login" class="space-y-4">
-			<label class="label">
-				<span class="label-text">Test User</span>
-				<select name="userId" class="select" required>
+		<form method="POST" action="?/login" class="zine-form">
+			<div class="form-field">
+				<label for="userId">TEST USER</label>
+				<select id="userId" name="userId" required>
 					{#each data.users as user}
 						<option value={user.id}>{user.label}</option>
 					{/each}
 				</select>
-			</label>
-
-			<button type="submit" class="btn preset-filled-primary-500 w-full">
-				Sign In as Selected User
-			</button>
+			</div>
+			<button type="submit" class="btn-accent">SIGN IN AS SELECTED USER</button>
 		</form>
 
-		<form method="POST" action="?/logout">
-			<button type="submit" class="btn preset-tonal-surface w-full text-sm">
-				Clear Session / Sign Out
-			</button>
+		<form method="POST" action="?/logout" style="margin-top: 8px;">
+			<button type="submit" class="btn-outline" style="width: 100%;">CLEAR SESSION / SIGN OUT</button>
 		</form>
 	</div>
 </div>
+
+<style>
+	.login-wrap { display: flex; min-height: 80vh; align-items: center; justify-content: center; padding: 16px; }
+	.login-card { background: var(--zine-surface); border: var(--zine-border); box-shadow: var(--zine-shadow); width: 100%; max-width: 380px; padding: 32px; }
+	.login-title { font-family: var(--font-heading); font-size: 24px; color: var(--zine-primary); margin: 0 0 8px; transform: rotate(-1deg); display: inline-block; }
+	.login-sub { font-size: 12px; opacity: 0.65; margin: 0 0 24px; }
+</style>

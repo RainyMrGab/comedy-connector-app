@@ -1,16 +1,10 @@
 <script lang="ts">
 	import { authStore } from '$stores/auth.svelte';
 	import { cityConfig } from '$config/city';
-	import { Menu, X, Mic2, Users, UserCheck } from 'lucide-svelte';
+	import { Menu, X } from 'lucide-svelte';
 
 	let { isLocal = false }: { isLocal?: boolean } = $props();
 	let mobileMenuOpen = $state(false);
-
-	const navLinks = [
-		{ href: '/performers', label: 'Performers', icon: Mic2 },
-		{ href: '/coaches', label: 'Coaches', icon: UserCheck },
-		{ href: '/teams', label: 'Teams', icon: Users }
-	];
 
 	async function openLogin() {
 		const module = await import('netlify-identity-widget');
@@ -27,55 +21,52 @@
 	}
 </script>
 
-<header class="bg-surface-900 text-surface-50 sticky top-0 z-50 shadow-md">
-	<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-		<!-- Logo -->
-		<a href="/" class="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity">
-			<span class="text-primary-400">🎭</span>
-			<span>{cityConfig.name} Comedy Connector</span>
+<header class="zine-header">
+	<div class="header-inner">
+		<!-- Wordmark -->
+		<a href="/" class="wordmark">
+			<svg class="wm-mark" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<rect x="3" y="3" width="34" height="34" fill="#1c1c1c"/>
+				<rect x="0" y="0" width="34" height="34" fill="#1c1c1c"/>
+				<text x="17" y="25" font-family="'Courier Prime',monospace" font-weight="700" font-size="19" fill="#f4efe6" text-anchor="middle" letter-spacing="-1">CC</text>
+			</svg>
+			<span class="wm-text">Comedy Connector</span>
 		</a>
 
 		<!-- Desktop nav -->
-		<nav class="hidden md:flex items-center gap-6" aria-label="Main navigation">
-			{#each navLinks as link}
-				<a
-					href={link.href}
-					class="flex items-center gap-1 text-sm font-medium hover:text-primary-300 transition-colors"
-				>
-					<link.icon size={16} />
-					{link.label}
-				</a>
-			{/each}
-			<a href="/connect" class="text-sm font-medium hover:text-secondary-300 transition-colors">
-				Connect
+		<nav class="desktop-nav" aria-label="Main navigation">
+			<a href="/performers">PERFORMERS</a>
+			<span class="dot" aria-hidden="true">·</span>
+			<a href="/coaches">COACHES</a>
+			<span class="dot" aria-hidden="true">·</span>
+			<a href="/teams">TEAMS</a>
+			<a href="/connect" class="connect-link">
+				<span class="star">★</span> CONNECT <span class="star">★</span>
 			</a>
+			<a href="/resources">RESOURCES</a>
 		</nav>
 
 		<!-- Desktop auth -->
-		<div class="hidden md:flex items-center gap-3">
+		<div class="desktop-auth">
 			{#if authStore.loading && !isLocal}
-				<div class="w-20 h-8 bg-surface-700 animate-pulse rounded"></div>
+				<div class="auth-loading"></div>
 			{:else if authStore.isAuthenticated}
-				<a href="/profile" class="text-sm hover:text-primary-300 transition-colors">
-					My Profile
-				</a>
+				<a href="/profile" class="btn-outline">MY PROFILE</a>
 				{#if isLocal}
-					<a href="/dev-login" class="btn btn-sm preset-tonal-surface">Switch User</a>
+					<a href="/dev-login" class="btn-outline">SWITCH USER</a>
 				{:else}
-					<button onclick={handleLogout} class="btn btn-sm preset-tonal-surface">Sign Out</button>
+					<button onclick={handleLogout} class="btn-outline">SIGN OUT</button>
 				{/if}
 			{:else if isLocal}
-				<a href="/dev-login" class="btn btn-sm preset-filled-primary-500">Dev Login</a>
+				<a href="/dev-login" class="btn-accent">DEV LOGIN</a>
 			{:else}
-				<button onclick={openLogin} class="btn btn-sm preset-filled-primary-500">
-					Sign In / Register
-				</button>
+				<button onclick={openLogin} class="btn-accent">JOIN THE SCENE</button>
 			{/if}
 		</div>
 
-		<!-- Mobile menu toggle -->
+		<!-- Mobile toggle -->
 		<button
-			class="md:hidden p-2 rounded hover:bg-surface-700 transition-colors"
+			class="mobile-toggle"
 			onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 			aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
 			aria-expanded={mobileMenuOpen}
@@ -88,51 +79,251 @@
 		</button>
 	</div>
 
-	<!-- Mobile menu -->
+	<!-- Mobile overlay -->
 	{#if mobileMenuOpen}
-		<div class="md:hidden bg-surface-800 border-t border-surface-700 px-4 pb-4">
-			<nav class="flex flex-col gap-2 pt-3" aria-label="Mobile navigation">
-				{#each navLinks as link}
-					<a
-						href={link.href}
-						onclick={closeMobileMenu}
-						class="flex items-center gap-2 py-2 text-sm font-medium hover:text-primary-300 transition-colors"
-					>
-						<link.icon size={18} />
-						{link.label}
-					</a>
-				{/each}
-				<a
-					href="/connect"
-					onclick={closeMobileMenu}
-					class="py-2 text-sm font-medium hover:text-secondary-300 transition-colors"
-				>
-					Connect
+		<button class="mobile-backdrop" onclick={closeMobileMenu} aria-label="Close menu"></button>
+		<div class="mobile-menu">
+			<div class="mobile-top">
+				<a href="/" class="wordmark" onclick={closeMobileMenu}>
+				<svg class="wm-mark" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<rect x="3" y="3" width="34" height="34" fill="#1c1c1c"/>
+					<rect x="0" y="0" width="34" height="34" fill="#1c1c1c"/>
+					<text x="17" y="25" font-family="'Courier Prime',monospace" font-weight="700" font-size="19" fill="#f4efe6" text-anchor="middle" letter-spacing="-1">CC</text>
+				</svg>
+				<span class="wm-text">{cityConfig.name} Comedy Connector</span>
+			</a>
+				<button class="mobile-close" onclick={closeMobileMenu} aria-label="Close menu">
+					<X size={24} />
+				</button>
+			</div>
+			<nav class="mobile-nav" aria-label="Mobile navigation">
+				<a href="/performers" onclick={closeMobileMenu}>PERFORMERS</a>
+				<a href="/coaches" onclick={closeMobileMenu}>COACHES</a>
+				<a href="/teams" onclick={closeMobileMenu}>TEAMS</a>
+				<a href="/connect" onclick={closeMobileMenu} class="connect-link">
+					<span class="star">★</span> CONNECT <span class="star">★</span>
 				</a>
-				<hr class="border-surface-600 my-2" />
+				<a href="/resources" onclick={closeMobileMenu}>RESOURCES</a>
+			</nav>
+			<div class="mobile-auth">
 				{#if authStore.isAuthenticated}
-					<a
-						href="/profile"
-						onclick={closeMobileMenu}
-						class="py-2 text-sm hover:text-primary-300 transition-colors"
-					>
-						My Profile
-					</a>
+					<a href="/profile" onclick={closeMobileMenu} class="btn-outline">MY PROFILE</a>
 					{#if isLocal}
-						<a href="/dev-login" class="btn btn-sm preset-tonal-surface w-full">Switch User</a>
+						<a href="/dev-login" class="btn-outline">SWITCH USER</a>
 					{:else}
-						<button onclick={handleLogout} class="btn btn-sm preset-tonal-surface w-full">Sign Out</button>
+						<button onclick={handleLogout} class="btn-outline">SIGN OUT</button>
 					{/if}
 				{:else if isLocal}
-					<a href="/dev-login" onclick={closeMobileMenu} class="btn btn-sm preset-filled-primary-500 w-full">
-						Dev Login
-					</a>
+					<a href="/dev-login" onclick={closeMobileMenu} class="btn-accent">DEV LOGIN</a>
 				{:else}
-					<button onclick={openLogin} class="btn btn-sm preset-filled-primary-500 w-full">
-						Sign In / Register
-					</button>
+					<button onclick={() => { closeMobileMenu(); openLogin(); }} class="btn-accent">JOIN THE SCENE</button>
 				{/if}
-			</nav>
+			</div>
 		</div>
 	{/if}
 </header>
+
+<style>
+	.zine-header {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		background: var(--zine-bg);
+		border-bottom: var(--zine-border);
+	}
+
+	.header-inner {
+		display: flex;
+		align-items: center;
+		gap: 32px;
+		padding: 14px 32px;
+		max-width: 1280px;
+		margin: 0 auto;
+	}
+
+	.wordmark {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		text-decoration: none;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.wm-mark {
+		width: 30px;
+		height: 30px;
+		transform: rotate(-2deg);
+		flex-shrink: 0;
+	}
+
+	.wm-text {
+		font-family: var(--font-heading);
+		font-size: 18px;
+		line-height: 1;
+		color: var(--zine-primary);
+	}
+
+	/* Desktop nav */
+	.desktop-nav {
+		display: none;
+		align-items: center;
+		gap: 20px;
+    margin-top: 3px;
+		flex: 1;
+	}
+
+	.desktop-nav a {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--zine-primary);
+		text-decoration: none;
+	}
+
+	.desktop-nav a:hover {
+		color: var(--zine-accent);
+	}
+
+	.dot {
+		color: var(--zine-primary);
+		font-size: 14px;
+		opacity: 0.5;
+	}
+
+	.connect-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.star {
+		color: var(--zine-muted);
+	}
+
+	.desktop-auth {
+		display: none;
+	}
+
+	.auth-loading {
+		width: 80px;
+		height: 32px;
+		background: var(--zine-surface);
+		border: var(--zine-border);
+		animation: pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.4; }
+	}
+
+	/* Normalize btn-accent height in header to match btn-outline */
+	.header-inner :global(.btn-accent) {
+		padding: 8px 16px;
+		font-size: 12px;
+	}
+
+	/* Mobile toggle */
+	.mobile-toggle {
+		margin-left: auto;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--zine-primary);
+		display: flex;
+		align-items: center;
+		padding: 4px;
+	}
+
+	/* Desktop breakpoint — must come after base rules to override */
+	@media (min-width: 768px) {
+		.desktop-nav {
+			display: flex;
+		}
+		.desktop-auth {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-left: auto;
+		}
+		.mobile-toggle {
+			display: none;
+		}
+	}
+
+	/* Mobile overlay */
+	.mobile-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(28, 28, 28, 0.4);
+		z-index: 99;
+		border: none;
+		cursor: default;
+	}
+
+	.mobile-menu {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: var(--zine-bg);
+		border-right: var(--zine-border);
+		z-index: 100;
+		display: flex;
+		flex-direction: column;
+		padding: 24px;
+	}
+
+	.mobile-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 32px;
+	}
+
+	.mobile-close {
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--zine-primary);
+		display: flex;
+		align-items: center;
+	}
+
+	.mobile-nav {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		flex: 1;
+	}
+
+	.mobile-nav a {
+		font-family: var(--font-body);
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: var(--zine-primary);
+		text-decoration: none;
+	}
+
+	.mobile-nav a:hover {
+		color: var(--zine-accent);
+	}
+
+	.mobile-auth {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding-top: 24px;
+		border-top: var(--zine-border);
+	}
+
+	.mobile-auth .btn-accent,
+	.mobile-auth .btn-outline {
+		text-align: center;
+		justify-content: center;
+	}
+</style>

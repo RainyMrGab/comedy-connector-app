@@ -3,7 +3,8 @@
 </script>
 
 <svg
-	class="animate-spin text-primary-500 {className}"
+	class="animate-spin {className}"
+	style="color: var(--zine-muted);"
 	xmlns="http://www.w3.org/2000/svg"
 	fill="none"
 	viewBox="0 0 24 24"

@@ -11,14 +11,14 @@
 	<title>Claim {team.name} | Comedy Connector</title>
 </svelte:head>
 
-<div class="mx-auto max-w-2xl px-4 py-10">
-	<div class="alert preset-tonal-tertiary mb-8">
-		<p class="font-semibold">Claiming: {team.name}</p>
-		<p class="text-sm mt-1">You're filling in the details for this stub team. All existing members will remain on the roster.</p>
+<div class="form-page">
+	<div class="claim-notice">
+		<p class="claim-title">CLAIMING: {team.name}</p>
+		<p class="claim-body">You're filling in the details for this stub team. All existing members will remain on the roster.</p>
 	</div>
 
 	{#if form?.error}
-		<div class="alert preset-filled-error-500 mb-6">{form.error}</div>
+		<div class="form-error-banner">{form.error}</div>
 	{/if}
 
 	<form
@@ -30,56 +30,55 @@
 				saving = false;
 			};
 		}}
-		class="space-y-6"
+		class="zine-form"
 	>
-		<div>
-			<label for="description" class="label"><span>Description</span></label>
-			<textarea id="description" name="description" class="textarea" rows="4" placeholder="Tell us about {team.name}..."></textarea>
+		<div class="form-field">
+			<label for="description">DESCRIPTION</label>
+			<textarea id="description" name="description" rows="4" placeholder="Tell us about {team.name}..."></textarea>
 		</div>
 
-		<div class="grid grid-cols-2 gap-4">
-			<div>
-				<label for="form" class="label"><span>Form / Style</span></label>
-				<input id="form" name="form" type="text" class="input" placeholder="e.g. Harold, Longform" />
+		<div class="two-col">
+			<div class="form-field">
+				<label for="form">FORM / STYLE</label>
+				<input id="form" name="form" type="text" placeholder="e.g. Harold, Longform" />
 			</div>
-			<div>
-				<label for="videoUrl" class="label"><span>Video URL</span></label>
-				<input id="videoUrl" name="videoUrl" type="url" class="input" placeholder="https://youtube.com/..." />
+			<div class="form-field">
+				<label for="videoUrl">VIDEO URL</label>
+				<input id="videoUrl" name="videoUrl" type="url" placeholder="https://youtube.com/..." />
 			</div>
 		</div>
 
-		<fieldset class="border border-surface-300 dark:border-surface-600 rounded-lg p-4">
-			<legend class="px-2 text-sm font-semibold">Team status</legend>
-			<div class="space-y-3 mt-2">
-				<label class="flex items-center gap-3 cursor-pointer">
-					<input type="checkbox" class="checkbox" name="isPracticeGroup" value="true" />
-					<span class="text-sm">Practice group (not a performing team)</span>
-				</label>
-				<label class="flex items-center gap-3 cursor-pointer">
-					<input type="checkbox" class="checkbox" name="openToNewMembers" value="true" />
-					<span class="text-sm">Open to new members</span>
-				</label>
-				<label class="flex items-center gap-3 cursor-pointer">
-					<input type="checkbox" class="checkbox" name="openToBookOpeners" value="true" />
-					<span class="text-sm">Available to book as opener</span>
-				</label>
-				<label class="flex items-center gap-3 cursor-pointer">
-					<input type="checkbox" class="checkbox" name="seekingCoach" value="true" />
-					<span class="text-sm">Seeking a coach</span>
-				</label>
+		<fieldset>
+			<legend>TEAM STATUS</legend>
+			<div class="checks">
+				<label class="checkbox-label"><input type="checkbox" name="isPracticeGroup" value="true" /><span>Practice group (not a performing team)</span></label>
+				<label class="checkbox-label"><input type="checkbox" name="openToNewMembers" value="true" /><span>Open to new members</span></label>
+				<label class="checkbox-label"><input type="checkbox" name="openToBookOpeners" value="true" /><span>Available to book as opener</span></label>
+				<label class="checkbox-label"><input type="checkbox" name="seekingCoach" value="true" /><span>Seeking a coach</span></label>
 			</div>
 		</fieldset>
 
-		<div>
-			<label for="lookingFor" class="label"><span>Looking For</span></label>
-			<input id="lookingFor" name="lookingFor" type="text" class="input" placeholder="Any specifics..." />
+		<div class="form-field">
+			<label for="lookingFor">LOOKING FOR</label>
+			<input id="lookingFor" name="lookingFor" type="text" placeholder="Any specifics..." />
 		</div>
 
-		<div class="flex gap-4 pt-4">
-			<button type="submit" class="btn preset-filled-tertiary-500" disabled={saving}>
-				{saving ? 'Claiming…' : 'Claim Team'}
+		<div class="form-actions">
+			<button type="submit" class="btn-accent" disabled={saving}>
+				{saving ? 'CLAIMING…' : 'CLAIM TEAM'}
 			</button>
-			<a href="/teams/{team.slug}" class="btn preset-tonal-surface">Cancel</a>
+			<a href="/teams/{team.slug}" class="btn-outline">CANCEL</a>
 		</div>
 	</form>
 </div>
+
+<style>
+	.form-page { max-width: 640px; margin: 0 auto; padding: 48px 32px; }
+	.claim-notice { background: var(--zine-surface); border: var(--zine-border); border-left: 4px solid var(--zine-muted); padding: 16px 20px; margin-bottom: 32px; box-shadow: var(--zine-shadow); }
+	.claim-title { font-family: var(--font-heading); font-size: 18px; color: var(--zine-muted); margin-bottom: 6px; }
+	.claim-body { font-size: 13px; opacity: 0.75; }
+	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+	.checks { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
+	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
+</style>

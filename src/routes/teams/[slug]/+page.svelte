@@ -20,58 +20,56 @@
 	<meta name="description" content="{team.name} — improv team in {cityConfig.name}." />
 </svelte:head>
 
-<div class="mx-auto max-w-3xl px-4 py-10">
+<div class="detail-page">
 	<!-- Header -->
-	<div class="flex items-start gap-6 mb-6">
-		{#if team.photoUrl}
-			<img src={team.photoUrl} alt={team.name} class="w-24 h-24 rounded-xl object-cover shadow-md" />
-		{:else}
-			<div class="w-24 h-24 rounded-xl bg-tertiary-500 flex items-center justify-center shadow-md">
-				<Users size={36} class="text-white" />
-			</div>
-		{/if}
-		<div class="flex-1">
-			<div class="flex items-center gap-3 flex-wrap">
-				<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-50">{team.name}</h1>
-				{#if team.status === 'stub'}
-					<span class="chip preset-tonal-warning">Unclaimed</span>
-				{/if}
-			</div>
-			<div class="flex flex-wrap gap-2 mt-2">
-				{#if team.form}
-					<span class="chip preset-tonal-tertiary">{team.form}</span>
-				{/if}
-				{#if team.isPracticeGroup}
-					<span class="chip preset-tonal-surface">Practice Group</span>
-				{/if}
-				{#if team.openToNewMembers}
-					<span class="chip preset-tonal-primary">Open to Members</span>
-				{/if}
-				{#if team.openToBookOpeners}
-					<span class="chip preset-tonal-secondary">Available to Book</span>
-				{/if}
-				{#if team.seekingCoach}
-					<span class="chip preset-tonal-tertiary">Seeking Coach</span>
-				{/if}
+	<div class="profile-header">
+		<div class="avatar-name">
+			{#if team.photoUrl}
+				<img src={team.photoUrl} alt={team.name} class="avatar" />
+			{:else}
+				<div class="avatar avatar-placeholder">
+					<Users size={36} />
+				</div>
+			{/if}
+			<div class="name-block">
+				<div class="title-row">
+					<h1 class="profile-name">{team.name}</h1>
+					{#if team.status === 'stub'}
+						<span class="zine-tag tag-warning">UNCLAIMED</span>
+					{/if}
+				</div>
+				<div class="tag-row">
+					{#if team.form}
+						<span class="zine-tag">{team.form.toUpperCase()}</span>
+					{/if}
+					{#if team.isPracticeGroup}
+						<span class="zine-tag">PRACTICE GROUP</span>
+					{/if}
+					{#if team.openToNewMembers}
+						<span class="zine-tag tag-muted">OPEN TO MEMBERS</span>
+					{/if}
+					{#if team.openToBookOpeners}
+						<span class="zine-tag">AVAILABLE TO BOOK</span>
+					{/if}
+					{#if team.seekingCoach}
+						<span class="zine-tag">SEEKING COACH</span>
+					{/if}
+				</div>
 			</div>
 		</div>
 
-		<div class="flex flex-col gap-2 shrink-0">
+		<div class="header-actions">
 			{#if isTeamMember}
-				<a href="/teams/{team.slug}/edit" class="btn preset-tonal-surface btn-sm gap-1">
-					<Pencil size={14} />
-					Edit Team
+				<a href="/teams/{team.slug}/edit" class="btn-outline">
+					<Pencil size={14} /> EDIT TEAM
 				</a>
 			{/if}
 			{#if team.status === 'stub' && authStore.isAuthenticated}
-				<a href="/teams/{team.slug}/claim" class="btn preset-filled-tertiary-500 btn-sm">
-					Claim This Team
-				</a>
+				<a href="/teams/{team.slug}/claim" class="btn-accent">CLAIM THIS TEAM</a>
 			{/if}
 			{#if authStore.isAuthenticated && team.primaryContactProfileId}
-				<button onclick={() => (contactOpen = true)} class="btn preset-filled-primary-500 btn-sm gap-1">
-					<Mail size={14} />
-					Contact
+				<button onclick={() => (contactOpen = true)} class="btn-accent">
+					<Mail size={14} /> CONTACT
 				</button>
 			{/if}
 		</div>
@@ -86,83 +84,72 @@
 		/>
 	{/if}
 
-	<!-- Stub call-to-action -->
+	<!-- Stub callout -->
 	{#if team.status === 'stub'}
-		<div class="alert preset-tonal-warning mb-6">
-			<div>
-				<p class="font-semibold">This team hasn't been set up yet.</p>
-				<p class="text-sm mt-1">Are you a member? Claim this team to add details and manage the roster.</p>
-				{#if authStore.isAuthenticated}
-					<a href="/teams/{team.slug}/claim" class="btn preset-filled-warning-500 btn-sm mt-3">
-						Claim This Team
-					</a>
-				{/if}
-			</div>
+		<div class="stub-callout">
+			<p class="stub-title">THIS TEAM HASN'T BEEN SET UP YET.</p>
+			<p class="stub-body">Are you a member? Claim this team to add details and manage the roster.</p>
+			{#if authStore.isAuthenticated}
+				<a href="/teams/{team.slug}/claim" class="btn-accent">CLAIM THIS TEAM</a>
+			{/if}
 		</div>
 	{/if}
 
-	<!-- Description -->
 	{#if team.description}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-2">About</h2>
-			<p class="text-surface-700 dark:text-surface-300 whitespace-pre-line">{team.description}</p>
+		<section class="detail-section">
+			<h2 class="section-label">ABOUT</h2>
+			<p class="section-body">{team.description}</p>
 		</section>
 	{/if}
 
-	<!-- Looking For -->
 	{#if team.lookingFor}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-2">Looking For</h2>
-			<p class="text-surface-700 dark:text-surface-300">{team.lookingFor}</p>
+		<section class="detail-section">
+			<h2 class="section-label">LOOKING FOR</h2>
+			<p class="section-body">{team.lookingFor}</p>
 		</section>
 	{/if}
 
-	<!-- Video -->
 	{#if team.videoUrl}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-2">Video</h2>
-			<a href={team.videoUrl} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-primary-500 hover:underline">
-				<Video size={16} />
-				Watch highlight video
+		<section class="detail-section">
+			<h2 class="section-label">VIDEO</h2>
+			<a href={team.videoUrl} target="_blank" rel="noopener noreferrer" class="video-link">
+				<Video size={14} /> Watch highlight video
 			</a>
 		</section>
 	{/if}
 
-	<!-- Members -->
 	{#if members.length > 0}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-3">
-				Members ({members.length})
-			</h2>
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+		<section class="detail-section">
+			<h2 class="section-label">MEMBERS ({members.length})</h2>
+			<div class="member-grid">
 				{#each members as member}
 					{#if member.profileId && member.slug}
-						<a href="/performers/{member.slug}" class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:border-primary-500 transition-colors">
+						<a href="/performers/{member.slug}" class="member-card">
 							{#if member.photoUrl}
-								<img src={member.photoUrl} alt={member.name} class="w-10 h-10 rounded-full object-cover" />
+								<img src={member.photoUrl} alt={member.name} class="member-avatar" />
 							{:else}
-								<div class="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold text-sm">
+								<div class="member-avatar member-avatar-placeholder">
 									{(member.name ?? '?')[0].toUpperCase()}
 								</div>
 							{/if}
 							<div>
-								<p class="font-medium text-surface-900 dark:text-surface-50 text-sm">{member.name}</p>
+								<p class="member-name">{member.name}</p>
 								{#if member.startYear}
-									<p class="text-xs text-surface-400">
+									<p class="member-date">
 										{formatDateRange(member.startYear, member.startMonth, member.endYear, member.endMonth, member.isCurrent)}
 									</p>
 								{/if}
 							</div>
 						</a>
 					{:else}
-						<div class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700">
-							<div class="w-10 h-10 rounded-full bg-surface-400 flex items-center justify-center text-white font-bold text-sm">
+						<div class="member-card member-card-unlinked">
+							<div class="member-avatar member-avatar-placeholder">
 								<Users size={14} />
 							</div>
 							<div>
-								<p class="font-medium text-surface-700 dark:text-surface-300 text-sm">{member.memberName ?? 'Unknown'}</p>
+								<p class="member-name">{member.memberName ?? 'Unknown'}</p>
 								{#if member.startYear}
-									<p class="text-xs text-surface-400">
+									<p class="member-date">
 										{formatDateRange(member.startYear, member.startMonth, member.endYear, member.endMonth, member.isCurrent)}
 									</p>
 								{/if}
@@ -174,38 +161,35 @@
 		</section>
 	{/if}
 
-	<!-- Coaches -->
 	{#if coaches.length > 0}
-		<section class="mb-6">
-			<h2 class="text-sm font-semibold uppercase text-surface-500 mb-3">
-				Coaches
-			</h2>
-			<div class="flex flex-col gap-2">
+		<section class="detail-section">
+			<h2 class="section-label">COACHES</h2>
+			<div class="member-list">
 				{#each coaches as coach}
 					{#if coach.profileId && coach.slug}
-						<a href="/coaches/{coach.slug}" class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:border-secondary-500 transition-colors">
+						<a href="/coaches/{coach.slug}" class="member-row">
 							{#if coach.photoUrl}
-								<img src={coach.photoUrl} alt={coach.name} class="w-10 h-10 rounded-full object-cover" />
+								<img src={coach.photoUrl} alt={coach.name} class="member-avatar" />
 							{:else}
-								<div class="w-10 h-10 rounded-full bg-secondary-500 flex items-center justify-center text-white">
+								<div class="member-avatar member-avatar-placeholder">
 									<UserCheck size={14} />
 								</div>
 							{/if}
 							<div>
-								<p class="font-medium text-surface-900 dark:text-surface-50 text-sm">{coach.name}</p>
+								<p class="member-name">{coach.name}</p>
 								{#if coach.startYear}
-									<p class="text-xs text-surface-400">
+									<p class="member-date">
 										{formatDateRange(coach.startYear, coach.startMonth, coach.endYear, coach.endMonth, coach.isCurrent)}
 									</p>
 								{/if}
 							</div>
 						</a>
 					{:else}
-						<div class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700">
-							<div class="w-10 h-10 rounded-full bg-secondary-400 flex items-center justify-center text-white">
+						<div class="member-row">
+							<div class="member-avatar member-avatar-placeholder">
 								<UserCheck size={14} />
 							</div>
-							<p class="font-medium text-surface-700 dark:text-surface-300 text-sm">{coach.coachName ?? 'Unknown'}</p>
+							<p class="member-name">{coach.coachName ?? 'Unknown'}</p>
 						</div>
 					{/if}
 				{/each}
@@ -213,3 +197,147 @@
 		</section>
 	{/if}
 </div>
+
+<style>
+	.detail-page { max-width: 768px; margin: 0 auto; padding: 48px 32px; }
+
+	.profile-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 24px;
+		padding: 24px;
+		background: var(--zine-surface);
+		border: var(--zine-border);
+		box-shadow: var(--zine-shadow);
+		margin-bottom: 32px;
+		flex-wrap: wrap;
+	}
+
+	.avatar-name { display: flex; align-items: flex-start; gap: 20px; flex: 1; }
+
+	.avatar { width: 80px; height: 80px; object-fit: cover; border: var(--zine-border); flex-shrink: 0; }
+
+	.avatar-placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--zine-muted);
+		color: #fff;
+	}
+
+	.name-block { flex: 1; }
+
+	.title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+
+	.profile-name { font-family: var(--font-heading); font-size: 32px; color: var(--zine-primary); margin: 0; }
+
+	.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+	.zine-tag {
+		font-family: var(--font-body);
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		background: var(--zine-primary);
+		color: var(--zine-bg);
+		padding: 2px 8px;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.tag-muted { background: var(--zine-muted); color: #fff; }
+	.tag-warning { background: var(--zine-accent); color: #fff; }
+
+	.header-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+
+	/* STUB CALLOUT */
+	.stub-callout {
+		padding: 20px 24px;
+		background: #fffbeb;
+		border: 2px solid #b45309;
+		box-shadow: 4px 4px 0px #b45309;
+		margin-bottom: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.stub-title { font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: #b45309; }
+	.stub-body { font-size: 13px; color: var(--zine-primary); }
+
+	/* SECTIONS */
+	.detail-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--zine-surface); }
+
+	.section-label {
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		color: var(--zine-muted);
+		margin-bottom: 8px;
+	}
+
+	.section-body { font-size: 15px; line-height: 1.7; white-space: pre-line; }
+
+	.video-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--zine-muted); text-decoration: none; }
+	.video-link:hover { color: var(--zine-accent); }
+
+	/* MEMBERS */
+	.member-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+	.member-card {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 10px;
+		border: var(--zine-border);
+		background: var(--zine-surface);
+		text-decoration: none;
+		color: var(--zine-primary);
+		transition: box-shadow 0.1s, transform 0.1s;
+	}
+
+	.member-card:hover { box-shadow: var(--zine-shadow); transform: translate(-1px, -1px); }
+	.member-card-unlinked { opacity: 0.65; cursor: default; }
+
+	.member-list { display: flex; flex-direction: column; gap: 8px; }
+
+	.member-row {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 12px;
+		border: var(--zine-border);
+		background: var(--zine-surface);
+		text-decoration: none;
+		color: var(--zine-primary);
+		transition: box-shadow 0.1s, transform 0.1s;
+	}
+
+	.member-row:hover { box-shadow: var(--zine-shadow); transform: translate(-1px, -1px); }
+
+	.member-avatar { width: 40px; height: 40px; object-fit: cover; border: 1px solid var(--zine-primary); flex-shrink: 0; }
+
+	.member-avatar-placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--zine-primary);
+		color: var(--zine-bg);
+		font-size: 14px;
+		font-weight: 700;
+	}
+
+	.member-name { font-size: 13px; font-weight: 700; }
+	.member-date { font-size: 11px; opacity: 0.6; }
+
+	@media (max-width: 640px) {
+		.detail-page { padding: 24px 16px; }
+		.profile-header { flex-direction: column; }
+		.avatar-name { flex-direction: column; }
+		.member-grid { grid-template-columns: 1fr; }
+	}
+</style>

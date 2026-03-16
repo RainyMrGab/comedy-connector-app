@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cityConfig } from '$config/city';
-	import { Mic2, Users, UserCheck, ArrowRight } from 'lucide-svelte';
+	import { Sparkles, Users, UserCheck } from 'lucide-svelte';
 </script>
 
 <svelte:head>
@@ -11,85 +11,43 @@
 	/>
 </svelte:head>
 
-<div class="mx-auto max-w-4xl px-4 py-16">
-	<div class="text-center mb-12">
-		<h1 class="text-4xl font-bold text-surface-900 dark:text-surface-50 mb-4">
-			Connect with the Community
-		</h1>
-		<p class="text-lg text-surface-500 max-w-2xl mx-auto">
-			Whether you're looking for a book opener, want to join a team, or need a coach — find your
-			match in {cityConfig.name}'s comedy scene.
-		</p>
-	</div>
-
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-		<!-- Book Opener -->
-		<a
-			href="/connect/book-opener"
-			class="card bg-surface-50 dark:bg-surface-800 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 hover:border-secondary-500 dark:hover:border-secondary-500 hover:shadow-lg transition-all group text-center"
-		>
-			<div
-				class="w-16 h-16 rounded-2xl bg-secondary-500 flex items-center justify-center text-white mx-auto mb-4"
-			>
-				<Mic2 size={28} />
-			</div>
-			<h2
-				class="text-xl font-bold text-surface-900 dark:text-surface-50 group-hover:text-secondary-500 transition-colors mb-2"
-			>
-				Find a Book Opener
-			</h2>
-			<p class="text-surface-500 text-sm mb-4">
-				Discover performers available to open your show or headline as a book opener.
-			</p>
-			<span class="flex items-center justify-center gap-1 text-secondary-500 text-sm font-medium">
-				Browse performers <ArrowRight size={14} />
-			</span>
+<div class="connect-page">
+	<h1 class="page-title">WHAT DO YOU NEED?</h1>
+	<div class="connect-grid">
+		<a href="/connect/book-opener" class="zine-card">
+			<div class="card-tag">BOOKING</div>
+			<div class="card-icon"><Sparkles size={28} /></div>
+			<h2 class="card-label">BOOK AN OPENER</h2>
+			<p class="card-desc">Discover performers available to open your show or headline as a book opener.</p>
+			<span class="card-go">→ GO</span>
 		</a>
-
-		<!-- Join a Team -->
-		<a
-			href="/connect/join-team"
-			class="card bg-surface-50 dark:bg-surface-800 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 hover:border-tertiary-500 dark:hover:border-tertiary-500 hover:shadow-lg transition-all group text-center"
-		>
-			<div
-				class="w-16 h-16 rounded-2xl bg-tertiary-500 flex items-center justify-center text-white mx-auto mb-4"
-			>
-				<Users size={28} />
-			</div>
-			<h2
-				class="text-xl font-bold text-surface-900 dark:text-surface-50 group-hover:text-tertiary-500 transition-colors mb-2"
-			>
-				Join a Team
-			</h2>
-			<p class="text-surface-500 text-sm mb-4">
-				Find teams that are open to new members and looking to grow their roster.
-			</p>
-			<span class="flex items-center justify-center gap-1 text-tertiary-500 text-sm font-medium">
-				Browse teams <ArrowRight size={14} />
-			</span>
+		<a href="/connect/join-team" class="zine-card">
+			<div class="card-tag">TEAMS</div>
+			<div class="card-icon"><Users size={28} /></div>
+			<h2 class="card-label">JOIN A TEAM</h2>
+			<p class="card-desc">Find teams that are open to new members and looking to grow their roster.</p>
+			<span class="card-go">→ GO</span>
 		</a>
-
-		<!-- Find a Coach -->
-		<a
-			href="/connect/find-coach"
-			class="card bg-surface-50 dark:bg-surface-800 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 hover:border-primary-500 dark:hover:border-primary-500 hover:shadow-lg transition-all group text-center"
-		>
-			<div
-				class="w-16 h-16 rounded-2xl bg-primary-500 flex items-center justify-center text-white mx-auto mb-4"
-			>
-				<UserCheck size={28} />
-			</div>
-			<h2
-				class="text-xl font-bold text-surface-900 dark:text-surface-50 group-hover:text-primary-500 transition-colors mb-2"
-			>
-				Find a Coach
-			</h2>
-			<p class="text-surface-500 text-sm mb-4">
-				Connect with coaches offering private sessions, team coaching, or workshops.
-			</p>
-			<span class="flex items-center justify-center gap-1 text-primary-500 text-sm font-medium">
-				Browse coaches <ArrowRight size={14} />
-			</span>
+		<a href="/connect/find-coach" class="zine-card">
+			<div class="card-tag">COACHING</div>
+			<div class="card-icon"><UserCheck size={28} /></div>
+			<h2 class="card-label">FIND A COACH</h2>
+			<p class="card-desc">Connect with coaches offering private sessions, team coaching, or workshops.</p>
+			<span class="card-go">→ GO</span>
 		</a>
 	</div>
 </div>
+
+<style>
+	.connect-page { max-width: 1024px; margin: 0 auto; padding: 64px 48px; }
+	.page-title { font-family: var(--font-heading); font-size: 48px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin-bottom: 40px; }
+	.connect-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+	.zine-card { background: var(--zine-surface); border: var(--zine-border); box-shadow: var(--zine-shadow); padding: 32px; display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: var(--zine-primary); transition: transform 0.1s, box-shadow 0.1s; }
+	.zine-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--zine-primary); }
+	.card-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--zine-muted); color: #fff; display: inline-block; padding: 2px 8px; width: fit-content; }
+	.card-icon { color: var(--zine-accent); }
+	.card-label { font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: 0.06em; margin: 0; }
+	.card-desc { font-size: 13px; line-height: 1.6; opacity: 0.8; margin: 0; }
+	.card-go { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--zine-muted); margin-top: 4px; }
+	@media (max-width: 768px) { .connect-page { padding: 48px 24px; } .connect-grid { grid-template-columns: 1fr; } }
+</style>

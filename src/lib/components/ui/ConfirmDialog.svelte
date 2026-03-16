@@ -31,25 +31,28 @@
 </script>
 
 {#if open}
-	<!-- Backdrop -->
+	<button
+		class="backdrop"
+		onclick={handleCancel}
+		tabindex="-1"
+		aria-label="Close dialog"
+	></button>
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+		class="dialog-wrap"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="dialog-title"
 	>
-		<div class="bg-surface-800 rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
-			<h2 id="dialog-title" class="text-lg font-semibold text-surface-50 mb-2">{title}</h2>
+		<div class="dialog-panel">
+			<h2 id="dialog-title" class="dialog-title">{title}</h2>
 			{#if message}
-				<p class="text-surface-300 text-sm mb-6">{message}</p>
+				<p class="dialog-message">{message}</p>
 			{/if}
-			<div class="flex gap-3 justify-end">
-				<button onclick={handleCancel} class="btn preset-tonal-surface">
-					{cancelLabel}
-				</button>
+			<div class="dialog-actions">
+				<button onclick={handleCancel} class="btn-outline">{cancelLabel}</button>
 				<button
 					onclick={handleConfirm}
-					class="btn {destructive ? 'preset-filled-error-500' : 'preset-filled-primary-500'}"
+					class={destructive ? 'btn-accent' : 'btn-dark'}
 				>
 					{confirmLabel}
 				</button>
@@ -57,3 +60,12 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(28, 28, 28, 0.75); cursor: default; width: 100%; border: none; }
+	.dialog-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none; }
+	.dialog-panel { background: var(--zine-bg); border: var(--zine-border); box-shadow: var(--zine-shadow); max-width: 440px; width: 100%; padding: 28px; pointer-events: auto; }
+	.dialog-title { font-family: var(--font-heading); font-size: 22px; color: var(--zine-primary); margin: 0 0 12px; }
+	.dialog-message { font-size: 13px; opacity: 0.75; margin: 0 0 24px; line-height: 1.6; }
+	.dialog-actions { display: flex; gap: 10px; justify-content: flex-end; }
+</style>

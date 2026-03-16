@@ -4,7 +4,7 @@
 	import SearchBar from '$components/search/SearchBar.svelte';
 	import ResultsList from '$components/search/ResultsList.svelte';
 	import { cityConfig } from '$config/city';
-	import { Mic2, ArrowLeft } from 'lucide-svelte';
+	import { Sparkles, ArrowLeft } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -21,24 +21,14 @@
 	/>
 </svelte:head>
 
-<div class="mx-auto max-w-6xl px-4 py-10">
-	<div class="mb-6">
-		<a
-			href="/connect"
-			class="flex items-center gap-1 text-sm text-surface-500 hover:text-surface-900 dark:hover:text-surface-50 transition-colors mb-4"
-		>
-			<ArrowLeft size={14} /> Back to Connect
-		</a>
-		<div class="flex items-center gap-3 mb-2">
-			<div class="w-10 h-10 rounded-xl bg-secondary-500 flex items-center justify-center text-white">
-				<Mic2 size={20} />
-			</div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-50">Find a Book Opener</h1>
+<div class="list-page">
+	<div class="page-header">
+		<a href="/connect" class="back-link"><ArrowLeft size={14} /> CONNECT</a>
+		<div class="title-row">
+			<span class="title-icon"><Sparkles size={20} /></span>
+			<h1 class="page-title">BOOK AN OPENER</h1>
 		</div>
-		<p class="text-surface-500 mb-4">
-			These performers are available to open shows in {cityConfig.name}. Search by name to narrow
-			results.
-		</p>
+		<p class="page-desc">Performers available to open shows in {cityConfig.name}. Search by name to narrow results.</p>
 		<SearchBar placeholder="Search by name..." onchange={(q) => (query = q)} />
 	</div>
 
@@ -50,3 +40,14 @@
 		initialNextCursor={data.initialNextCursor}
 	/>
 </div>
+
+<style>
+	.list-page { max-width: 1152px; margin: 0 auto; padding: 48px 32px; }
+	.page-header { margin-bottom: 32px; }
+	.back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-muted); text-decoration: none; margin-bottom: 16px; }
+	.back-link:hover { color: var(--zine-accent); }
+	.title-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+	.title-icon { color: var(--zine-accent); }
+	.page-title { font-family: var(--font-heading); font-size: 40px; color: var(--zine-primary); margin: 0; }
+	.page-desc { font-size: 14px; opacity: 0.75; margin-bottom: 20px; }
+</style>

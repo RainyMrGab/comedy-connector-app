@@ -60,9 +60,236 @@
 	}
 }
 
+/* ------------------------------------------------------------------ */
+/* Zine design tokens                                                  */
+/* ------------------------------------------------------------------ */
+:root {
+	--zine-bg: #f4efe6;
+	--zine-surface: #ebe5d8;
+	--zine-primary: #1c1c1c;
+	--zine-accent: #d93b2b;
+	--zine-muted: #2e7d7d;
+	--zine-highlight: #f2c84b;
+	--zine-shadow: 4px 4px 0px var(--zine-primary);
+	--zine-border: 2px solid var(--zine-primary);
+	--font-heading: 'Permanent Marker', cursive;
+	--font-body: 'Courier Prime', monospace;
+	color-scheme: light;
+}
+
 /* Global base styles */
 @layer base {
 	html {
 		@apply scroll-smooth;
 	}
+
+	*,
+	*::before,
+	*::after {
+		border-radius: 0 !important;
+	}
+}
+
+/* Unlayered overrides — beat Skeleton cerberus dark theme variables */
+html,
+body {
+	background: var(--zine-bg) !important;
+	color: var(--zine-primary) !important;
+	font-family: var(--font-body) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Zine button utilities                                               */
+/* ------------------------------------------------------------------ */
+.btn-accent {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-body);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	background: var(--zine-accent);
+	color: #fff;
+	border: var(--zine-border);
+	padding: 12px 24px;
+	cursor: pointer;
+	box-shadow: var(--zine-shadow);
+	text-decoration: none;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
+}
+
+.btn-accent:hover {
+	transform: translate(-2px, -2px);
+	box-shadow: 6px 6px 0px var(--zine-primary);
+}
+
+.btn-outline {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-body);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	background: transparent;
+	color: var(--zine-primary);
+	border: var(--zine-border);
+	padding: 8px 16px;
+	cursor: pointer;
+	box-shadow: var(--zine-shadow);
+	text-decoration: none;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
+}
+
+.btn-outline:hover {
+	transform: translate(-2px, -2px);
+	box-shadow: 6px 6px 0px var(--zine-primary);
+}
+
+.btn-dark {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-body);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	background: var(--zine-primary);
+	color: var(--zine-highlight);
+	border: var(--zine-border);
+	padding: 12px 28px;
+	cursor: pointer;
+	box-shadow: 4px 4px 0px #555;
+	text-decoration: none;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
+}
+
+.btn-dark:hover {
+	transform: translate(-2px, -2px);
+	box-shadow: 6px 6px 0px #555;
+}
+
+/* ------------------------------------------------------------------ */
+/* Zine form utilities — apply .zine-form to a <form> or wrapper       */
+/* ------------------------------------------------------------------ */
+.zine-form .form-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.zine-form label,
+.zine-form p.form-label {
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--zine-primary);
+}
+
+.zine-form input[type='text'],
+.zine-form input[type='email'],
+.zine-form input[type='url'],
+.zine-form input[type='number'],
+.zine-form textarea,
+.zine-form select {
+	font-family: var(--font-body);
+	font-size: 14px;
+	background: var(--zine-bg);
+	color: var(--zine-primary);
+	border: var(--zine-border);
+	padding: 10px 12px;
+	width: 100%;
+	outline: none;
+}
+
+.zine-form input[type='text']:focus,
+.zine-form input[type='email']:focus,
+.zine-form input[type='url']:focus,
+.zine-form input[type='number']:focus,
+.zine-form textarea:focus,
+.zine-form select:focus {
+	box-shadow: var(--zine-shadow);
+}
+
+.zine-form input.input-error {
+	border-color: var(--zine-accent);
+}
+
+.zine-form .error-msg {
+	font-size: 12px;
+	color: var(--zine-accent);
+}
+
+.zine-form fieldset {
+	border: var(--zine-border);
+	padding: 16px 20px;
+}
+
+.zine-form legend {
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--zine-muted);
+	padding: 0 8px;
+}
+
+.zine-form input[type='checkbox'] {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--zine-accent);
+	flex-shrink: 0;
+}
+
+.zine-form .checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Rubber stamp tag utilities                                          */
+/* ------------------------------------------------------------------ */
+.stamp-tag {
+	font-family: var(--font-body);
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	padding: 2px 8px;
+	display: inline-block;
+	background: var(--zine-primary);
+	color: var(--zine-bg);
+}
+
+.stamp-tag-teal {
+	background: var(--zine-muted);
+	color: #fff;
+}
+
+.stamp-tag-red {
+	background: var(--zine-accent);
+	color: #fff;
+}
+
+.form-error-banner {
+	background: #fee;
+	border: 2px solid var(--zine-accent);
+	color: var(--zine-accent);
+	padding: 12px 16px;
+	font-size: 13px;
+	font-weight: 700;
+	margin-bottom: 24px;
 }

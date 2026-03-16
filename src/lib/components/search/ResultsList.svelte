@@ -108,13 +108,13 @@
 
 <div>
 	{#if loading}
-		<div class="flex justify-center py-16">
+		<div class="loading-wrap">
 			<LoadingSpinner />
 		</div>
 	{:else if results.length === 0}
 		<EmptyState title="No results found" description="Try a different search or clear your filters." />
 	{:else}
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+		<div class="results-grid">
 			{#each results as result (result.id)}
 				<ResultCard {result} {type} />
 			{/each}
@@ -123,10 +123,18 @@
 
 	<!-- Sentinel for infinite scroll -->
 	{#if nextCursor}
-		<div bind:this={sentinel} class="py-6 flex justify-center">
+		<div bind:this={sentinel} class="sentinel">
 			{#if loadingMore}
 				<LoadingSpinner />
 			{/if}
 		</div>
 	{/if}
 </div>
+
+<style>
+	.loading-wrap { display: flex; justify-content: center; padding: 64px 0; }
+	.results-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 12px; }
+	.sentinel { padding: 24px 0; display: flex; justify-content: center; }
+	@media (min-width: 640px) { .results-grid { grid-template-columns: repeat(2, 1fr); } }
+	@media (min-width: 1024px) { .results-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>

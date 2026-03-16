@@ -36,19 +36,19 @@
 	<title>Edit {team.name} | Comedy Connector</title>
 </svelte:head>
 
-<div class="mx-auto max-w-3xl px-4 py-10">
-	<div class="flex items-center justify-between mb-8">
-		<h1 class="text-2xl font-bold text-surface-900 dark:text-surface-50">Edit Team: {team.name}</h1>
-		<a href="/teams/{team.slug}" class="btn preset-tonal-surface">View Team</a>
+<div class="edit-page">
+	<div class="page-top">
+		<h1 class="page-title">EDIT TEAM</h1>
+		<a href="/teams/{team.slug}" class="btn-outline">VIEW TEAM</a>
 	</div>
 
 	{#if form?.error}
-		<div class="alert preset-filled-error-500 mb-6">{form.error}</div>
+		<div class="form-error-banner">{form.error}</div>
 	{/if}
 
 	<!-- Team Details -->
-	<section class="mb-10">
-		<h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 mb-4">Team Details</h2>
+	<section class="edit-section">
+		<h2 class="section-label">TEAM DETAILS</h2>
 		<form
 			method="POST"
 			action="?/updateTeam"
@@ -56,65 +56,66 @@
 				savingTeam = true;
 				return async ({ update }) => { await update(); savingTeam = false; };
 			}}
-			class="space-y-4"
+			class="zine-form"
 		>
-			<div>
-				<label for="description" class="label"><span>Description</span></label>
-				<textarea id="description" name="description" class="textarea" rows="4">
-					{team.description ?? ''}
-				</textarea>
+			<div class="form-field">
+				<label for="description">DESCRIPTION</label>
+				<textarea id="description" name="description" rows="4">{team.description ?? ''}</textarea>
 			</div>
-			<div class="grid grid-cols-2 gap-4">
-				<div>
-					<label for="form" class="label"><span>Form / Style</span></label>
-					<input id="form" name="form" type="text" class="input" value={team.form ?? ''} />
+			<div class="two-col">
+				<div class="form-field">
+					<label for="form">FORM / STYLE</label>
+					<input id="form" name="form" type="text" value={team.form ?? ''} />
 				</div>
-				<div>
-					<label for="videoUrl" class="label"><span>Video URL</span></label>
-					<input id="videoUrl" name="videoUrl" type="url" class="input" value={team.videoUrl ?? ''} />
+				<div class="form-field">
+					<label for="videoUrl">VIDEO URL</label>
+					<input id="videoUrl" name="videoUrl" type="url" value={team.videoUrl ?? ''} />
 				</div>
 			</div>
-			<div class="flex flex-wrap gap-4">
-				{#each [['isPracticeGroup', 'Practice Group'], ['openToNewMembers', 'Open to Members'], ['openToBookOpeners', 'Open to Book Openers'], ['seekingCoach', 'Seeking Coach']] as [name, label]}
-					<label class="flex items-center gap-2 cursor-pointer">
-						<input type="checkbox" class="checkbox" {name} value="true" checked={(team as any)[name]} />
-						<span class="text-sm">{label}</span>
-					</label>
-				{/each}
+			<fieldset>
+				<legend>TEAM STATUS</legend>
+				<div class="checks">
+					{#each [['isPracticeGroup', 'Practice Group'], ['openToNewMembers', 'Open to Members'], ['openToBookOpeners', 'Open to Book Openers'], ['seekingCoach', 'Seeking Coach']] as [name, label]}
+						<label class="checkbox-label">
+							<input type="checkbox" {name} value="true" checked={(team as any)[name]} />
+							<span>{label}</span>
+						</label>
+					{/each}
+				</div>
+			</fieldset>
+			<div class="form-field">
+				<label for="lookingFor">LOOKING FOR</label>
+				<input id="lookingFor" name="lookingFor" type="text" value={team.lookingFor ?? ''} />
 			</div>
 			<div>
-				<label for="lookingFor" class="label"><span>Looking For</span></label>
-				<input id="lookingFor" name="lookingFor" type="text" class="input" value={team.lookingFor ?? ''} />
+				<button type="submit" class="btn-accent" disabled={savingTeam}>
+					{savingTeam ? 'SAVING…' : 'SAVE CHANGES'}
+				</button>
 			</div>
-			<button type="submit" class="btn preset-filled-tertiary-500" disabled={savingTeam}>
-				{savingTeam ? 'Saving…' : 'Save Changes'}
-			</button>
 		</form>
 	</section>
 
 	<!-- Members -->
-	<section class="mb-10">
-		<h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 mb-4">Members</h2>
+	<section class="edit-section">
+		<h2 class="section-label">MEMBERS</h2>
 
-		<!-- Existing members -->
-		<div class="mb-4 space-y-2">
+		<div class="roster-list">
 			{#each members as member}
-				<div class="flex items-center justify-between p-3 rounded-lg bg-surface-100 dark:bg-surface-700">
-					<div>
-						<span class="font-medium text-sm">{member.name ?? member.memberName ?? 'Unknown'}</span>
+				<div class="roster-row">
+					<div class="roster-info">
+						<span class="roster-name">{member.name ?? member.memberName ?? 'Unknown'}</span>
 						{#if member.approvalStatus === 'pending'}
-							<span class="chip preset-tonal-warning text-xs ml-2">Pending</span>
+							<span class="status-tag">PENDING</span>
 						{/if}
 					</div>
 					<form method="POST" action="?/removeMember" use:enhance>
 						<input type="hidden" name="memberId" value={member.id} />
-						<button type="submit" class="btn preset-tonal-error btn-sm">Remove</button>
+						<button type="submit" class="btn-remove">REMOVE</button>
 					</form>
 				</div>
 			{/each}
 		</div>
 
-		<!-- Add member form -->
 		<form
 			method="POST"
 			action="?/addMember"
@@ -128,27 +129,25 @@
 					memberResults = [];
 				};
 			}}
-			class="border border-surface-300 dark:border-surface-600 rounded-lg p-4 space-y-3"
+			class="subsection zine-form"
 		>
-			<p class="text-sm font-semibold text-surface-600 dark:text-surface-300">Add Member</p>
-			<!-- Performer combobox -->
-			<div class="relative">
-				<label for="memberSearch" class="label text-xs"><span>Search app users</span></label>
+			<p class="subsection-title">ADD MEMBER</p>
+			<div class="form-field combo-wrap">
+				<label for="memberSearch">SEARCH APP USERS</label>
 				<input
 					id="memberSearch"
 					type="text"
-					class="input"
 					placeholder="Type a name to search performers..."
 					bind:value={memberSearch}
 					oninput={() => searchPerformers(memberSearch)}
 					autocomplete="off"
 				/>
 				{#if memberResults.length > 0}
-					<div class="absolute z-10 w-full bg-surface-50 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded-lg shadow-lg mt-1">
+					<div class="combo-dropdown">
 						{#each memberResults as result}
 							<button
 								type="button"
-								class="w-full text-left px-4 py-2 text-sm hover:bg-surface-200 dark:hover:bg-surface-700"
+								class="combo-option"
 								onclick={() => {
 									selectedMember = { id: result.id, name: result.name };
 									memberSearch = result.name;
@@ -162,31 +161,33 @@
 					<input type="hidden" name="profileId" value={selectedMember.id} />
 				{/if}
 			</div>
-			<div>
-				<label for="memberName" class="label text-xs"><span>Or add by name only (non-app user)</span></label>
-				<input id="memberName" name="memberName" type="text" class="input" placeholder="Full name..." />
+			<div class="form-field">
+				<label for="memberName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
+				<input id="memberName" name="memberName" type="text" placeholder="Full name..." />
 			</div>
-			<button type="submit" class="btn preset-tonal-primary btn-sm" disabled={addingMember}>
-				{addingMember ? 'Adding…' : 'Add Member'}
-			</button>
+			<div>
+				<button type="submit" class="btn-accent" disabled={addingMember}>
+					{addingMember ? 'ADDING…' : 'ADD MEMBER'}
+				</button>
+			</div>
 		</form>
 	</section>
 
 	<!-- Coaches -->
-	<section class="mb-10">
-		<h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 mb-4">Coaches</h2>
-		<div class="mb-4 space-y-2">
+	<section class="edit-section">
+		<h2 class="section-label">COACHES</h2>
+		<div class="roster-list">
 			{#each coaches as coach}
-				<div class="flex items-center justify-between p-3 rounded-lg bg-surface-100 dark:bg-surface-700">
-					<div>
-						<span class="font-medium text-sm">{coach.name ?? coach.coachName ?? 'Unknown'}</span>
+				<div class="roster-row">
+					<div class="roster-info">
+						<span class="roster-name">{coach.name ?? coach.coachName ?? 'Unknown'}</span>
 						{#if coach.approvalStatus === 'pending'}
-							<span class="chip preset-tonal-warning text-xs ml-2">Pending</span>
+							<span class="status-tag">PENDING</span>
 						{/if}
 					</div>
 					<form method="POST" action="?/removeCoach" use:enhance>
 						<input type="hidden" name="coachId" value={coach.id} />
-						<button type="submit" class="btn preset-tonal-error btn-sm">Remove</button>
+						<button type="submit" class="btn-remove">REMOVE</button>
 					</form>
 				</div>
 			{/each}
@@ -205,26 +206,25 @@
 					coachResults = [];
 				};
 			}}
-			class="border border-surface-300 dark:border-surface-600 rounded-lg p-4 space-y-3"
+			class="subsection zine-form"
 		>
-			<p class="text-sm font-semibold text-surface-600 dark:text-surface-300">Add Coach</p>
-			<div class="relative">
-				<label for="coachSearch" class="label text-xs"><span>Search coaches</span></label>
+			<p class="subsection-title">ADD COACH</p>
+			<div class="form-field combo-wrap">
+				<label for="coachSearch">SEARCH COACHES</label>
 				<input
 					id="coachSearch"
 					type="text"
-					class="input"
 					placeholder="Type a name to search coaches..."
 					bind:value={coachSearch}
 					oninput={() => searchCoaches(coachSearch)}
 					autocomplete="off"
 				/>
 				{#if coachResults.length > 0}
-					<div class="absolute z-10 w-full bg-surface-50 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded-lg shadow-lg mt-1">
+					<div class="combo-dropdown">
 						{#each coachResults as result}
 							<button
 								type="button"
-								class="w-full text-left px-4 py-2 text-sm hover:bg-surface-200 dark:hover:bg-surface-700"
+								class="combo-option"
 								onclick={() => {
 									selectedCoach = { id: result.id, name: result.name };
 									coachSearch = result.name;
@@ -238,13 +238,40 @@
 					<input type="hidden" name="profileId" value={selectedCoach.id} />
 				{/if}
 			</div>
-			<div>
-				<label for="coachName" class="label text-xs"><span>Or add by name only (non-app user)</span></label>
-				<input id="coachName" name="coachName" type="text" class="input" placeholder="Full name..." />
+			<div class="form-field">
+				<label for="coachName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
+				<input id="coachName" name="coachName" type="text" placeholder="Full name..." />
 			</div>
-			<button type="submit" class="btn preset-tonal-secondary btn-sm" disabled={addingCoach}>
-				{addingCoach ? 'Adding…' : 'Add Coach'}
-			</button>
+			<div>
+				<button type="submit" class="btn-accent" disabled={addingCoach}>
+					{addingCoach ? 'ADDING…' : 'ADD COACH'}
+				</button>
+			</div>
 		</form>
 	</section>
 </div>
+
+<style>
+	.edit-page { max-width: 720px; margin: 0 auto; padding: 48px 32px; }
+	.page-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+	.page-title { font-family: var(--font-heading); font-size: 36px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }
+	.edit-section { margin-bottom: 48px; }
+	.section-label { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); border-bottom: 1px solid var(--zine-muted); padding-bottom: 6px; margin-bottom: 20px; }
+	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+	.checks { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+	.roster-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+	.roster-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--zine-surface); border: var(--zine-border); }
+	.roster-info { display: flex; align-items: center; gap: 8px; }
+	.roster-name { font-size: 13px; font-weight: 700; }
+	.status-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-highlight); background: var(--zine-primary); padding: 2px 6px; }
+	.btn-remove { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-accent); border: 1px solid var(--zine-accent); background: transparent; padding: 4px 10px; cursor: pointer; }
+	.btn-remove:hover { background: var(--zine-accent); color: #fff; }
+	.subsection { border: var(--zine-border); padding: 20px; background: var(--zine-surface); }
+	.subsection-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); margin-bottom: 16px; }
+	.combo-wrap { position: relative; }
+	.combo-dropdown { position: absolute; z-index: 10; width: 100%; background: var(--zine-bg); border: var(--zine-border); border-top: none; box-shadow: var(--zine-shadow); }
+	.combo-option { display: block; width: 100%; text-align: left; padding: 8px 12px; font-family: var(--font-body); font-size: 13px; background: transparent; border: none; cursor: pointer; color: var(--zine-primary); }
+	.combo-option:hover { background: var(--zine-surface); }
+	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
+	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
+</style>

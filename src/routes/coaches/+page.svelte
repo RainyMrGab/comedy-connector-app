@@ -17,10 +17,10 @@
 	<meta name="description" content="Find comedy coaches in {cityConfig.name}." />
 </svelte:head>
 
-<div class="mx-auto max-w-6xl px-4 py-10">
-	<div class="mb-6">
-		<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-50 mb-4">Coaches</h1>
-		<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-wrap">
+<div class="list-page">
+	<div class="page-header">
+		<h1 class="page-title">COACHES</h1>
+		<div class="search-row">
 			<SearchBar placeholder="Search coaches..." onchange={(q) => (query = q)} />
 			<FilterPanel type="coaches" {filters} onchange={(f) => (filters = f)} />
 		</div>
@@ -34,3 +34,11 @@
 		initialNextCursor={data.initialNextCursor}
 	/>
 </div>
+
+<style>
+	.list-page { max-width: 1152px; margin: 0 auto; padding: 48px 32px; }
+	.page-header { margin-bottom: 32px; }
+	.page-title { font-family: var(--font-heading); font-size: 48px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin-bottom: 24px; }
+	.search-row { display: flex; flex-direction: column; gap: 12px; }
+	@media (min-width: 640px) { .search-row { flex-direction: row; align-items: center; flex-wrap: wrap; } }
+</style>
