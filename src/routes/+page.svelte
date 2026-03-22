@@ -1,383 +1,324 @@
 <script lang="ts">
-	import { authStore } from '$stores/auth.svelte';
-	import { cityConfig } from '$config/city';
-	import { Sparkles, GraduationCap, Handshake, Users, UserCheck, ArrowRight } from 'lucide-svelte';
+  import { authStore } from '$stores/auth.svelte';
+  import { cityConfig } from '$config/city';
+  import { Sparkles, GraduationCap, Handshake, Users, UserCheck, ArrowRight } from 'lucide-svelte';
 
-	const connectCards = [
-		{
-			icon: Sparkles,
-			label: 'BOOK AN OPENER',
-			tag: 'BOOKING',
-			desc: 'Find performers available to open for your show.',
-			href: '/connect/book-opener'
-		},
-		{
-			icon: GraduationCap,
-			label: 'FIND A COACH',
-			tag: 'COACHING',
-			desc: 'Browse coaches by style, availability, and focus area.',
-			href: '/connect/find-coach'
-		},
-		{
-			icon: Handshake,
-			label: 'JOIN A TEAM',
-			tag: 'TEAMS',
-			desc: 'Find teams actively looking for new members.',
-			href: '/connect/join-team'
-		}
-	];
+  const connectCards = [
+    {
+      icon: Sparkles,
+      label: 'BOOK AN OPENER',
+      desc: 'Find teams interested in opening for your show.',
+      href: '/connect/book-opener'
+    },
+    {
+      icon: GraduationCap,
+      label: 'FIND A COACH',
+      desc: 'Browse coaches by style, availability, and focus area.',
+      href: '/connect/find-coach'
+    },
+    {
+      icon: Handshake,
+      label: 'JOIN A TEAM',
+      desc: 'Find teams and practice groups looking for new players.',
+      href: '/connect/join-team'
+    }
+  ];
 
-	const browseCards = [
-		{
-			icon: Sparkles,
-			label: 'PERFORMERS',
-			tag: 'BROWSE',
-			desc: 'Create a profile, showcase your training, and let the community know what you\'re looking for.',
-			href: '/performers'
-		},
-		{
-			icon: UserCheck,
-			label: 'COACHES',
-			tag: 'BROWSE',
-			desc: 'Find a coach that fits your style, or list yourself as available for sessions and workshops.',
-			href: '/coaches'
-		},
-		{
-			icon: Users,
-			label: 'TEAMS',
-			tag: 'BROWSE',
-			desc: 'Discover local teams, see who\'s on them, and find groups open to new members.',
-			href: '/teams'
-		}
-	];
+  const browseCards = [
+    {
+      icon: Sparkles,
+      label: 'PERFORMERS',
+      desc: 'Browse performer profiles including bios, interests, media, and teams.',
+      href: '/performers'
+    },
+    {
+      icon: UserCheck,
+      label: 'COACHES',
+      desc: 'Browse coach profiles including bios, interests, styles, and availability.',
+      href: '/coaches'
+    },
+    {
+      icon: Users,
+      label: 'TEAMS',
+      desc: 'Browse team profiles including performance videos, interests, members, and coaches.',
+      href: '/teams'
+    }
+  ];
 
-	async function openSignup() {
-		const module = await import('netlify-identity-widget');
-		module.default.open('signup');
-	}
+  async function openSignup() {
+    const module = await import('netlify-identity-widget');
+    module.default.open('signup');
+  }
 </script>
 
 <svelte:head>
-	<title>{cityConfig.name} Comedy Connector</title>
-	<meta name="description" content="Connect with {cityConfig.name}'s improv and comedy community. Find performers, coaches, and teams." />
+  <title>{cityConfig.name} Comedy Connector</title>
+  <meta name="description"
+        content="Connect with {cityConfig.name}'s improv and comedy community. Find performers, coaches, and teams."/>
 </svelte:head>
 
 <!-- HERO -->
 <section class="hero">
-	<div class="hero-inner">
-		<div class="hero-headline" aria-label="Your scene. Your people.">
-			<h1 class="headline-line">YOUR SCENE.</h1>
-			<h1 class="headline-line indent">YOUR PEOPLE.</h1>
-		</div>
-		<p class="hero-sub">
-			{cityConfig.name}'s open directory for improv performers, coaches, and teams.<br />
-			Find your crew. Build your scene.
-		</p>
-		<div class="hero-actions">
-			{#if authStore.isAuthenticated}
-				<a href="/profile/edit" class="btn-accent">
-					SET UP YOUR PROFILE <ArrowRight size={18} />
-				</a>
-				<a href="/performers" class="btn-outline">BROWSE</a>
-			{:else}
-				<button onclick={openSignup} class="btn-accent">
-					JOIN THE SCENE <ArrowRight size={18} />
-				</button>
-				<a href="/performers" class="btn-outline">BROWSE THE SCENE</a>
-			{/if}
-		</div>
-	</div>
-	<div class="hero-deco" aria-hidden="true">
-		<span class="stamp">EST.<br />{cityConfig.name.toUpperCase()}</span>
-	</div>
+  <div class="hero-inner">
+    <div class="hero-headline" aria-label="Connecting your comedy scene">
+      <h1 class="headline-line">CONNECTING</h1>
+      <h1 class="headline-line indent">YOUR</h1>
+      <h1 class="headline-line">COMEDY SCENE.</h1>
+    </div>
+    <p class="hero-sub">
+      {cityConfig.name}'s open directory for performers, coaches, and teams.
+    </p>
+    <div class="hero-actions">
+      {#if authStore.isAuthenticated}
+        <a href="/profile/edit" class="btn-accent">
+          SET UP YOUR PROFILE
+          <ArrowRight size={18}/>
+        </a>
+        <a href="/performers" class="btn-outline">BROWSE</a>
+      {:else}
+        <button onclick={openSignup} class="btn-accent">
+          JOIN THE SCENE
+          <ArrowRight size={18}/>
+        </button>
+        <a href="/performers" class="btn-outline">BROWSE THE SCENE</a>
+      {/if}
+    </div>
+  </div>
 </section>
 
 <!-- RULE -->
 <div class="section-rule" aria-hidden="true">
-	★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★
+  ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★
 </div>
 
 <!-- CONNECT -->
 <section class="content-section">
-	<h2 class="section-heading">WHAT DO YOU NEED?</h2>
-	<div class="connect-grid">
-		{#each connectCards as card}
-			<a href={card.href} class="zine-card connect-card">
-				<div class="card-tag">{card.tag}</div>
-				<div class="card-icon"><card.icon size={24} /></div>
-				<h3 class="card-label">{card.label}</h3>
-				<p class="card-desc">{card.desc}</p>
-				<span class="card-go">→ GO</span>
-			</a>
-		{/each}
-	</div>
+  <h2 class="section-heading">WHAT DO YOU NEED?</h2>
+  <div class="connect-grid">
+    {#each connectCards as card}
+      <a href={card.href} class="zine-card connect-card">
+        <div class="card-icon">
+          <card.icon size={24}/>
+        </div>
+        <h3 class="card-label">{card.label}</h3>
+        <p class="card-desc">{card.desc}</p>
+      </a>
+    {/each}
+  </div>
 </section>
 
 <!-- FEATURES -->
 <section class="content-section features-section">
-	<h2 class="section-heading">WHO'S HERE?</h2>
-	<div class="features-grid">
-		{#each browseCards as card}
-			<a href={card.href} class="zine-card">
-				<div class="card-tag">{card.tag}</div>
-				<div class="card-icon">
-					<card.icon size={28} />
-				</div>
-				<h3 class="card-label">{card.label}</h3>
-				<p class="card-desc">{card.desc}</p>
-			</a>
-		{/each}
-	</div>
+  <h2 class="section-heading">WHO'S HERE?</h2>
+  <div class="features-grid">
+    {#each browseCards as card}
+      <a href={card.href} class="zine-card">
+        <div class="card-icon">
+          <card.icon size={28}/>
+        </div>
+        <h3 class="card-label">{card.label}</h3>
+        <p class="card-desc">{card.desc}</p>
+      </a>
+    {/each}
+  </div>
 </section>
 
 <!-- CTA STRIP (logged out only) -->
 {#if !authStore.isAuthenticated && !authStore.loading}
-	<section class="cta-strip">
-		<div class="cta-inner">
-			<p class="cta-eyebrow">— IT'S FREE, FOREVER —</p>
-      <h2 class="cta-heading">READY TO BE GET INVOLVED?</h2>
+  <section class="cta-strip">
+    <div class="cta-inner">
+      <p class="cta-eyebrow">— IT'S FREE, FOREVER —</p>
+      <h2 class="cta-heading">READY TO GET INVOLVED?</h2>
       <button onclick={openSignup} class="btn-accent">
-        CREATE YOUR PROFILE <ArrowRight size={18} />
-			</button>
-		</div>
-	</section>
+        CREATE YOUR PROFILE
+        <ArrowRight size={18}/>
+      </button>
+    </div>
+  </section>
 {/if}
 
 <style>
-	/* HERO */
-	.hero {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 56px 48px;
-		border-bottom: var(--zine-border);
-		gap: 48px;
-		overflow: hidden;
-	}
+  /* HERO */
+  .hero {
+    padding: 56px 48px;
+    border-bottom: var(--zine-border);
+  }
 
-	.hero-inner {
-		flex: 1;
-		max-width: 640px;
-	}
+  .hero-headline {
+    transform: rotate(-2deg);
+    transform-origin: left center;
+    margin-bottom: 20px;
+  }
 
-	.hero-headline {
-		transform: rotate(-2deg);
-		transform-origin: left center;
-		margin-bottom: 20px;
-	}
+  .headline-line {
+    font-family: var(--font-heading);
+    font-size: clamp(48px, 8vw, 88px);
+    line-height: 1.05;
+    color: var(--zine-primary);
+    display: block;
+    margin: 0;
+  }
 
-	.headline-line {
-		font-family: var(--font-heading);
-		font-size: clamp(48px, 8vw, 88px);
-		line-height: 1.05;
-		color: var(--zine-primary);
-		display: block;
-		margin: 0;
-	}
+  .headline-line.indent {
+    margin-left: 24px;
+  }
 
-	.headline-line.indent {
-		margin-left: 24px;
-	}
+  .hero-sub {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--zine-primary);
+    margin-bottom: 32px;
+    max-width: 480px;
+    opacity: 0.85;
+  }
 
-	.hero-sub {
-		font-size: 16px;
-		line-height: 1.7;
-		color: var(--zine-primary);
-		margin-bottom: 32px;
-		max-width: 480px;
-		opacity: 0.85;
-	}
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 
-	.hero-actions {
-		display: flex;
-		gap: 16px;
-		flex-wrap: wrap;
-	}
+  /* RULE */
+  .section-rule {
+    text-align: center;
+    padding: 12px 0;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--zine-muted);
+    border-bottom: var(--zine-border);
+    background: var(--zine-surface);
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
-	.hero-deco {
-		flex-shrink: 0;
-	}
+  /* SECTIONS */
+  .content-section {
+    padding: 48px 32px;
+  }
 
-	.stamp {
-		display: block;
-		font-family: var(--font-heading);
-		font-size: 22px;
-		line-height: 1.3;
-		text-align: center;
-		color: var(--zine-accent);
-		border: 4px solid var(--zine-accent);
-		padding: 20px 28px;
-		transform: rotate(8deg);
-		opacity: 0.65;
-		letter-spacing: 0.05em;
-	}
+  .features-section {
+    background: var(--zine-surface);
+    border-top: var(--zine-border);
+  }
 
-	/* RULE */
-	.section-rule {
-		text-align: center;
-		padding: 12px 0;
-		font-size: 13px;
-		letter-spacing: 0.15em;
-		color: var(--zine-muted);
-		border-bottom: var(--zine-border);
-		background: var(--zine-surface);
-		overflow: hidden;
-		white-space: nowrap;
-	}
+  .section-heading {
+    font-family: var(--font-heading);
+    font-size: 36px;
+    margin-bottom: 24px;
+    color: var(--zine-primary);
+    transform: rotate(-1deg);
+    display: inline-block;
+  }
 
-	/* SECTIONS */
-	.content-section {
-		padding: 48px 32px;
-	}
+  /* CARDS */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
 
-	.features-section {
-		background: var(--zine-surface);
-		border-top: var(--zine-border);
-	}
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
 
-	.section-heading {
-		font-family: var(--font-heading);
-		font-size: 36px;
-		margin-bottom: 24px;
-		color: var(--zine-primary);
-		transform: rotate(-1deg);
-		display: inline-block;
-	}
+  .zine-card {
+    background: var(--zine-bg);
+    border: var(--zine-border);
+    box-shadow: var(--zine-shadow);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--zine-primary);
+    transition: transform 0.1s,
+    box-shadow 0.1s;
+  }
 
-	/* CARDS */
-	.connect-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 16px;
-	}
+  .zine-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--zine-primary);
+  }
 
-	.features-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 16px;
-	}
+  .connect-card {
+    padding: 20px 24px;
+    background: var(--zine-surface);
+  }
 
-	.zine-card {
-		background: var(--zine-bg);
-		border: var(--zine-border);
-		box-shadow: var(--zine-shadow);
-		padding: 18px 20px;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		text-decoration: none;
-		color: var(--zine-primary);
-		transition:
-			transform 0.1s,
-			box-shadow 0.1s;
-	}
+  .features-section .zine-card {
+    background: var(--zine-bg);
+  }
 
-	.zine-card:hover {
-		transform: translate(-2px, -2px);
-		box-shadow: 6px 6px 0px var(--zine-primary);
-	}
+  .card-icon {
+    color: var(--zine-accent);
+    margin-top: 4px;
+  }
 
-	.connect-card {
-		padding: 20px 24px;
-		background: var(--zine-surface);
-	}
+  .card-label {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--zine-primary);
+    margin: 0;
+  }
 
-	.features-section .zine-card {
-		background: var(--zine-bg);
-	}
+  .card-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--zine-primary);
+    opacity: 0.8;
+    margin: 0;
+  }
 
-	.card-tag {
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		background: var(--zine-muted);
-		color: #fff;
-		display: inline-block;
-		padding: 2px 8px;
-		width: fit-content;
-	}
+  /* CTA STRIP */
+  .cta-strip {
+    background: var(--zine-highlight);
+    border-top: var(--zine-border);
+    padding: 48px 32px;
+  }
 
-	.card-icon {
-		color: var(--zine-accent);
-		margin-top: 4px;
-	}
+  .cta-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
 
-	.card-label {
-		font-family: var(--font-body);
-		font-size: 15px;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: var(--zine-primary);
-		margin: 0;
-	}
+  .cta-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--zine-primary);
+    opacity: 0.7;
+    margin: 0;
+  }
 
-	.card-desc {
-		font-size: 13px;
-		line-height: 1.6;
-		color: var(--zine-primary);
-		opacity: 0.8;
-		margin: 0;
-	}
+  .cta-heading {
+    font-family: var(--font-heading);
+    font-size: 42px;
+    color: var(--zine-primary);
+    margin: 0;
+  }
 
-	.card-go {
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		color: var(--zine-muted);
-		margin-top: 4px;
-	}
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero {
+      flex-direction: column;
+      padding: 36px 24px;
+    }
 
-	/* CTA STRIP */
-	.cta-strip {
-		background: var(--zine-highlight);
-		border-top: var(--zine-border);
-		padding: 48px 32px;
-	}
+    .connect-grid,
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
 
-	.cta-inner {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 20px;
-		text-align: center;
-	}
-
-	.cta-eyebrow {
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.15em;
-		color: var(--zine-primary);
-		opacity: 0.7;
-		margin: 0;
-	}
-
-	.cta-heading {
-		font-family: var(--font-heading);
-		font-size: 42px;
-		color: var(--zine-primary);
-		margin: 0;
-	}
-
-	/* Responsive */
-	@media (max-width: 768px) {
-		.hero {
-			flex-direction: column;
-			padding: 36px 24px;
-		}
-
-		.hero-deco {
-			display: none;
-		}
-
-		.connect-grid,
-		.features-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.content-section {
-			padding: 48px 24px;
-		}
-	}
+    .content-section {
+      padding: 48px 24px;
+    }
+  }
 </style>
