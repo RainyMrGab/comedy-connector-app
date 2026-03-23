@@ -22,16 +22,16 @@ Built as an open-source template that any city's comedy scene can deploy for fre
 
 ## Tech Stack
 
-| Layer           | Technology                               |
-|-----------------|------------------------------------------|
-| Frontend        | SvelteKit 2 + Svelte 5 (runes)           |
-| Styles          | Tailwind v4 + Skeleton UI v4             |
-| Icons           | Lucide Svelte                            |
+| Layer           | Technology                                                    |
+|-----------------|---------------------------------------------------------------|
+| Frontend        | SvelteKit 2 + Svelte 5 (runes)                                |
+| Styles          | Tailwind v4 + Skeleton UI v4                                  |
+| Icons           | Lucide Svelte                                                 |
 | Database        | PGLite (local dev) / Neon Postgres (production) + Drizzle ORM |
-| Auth            | Netlify Identity                         |
-| Email           | Resend                                   |
-| Deploy          | Netlify (free tier)                      |
-| Package manager | pnpm 10                                  |
+| Auth            | Netlify Identity                                              |
+| Email           | Resend                                                        |
+| Deploy          | Netlify (free tier)                                           |
+| Package manager | pnpm 10                                                       |
 
 ## Local Development
 
@@ -53,7 +53,9 @@ cp .env.example .env
 pnpm dev
 ```
 
-On first startup, the app creates `.local-db/` (a local Postgres-compatible file database powered by [PGLite](https://pglite.dev)) and seeds 3 test users. Navigate to `http://localhost:5173/dev-login` to select a test user and start exploring.
+On first startup, the app creates `.local-db/` (a local Postgres-compatible file database powered
+by [PGLite](https://pglite.dev)) and seeds 3 test users. Navigate to `http://localhost:5173/dev-login` to select a test
+user and start exploring.
 
 > **No database account or external service needed** for local development.
 
@@ -122,10 +124,25 @@ Pushes to `main` auto-deploy. Netlify Identity handles user registration.
 
 ## Customizing for Your City
 
-1. Update resource links in `src/lib/config/city.ts`
-2. Set `PUBLIC_CITY_NAME`, `PUBLIC_CITY_DOMAIN`, `PUBLIC_SITE_URL` on Netlify
-3. Update the GitHub footer URL in `src/lib/components/layout/Footer.svelte`
-4. Optionally customize theme colors in `src/app.css` (`@layer theme`)
+1. Create a resource file at `src/lib/config/resources/[your-city].ts` (copy `pittsburgh.ts` as a starting point)
+2. Update the import in `src/lib/config/city.ts` to point to your file
+3. Set `PUBLIC_CITY_NAME`, `PUBLIC_CITY_DOMAIN`, `PUBLIC_SITE_URL` on Netlify
+4. Set `FEEDBACK_EMAIL` (server env var) to the address feedback should go to
+5. Optionally customize theme colors in `src/app.css` (`@layer theme`)
+
+## Add Your City
+
+Want to run Comedy Connector for your city? Here's how:
+
+1. **Open an issue** on [GitHub](https://github.com/RainyMrGab/comedy-connector-app/issues) to let us know which city
+   you're setting up — we're happy to help
+2. Fork the repo and follow the [Deployment](#deployment) and [Customizing for Your City](#customizing-for-your-city)
+   sections
+3. Create `src/lib/config/resources/[your-city].ts` with your local links (use `pittsburgh.ts` as a template)
+4. Update the import in `src/lib/config/city.ts`
+5. Make a PR to contribute your city resources back to the repo. Ideally there are not code changes in the forks so 
+   it's easy for you to keep your fork updated.
+6. This process is new, be patient.
 
 ## Project Structure
 
@@ -137,7 +154,9 @@ src/
 │   │   ├── layout/     Header, Footer
 │   │   ├── search/     SearchBar, FilterPanel, ResultCard, ResultsList (infinite scroll)
 │   │   └── ui/         Toast, LoadingSpinner, EmptyState, ConfirmDialog
-│   ├── config/city.ts  City config + resource links
+│   ├── config/
+│   │   ├── city.ts          City config (name, domain, siteUrl, resources)
+│   │   └── resources/       Per-city resource link files
 │   ├── server/
 │   │   ├── db/         Drizzle schema, migrations, client
 │   │   ├── auth.ts     JWT decode + user resolution (hooks.server.ts middleware)

@@ -37,14 +37,17 @@
 		</div>
 
 		<div class="footer-bottom">
-			<p>&copy; {new Date().getFullYear()} Comedy Connector — {cityConfig.name} Instance</p>
+			<p>&copy; {new Date().getFullYear()} Comedy Connector — {cityConfig.name}</p>
 			<p>
-				Open source · Built with ❤ for the comedy community ·
-				<a
-					href="https://github.com/RainyMrGab/comedy-connector-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>GitHub</a>
+				<a href="https://github.com/RainyMrGab/comedy-connector-app/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Open source</a>
+				·
+				<a href="https://github.com/RainyMrGab/comedy-connector-app/issues" target="_blank" rel="noopener noreferrer">Report a bug</a>
+				·
+				<a href="/feedback">Feedback</a>
+				·
+				<a href="https://www.paypal.com/paypalme/bmgray84" target="_blank" rel="noopener noreferrer">Support this project</a>
+				·
+				<a href="https://github.com/RainyMrGab/comedy-connector-app#add-your-city" target="_blank" rel="noopener noreferrer">Add your city</a>
 			</p>
 		</div>
 	</div>

@@ -99,6 +99,7 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 |----------|-------|-------|
 | `NETLIFY_DATABASE_URL` | Server | Add to `.env` to use Neon DB (for `db:*` commands). If unset, PGLite is used. Netlify CLI also injects it automatically during `dev:netlify`. Set in Netlify dashboard for prod. |
 | `RESEND_API_KEY` | Server | Resend dashboard — not needed for local dev |
+| `FEEDBACK_EMAIL` | Server | Destination address for `/feedback` form submissions |
 | `PUBLIC_CITY_NAME` | Public | Defaults to `Pittsburgh` |
 | `PUBLIC_CITY_DOMAIN` | Public | Defaults to `pittsburgh.comedyconnector.app` |
 | `PUBLIC_SITE_URL` | Public | Full URL for email links |
