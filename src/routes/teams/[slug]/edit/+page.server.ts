@@ -69,8 +69,7 @@ export const actions: Actions = {
 			openToNewMembers: formData.get('openToNewMembers') === 'true',
 			openToBookOpeners: formData.get('openToBookOpeners') === 'true',
 			seekingCoach: formData.get('seekingCoach') === 'true',
-			lookingFor: String(formData.get('lookingFor') ?? ''),
-			freshnessRemindersEnabled: formData.get('freshnessRemindersEnabled') !== 'false'
+			lookingFor: String(formData.get('lookingFor') ?? '')
 		};
 
 		const result = teamSchema.safeParse(raw);

@@ -1,21 +1,31 @@
 import type { Handler } from '@netlify/functions';
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
-import { eq, and } from 'drizzle-orm';
 import { Resend } from 'resend';
-import { personalProfiles } from '../../src/lib/server/db/schema/personal_profiles.js';
-import { teams } from '../../src/lib/server/db/schema/teams.js';
-import { users } from '../../src/lib/server/db/schema/users.js';
+import { reminderConfig } from '../../src/lib/config/reminders.js';
+import {
+	getFreshnessRecipients,
+	countRemainingRecipients,
+	buildFreshnessEmailHtml,
+	buildFreshnessEmailText,
+	getInactiveSinceCutoff,
+	FRESHNESS_EMAIL_SUBJECT
+} from '../../src/lib/server/reminders.js';
 
 /**
- * Scheduled function — runs on the 1st of each month at 14:00 UTC (9am EST).
- * Sends freshness reminder emails to performers and active team primary contacts.
- * Schedule configured in netlify.toml: [functions."freshness-reminder"] schedule = "0 14 1 * *"
+ * Scheduled function — runs daily on the 1st–7th of each month at 10am EST (15:00 UTC).
+ * Sends consolidated freshness reminder emails to inactive users, 50 per day.
+ * Schedule configured in netlify.toml: [functions."freshness-reminder"] schedule = "0 15 1-7 * *"
+ *
+ * Offset-based batching (no extra DB state):
+ *   Day 1 → users 0–49, Day 2 → 50–99, ..., Day 7 → 300–349
+ * On day 7 (last day of window), sends an admin alert if any eligible users were not reached.
  */
 export const handler: Handler = async () => {
 	const dbUrl = process.env.NETLIFY_DATABASE_URL;
 	const resendKey = process.env.RESEND_API_KEY;
-	const siteUrl = process.env.PUBLIC_SITE_URL ?? 'https://comedyconnector.app';
+	const siteUrl = process.env.PUBLIC_SITE_URL ?? 'https://pittsburgh.comedyconnector.app';
+	const feedbackEmail = process.env.FEEDBACK_EMAIL;
 
 	if (!dbUrl) return { statusCode: 500, body: 'NETLIFY_DATABASE_URL not set' };
 	if (!resendKey) return { statusCode: 500, body: 'RESEND_API_KEY not set' };
@@ -24,115 +34,75 @@ export const handler: Handler = async () => {
 	const db = drizzle(sql);
 	const resend = new Resend(resendKey);
 	const hostname = new URL(siteUrl).hostname;
+	const fromAddress = `Comedy Connector <noreply@${hostname}>`;
+
+	const { dailyEmailLimit, pollingWindowDays } = reminderConfig;
+	const dayOfMonth = new Date().getDate(); // 1–7
+	const offset = (dayOfMonth - 1) * dailyEmailLimit;
+	const inactiveSince = getInactiveSinceCutoff();
 
 	let sent = 0;
 	let errors = 0;
 
-	// ---- Performer reminders ----
-	const performers = await db
-		.select({
-			name: personalProfiles.name,
-			slug: personalProfiles.slug,
-			contactEmail: personalProfiles.contactEmail,
-			userEmail: users.email
-		})
-		.from(personalProfiles)
-		.innerJoin(users, eq(personalProfiles.userId, users.id))
-		.where(eq(personalProfiles.freshnessRemindersEnabled, true));
+	// ---- Fetch batch ----
+	const recipients = await getFreshnessRecipients(db, offset, dailyEmailLimit, inactiveSince);
 
-	for (const p of performers) {
-		const to = p.contactEmail ?? p.userEmail;
+	// ---- Send emails ----
+	for (const recipient of recipients) {
 		try {
 			await resend.emails.send({
-				from: `Comedy Connector <noreply@${hostname}>`,
-				to,
-				subject: `Keep your Comedy Connector profile fresh!`,
-				html: buildReminderHtml(p.name, `${siteUrl}/performers/${p.slug}`, siteUrl),
-				text: `Hey ${p.name}!\n\nUpdate your profile: ${siteUrl}/performers/${p.slug}`
+				from: fromAddress,
+				to: recipient.email,
+				subject: FRESHNESS_EMAIL_SUBJECT,
+				html: buildFreshnessEmailHtml(recipient, siteUrl),
+				text: buildFreshnessEmailText(recipient, siteUrl)
 			});
 			sent++;
 		} catch (e) {
-			console.error(`Performer reminder failed for ${to}:`, e);
+			console.error(`Freshness reminder failed for ${recipient.email}:`, e);
 			errors++;
 		}
 	}
 
-	// ---- Team reminders ----
-	const activeTeams = await db
-		.select({
-			name: teams.name,
-			slug: teams.slug,
-			primaryContactProfileId: teams.primaryContactProfileId
-		})
-		.from(teams)
-		.where(and(eq(teams.freshnessRemindersEnabled, true), eq(teams.status, 'active')));
+	console.log(
+		`Freshness reminders day ${dayOfMonth}: ${sent} sent, ${errors} errors, offset ${offset}`
+	);
 
-	for (const team of activeTeams) {
-		if (!team.primaryContactProfileId) continue;
-
-		const [contact] = await db
-			.select({
-				name: personalProfiles.name,
-				contactEmail: personalProfiles.contactEmail,
-				userEmail: users.email
-			})
-			.from(personalProfiles)
-			.innerJoin(users, eq(personalProfiles.userId, users.id))
-			.where(eq(personalProfiles.id, team.primaryContactProfileId))
-			.limit(1);
-
-		if (!contact) continue;
-
-		const to = contact.contactEmail ?? contact.userEmail;
+	// ---- Backstop: alert admin if eligible users remain after the last polling day ----
+	if (dayOfMonth === pollingWindowDays && feedbackEmail) {
 		try {
-			await resend.emails.send({
-				from: `Comedy Connector <noreply@${hostname}>`,
-				to,
-				subject: `Keep your ${team.name} team profile fresh!`,
-				html: buildTeamReminderHtml(
-					contact.name,
-					team.name,
-					`${siteUrl}/teams/${team.slug}`,
-					siteUrl
-				),
-				text: `Hey ${contact.name}!\n\nUpdate the ${team.name} profile: ${siteUrl}/teams/${team.slug}`
-			});
-			sent++;
+			const remaining = await countRemainingRecipients(db, offset + dailyEmailLimit, inactiveSince);
+			if (remaining > 0) {
+				await resend.emails.send({
+					from: fromAddress,
+					to: feedbackEmail,
+					subject: `⚠️ Comedy Connector: ${remaining} users not reached in freshness poll`,
+					html: `
+<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+  <h2 style="color:#7c3aed;">Freshness Poll Capacity Alert</h2>
+  <p><strong>${remaining}</strong> eligible user(s) were not reached during this month's polling window
+  (${pollingWindowDays} days × ${dailyEmailLimit} emails/day = ${pollingWindowDays * dailyEmailLimit} max).</p>
+  <p>To fix this, increase <code>dailyEmailLimit</code> or <code>pollingWindowDays</code>
+  in <code>src/lib/config/reminders.ts</code> and update the cron schedule in <code>netlify.toml</code> accordingly.</p>
+  <p style="color:#9ca3af;font-size:12px;">Sent by the Comedy Connector freshness-reminder function.</p>
+</div>`,
+					text: `Freshness Poll Capacity Alert\n\n${remaining} user(s) were not reached during this month's polling window (${pollingWindowDays} days × ${dailyEmailLimit}/day = ${pollingWindowDays * dailyEmailLimit} max).\n\nIncrease dailyEmailLimit or pollingWindowDays in src/lib/config/reminders.ts.`
+				});
+				console.log(`Backstop alert sent: ${remaining} users not reached`);
+			}
 		} catch (e) {
-			console.error(`Team reminder failed for ${to} (${team.name}):`, e);
-			errors++;
+			console.error('Failed to send backstop alert:', e);
 		}
 	}
 
-	console.log(`Freshness reminders: ${sent} sent, ${errors} errors`);
 	return {
 		statusCode: 200,
-		body: JSON.stringify({ sent, errors, performers: performers.length, teams: activeTeams.length })
+		body: JSON.stringify({
+			day: dayOfMonth,
+			offset,
+			batchSize: recipients.length,
+			sent,
+			errors
+		})
 	};
 };
-
-function buildReminderHtml(name: string, profileUrl: string, siteUrl: string): string {
-	return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-<h2 style="color:#7c3aed">Hey ${name}!</h2>
-<p>It's been a while — take a moment to make sure your Comedy Connector profile is up to date.</p>
-<p>Updated profiles help the community find and connect with the right people.</p>
-<a href="${profileUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin:16px 0">Update My Profile</a>
-<p style="color:#9ca3af;font-size:12px;margin-top:24px">
-  Sent via <a href="${siteUrl}">${siteUrl}</a>. <a href="${profileUrl}/edit">Manage preferences</a>
-</p></div>`;
-}
-
-function buildTeamReminderHtml(
-	contactName: string,
-	teamName: string,
-	teamUrl: string,
-	siteUrl: string
-): string {
-	return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-<h2 style="color:#7c3aed">Hey ${contactName}!</h2>
-<p>Just a reminder to keep the <strong>${teamName}</strong> profile on Comedy Connector up to date.</p>
-<a href="${teamUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin:16px 0">Update Team Profile</a>
-<p style="color:#9ca3af;font-size:12px;margin-top:24px">
-  Sent via <a href="${siteUrl}">${siteUrl}</a>. <a href="${teamUrl}/edit">Manage team preferences</a>
-</p></div>`;
-}

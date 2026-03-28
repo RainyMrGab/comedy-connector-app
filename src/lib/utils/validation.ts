@@ -15,8 +15,7 @@ export const personalProfileSchema = z.object({
 	training: z.string().max(2000).optional(),
 	lookingFor: z.string().max(500).optional(),
 	contactEmail: z.string().email().optional().or(z.literal('')),
-	socialLinks: socialLinksSchema.optional(),
-	freshnessRemindersEnabled: z.boolean().optional()
+	socialLinks: socialLinksSchema.optional()
 });
 
 export const performerProfileSchema = z.object({
@@ -44,8 +43,7 @@ export const teamSchema = z.object({
 	openToNewMembers: z.boolean().optional(),
 	openToBookOpeners: z.boolean().optional(),
 	seekingCoach: z.boolean().optional(),
-	lookingFor: z.string().max(500).optional(),
-	freshnessRemindersEnabled: z.boolean().optional()
+	lookingFor: z.string().max(500).optional()
 });
 
 export const contactMessageSchema = z.object({

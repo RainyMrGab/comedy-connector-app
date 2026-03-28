@@ -29,7 +29,6 @@ export const teams = pgTable('teams', {
 		() => personalProfiles.id,
 		{ onDelete: 'set null' }
 	),
-	freshnessRemindersEnabled: boolean('freshness_reminders_enabled').notNull().default(true),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });

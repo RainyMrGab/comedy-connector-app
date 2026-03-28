@@ -27,7 +27,6 @@ export const actions: Actions = {
 			training: String(formData.get('training') ?? ''),
 			lookingFor: String(formData.get('lookingFor') ?? ''),
 			contactEmail: String(formData.get('contactEmail') ?? ''),
-			freshnessRemindersEnabled: formData.get('freshnessRemindersEnabled') === 'true',
 			socialLinks: {
 				instagram: String(formData.get('instagram') ?? ''),
 				tiktok: String(formData.get('tiktok') ?? ''),
@@ -66,7 +65,6 @@ export const actions: Actions = {
 					lookingFor: data.lookingFor ?? null,
 					contactEmail: data.contactEmail || null,
 					socialLinks,
-					freshnessRemindersEnabled: data.freshnessRemindersEnabled ?? true,
 					updatedAt: new Date()
 				})
 				.where(eq(personalProfiles.id, existing.id));
@@ -79,8 +77,7 @@ export const actions: Actions = {
 				training: data.training ?? null,
 				lookingFor: data.lookingFor ?? null,
 				contactEmail: data.contactEmail || null,
-				socialLinks,
-				freshnessRemindersEnabled: data.freshnessRemindersEnabled ?? true
+				socialLinks
 			});
 		}
 

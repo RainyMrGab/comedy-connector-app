@@ -64,10 +64,9 @@
 				{/each}
 			</div>
 		</fieldset>
-		<label class="checkbox-label">
-			<input id="freshnessReminders" name="freshnessRemindersEnabled" type="checkbox" value="true" checked={profile?.freshnessRemindersEnabled ?? true} />
-			<span>Send me monthly reminders to keep my profile fresh</span>
-		</label>
+		<p class="freshness-notice">
+			📬 <strong>Profile freshness reminders:</strong> Comedy Connector emails you once a month to help keep your listing accurate. We won't use your email for spam or share it with third parties — these reminders exist solely to keep the community directory useful for everyone.
+		</p>
 		<div class="form-actions">
 			<button type="submit" class="btn-accent" disabled={saving}>{saving ? 'SAVING…' : 'SAVE PROFILE'}</button>
 			{#if profile}
@@ -85,5 +84,6 @@
 	.zine-form { display: flex; flex-direction: column; gap: 24px; }
 	.social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
+	.freshness-notice { font-size: 13px; color: var(--zine-muted); border: 1px solid var(--zine-border-color, #e5e7eb); border-left: 3px solid var(--zine-primary); padding: 12px 14px; margin: 0; }
 	@media (max-width: 500px) { .social-grid { grid-template-columns: 1fr; } }
 </style>
