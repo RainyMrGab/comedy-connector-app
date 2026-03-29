@@ -5,8 +5,8 @@ import { teamMembers, teamCoaches, teams, personalProfiles } from '$server/db/sc
 import { eq, and } from 'drizzle-orm';
 import { getProfileByUserId } from '$server/profiles';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) redirect(302, '/');
+export const load: PageServerLoad = async ({ locals, url }) => {
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 
 	const userProfile = await getProfileByUserId(locals.user.id);
 	if (!userProfile) return { pendingMemberships: [], pendingCoachRoles: [] };

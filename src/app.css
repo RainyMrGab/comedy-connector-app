@@ -199,6 +199,7 @@ body {
 .zine-form input[type='email'],
 .zine-form input[type='url'],
 .zine-form input[type='number'],
+.zine-form input[type='password'],
 .zine-form textarea,
 .zine-form select {
 	font-family: var(--font-body);
@@ -215,6 +216,7 @@ body {
 .zine-form input[type='email']:focus,
 .zine-form input[type='url']:focus,
 .zine-form input[type='number']:focus,
+.zine-form input[type='password']:focus,
 .zine-form textarea:focus,
 .zine-form select:focus {
 	box-shadow: var(--zine-shadow);

@@ -9,7 +9,8 @@
 
 <script lang="ts">
 	import '../app.css';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidateAll, goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import type { User } from 'netlify-identity-widget';
 	import { authStore } from '$stores/auth.svelte';
 	import { toastStore } from '$stores/toast.svelte';
@@ -59,8 +60,13 @@
 				authStore.setUser({ id: user.id, email: user.email, name: user.user_metadata?.full_name }, token);
 				identity.close();
 				toastStore.success('Welcome back!');
-				// Refresh server load fns without wiping client auth state
-				invalidateAll();
+				// Refresh server load fns, then redirect if we came via /login
+				invalidateAll().then(() => {
+					if (page.url.pathname === '/login') {
+						const returnTo = page.url.searchParams.get('returnTo') ?? '/profile';
+						goto(returnTo);
+					}
+				});
 			});
 
 			identity.on('logout', () => {

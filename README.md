@@ -76,7 +76,7 @@ Since Netlify Identity cookies are domain-specific and won't work on `localhost`
 | `NETLIFY_DATABASE_URL` | **No** — uses PGLite | Neon Postgres. Leave unset to use local PGLite.    |
 | `RESEND_API_KEY`       | No (email features)  | Resend API key for contact + reminder emails       |
 | `PUBLIC_CITY_NAME`     | No                   | City name (default: `Pittsburgh`)                  |
-| `PUBLIC_CITY_DOMAIN`   | No                   | Domain (default: `pittsburgh.comedyconnector.app`) |
+| `PUBLIC_CITY_DOMAIN`   | No                   | Domain (default: `pgh.comedyconnector.app`)        |
 | `PUBLIC_SITE_URL`      | No                   | Full site URL for email links                      |
 
 ### Useful Scripts

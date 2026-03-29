@@ -127,7 +127,7 @@
 {#if !authStore.isAuthenticated && !authStore.loading}
   <section class="cta-strip">
     <div class="cta-inner">
-      <p class="cta-eyebrow">— IT'S FREE, FOREVER —</p>
+      <!-- <p class="cta-eyebrow">— IT'S FREE, FOREVER —</p>-->
       <h2 class="cta-heading">READY TO GET INVOLVED?</h2>
       <button onclick={openSignup} class="btn-accent">
         CREATE YOUR PROFILE

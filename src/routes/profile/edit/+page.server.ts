@@ -6,9 +6,9 @@ import { eq } from 'drizzle-orm';
 import { getProfileByUserId, resolveProfileSlug } from '$server/profiles';
 import { personalProfileSchema } from '$utils/validation';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
-		redirect(302, '/');
+		redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	}
 	const profile = await getProfileByUserId(locals.user.id);
 	return { profile };

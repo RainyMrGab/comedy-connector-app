@@ -14,9 +14,9 @@ import {
 } from '$server/reminders';
 
 // Only available outside production
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (env.PUBLIC_DEPLOY_CONTEXT === 'production') redirect(302, '/');
-	if (!locals.user) redirect(302, '/');
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	return {};
 };
 
@@ -41,7 +41,7 @@ export const actions: Actions = {
 		const recipients = await getFreshnessRecipients(db, 0, dailyEmailLimit, inactiveSince);
 
 		const dryRun = !privateEnv.RESEND_API_KEY;
-		const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pittsburgh.comedyconnector.app';
+		const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 		const errors: string[] = [];
 		let sent = 0;
 

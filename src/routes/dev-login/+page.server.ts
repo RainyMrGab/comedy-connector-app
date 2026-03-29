@@ -3,9 +3,12 @@ import type { Actions, PageServerLoad } from './$types';
 import { IS_LOCAL } from '$server/db';
 import { DEV_USERS } from '$server/db/seed.js';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ url }) => {
 	if (!IS_LOCAL) redirect(302, '/');
-	return { users: DEV_USERS };
+	const returnTo = url.searchParams.get('returnTo') ?? '/profile';
+	// Security: only allow relative paths
+	const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
+	return { users: DEV_USERS, returnTo: safeReturnTo };
 };
 
 export const actions: Actions = {
@@ -14,6 +17,9 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const userId = String(formData.get('userId') ?? '');
+		const returnTo = String(formData.get('returnTo') ?? '/profile');
+		// Security: only allow relative paths
+		const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
 
 		// Only allow the known seeded dev user IDs — reject arbitrary UUIDs
 		const validUser = DEV_USERS.find((u) => u.id === userId);
@@ -27,7 +33,7 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 * 7 // 1 week
 		});
 
-		redirect(302, '/profile');
+		redirect(302, safeReturnTo);
 	},
 
 	logout: async ({ cookies }) => {

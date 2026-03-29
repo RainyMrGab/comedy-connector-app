@@ -5,9 +5,9 @@ import { db } from '$server/db';
 import { performerProfiles, coachProfiles } from '$server/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
-		redirect(302, '/');
+		redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	}
 
 	const profile = await getProfileByUserId(locals.user.id);

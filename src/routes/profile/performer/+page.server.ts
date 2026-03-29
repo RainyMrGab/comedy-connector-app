@@ -6,8 +6,8 @@ import { eq } from 'drizzle-orm';
 import { getProfileByUserId } from '$server/profiles';
 import { performerProfileSchema } from '$utils/validation';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) redirect(302, '/');
+export const load: PageServerLoad = async ({ locals, url }) => {
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 
 	const profile = await getProfileByUserId(locals.user.id);
 	if (!profile) redirect(302, '/profile/edit');

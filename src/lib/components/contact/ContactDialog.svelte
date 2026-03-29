@@ -51,7 +51,7 @@
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: `Bearer ${authStore.token}`
+					...(authStore.token ? { Authorization: `Bearer ${authStore.token}` } : {})
 				},
 				body: JSON.stringify({ recipientId, recipientType, subject: subject.trim(), message: message.trim() })
 			});
