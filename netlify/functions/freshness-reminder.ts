@@ -24,7 +24,7 @@ import {
 export const handler: Handler = async () => {
 	const dbUrl = process.env.NETLIFY_DATABASE_URL;
 	const resendKey = process.env.RESEND_API_KEY;
-	const siteUrl = process.env.PUBLIC_SITE_URL ?? 'https://pittsburgh.comedyconnector.app';
+	const siteUrl = process.env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 	const feedbackEmail = process.env.FEEDBACK_EMAIL;
 
 	if (!dbUrl) return { statusCode: 500, body: 'NETLIFY_DATABASE_URL not set' };
