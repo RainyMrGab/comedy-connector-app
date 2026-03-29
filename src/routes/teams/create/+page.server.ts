@@ -7,8 +7,8 @@ import { getProfileByUserId } from '$server/profiles';
 import { resolveTeamSlug, findTeamByName } from '$server/teams';
 import { teamSchema } from '$utils/validation';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) redirect(302, '/');
+export const load: PageServerLoad = async ({ locals, url }) => {
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	return {};
 };
 

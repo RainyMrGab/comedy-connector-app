@@ -1,19 +1,24 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
 	import { authStore } from '$stores/auth.svelte';
+	import { toastStore } from '$stores/toast.svelte';
 	import { cityConfig } from '$config/city';
 	import { Menu, X } from 'lucide-svelte';
 
 	let { isLocal = false }: { isLocal?: boolean } = $props();
 	let mobileMenuOpen = $state(false);
 
-	async function openLogin() {
-		const module = await import('netlify-identity-widget');
-		module.default.open('login');
+	function openLogin() {
+		goto('/login');
 	}
 
-	async function handleLogout() {
-		const module = await import('netlify-identity-widget');
-		module.default.logout();
+	function handleLogoutEnhance() {
+		return async ({ update }: { update: () => Promise<void> }) => {
+			authStore.clearUser();
+			toastStore.info('You have been signed out.');
+			await update();
+		};
 	}
 
 	function closeMobileMenu() {
@@ -55,7 +60,9 @@
 				{#if isLocal}
 					<a href="/dev-login" class="btn-outline">SWITCH USER</a>
 				{:else}
-					<button onclick={handleLogout} class="btn-outline">SIGN OUT</button>
+					<form method="POST" action="/api/auth/logout" use:enhance={handleLogoutEnhance}>
+						<button type="submit" class="btn-outline">SIGN OUT</button>
+					</form>
 				{/if}
 			{:else if isLocal}
 				<a href="/dev-login" class="btn-accent">DEV LOGIN</a>
@@ -111,7 +118,9 @@
 					{#if isLocal}
 						<a href="/dev-login" class="btn-outline">SWITCH USER</a>
 					{:else}
-						<button onclick={handleLogout} class="btn-outline">SIGN OUT</button>
+						<form method="POST" action="/api/auth/logout" use:enhance={handleLogoutEnhance}>
+							<button type="submit" class="btn-outline" onclick={closeMobileMenu}>SIGN OUT</button>
+						</form>
 					{/if}
 				{:else if isLocal}
 					<a href="/dev-login" onclick={closeMobileMenu} class="btn-accent">DEV LOGIN</a>

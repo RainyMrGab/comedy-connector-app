@@ -22,6 +22,7 @@
 					{/each}
 				</select>
 			</div>
+			<input type="hidden" name="returnTo" value={data.returnTo} />
 			<button type="submit" class="btn-accent">SIGN IN AS SELECTED USER</button>
 		</form>
 

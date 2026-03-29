@@ -6,8 +6,8 @@ import { eq } from 'drizzle-orm';
 import { getTeamBySlug, resolveTeamSlug } from '$server/teams';
 import { teamSchema } from '$utils/validation';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
-	if (!locals.user) redirect(302, '/');
+export const load: PageServerLoad = async ({ params, locals, url }) => {
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	const team = await getTeamBySlug(params.slug);
 	if (!team) error(404, 'Team not found');
 	if (team.status !== 'stub') redirect(302, `/teams/${params.slug}`);

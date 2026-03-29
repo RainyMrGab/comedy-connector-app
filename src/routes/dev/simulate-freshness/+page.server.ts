@@ -14,9 +14,9 @@ import {
 } from '$server/reminders';
 
 // Only available outside production
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (env.PUBLIC_DEPLOY_CONTEXT === 'production') redirect(302, '/');
-	if (!locals.user) redirect(302, '/');
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	return {};
 };
 
