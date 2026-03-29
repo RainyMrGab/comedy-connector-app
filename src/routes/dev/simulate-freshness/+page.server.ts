@@ -41,7 +41,7 @@ export const actions: Actions = {
 		const recipients = await getFreshnessRecipients(db, 0, dailyEmailLimit, inactiveSince);
 
 		const dryRun = !privateEnv.RESEND_API_KEY;
-		const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pittsburgh.comedyconnector.app';
+		const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 		const errors: string[] = [];
 		let sent = 0;
 

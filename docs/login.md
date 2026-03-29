@@ -57,9 +57,9 @@ Google is the recommended social sign-in option for non-technical audiences.
     - Create a new project (or use an existing one).
     - Go to **APIs & Services → Credentials → Create Credentials → OAuth client ID**.
     - Application type: **Web application**.
-    - Add your site URL to **Authorized JavaScript origins** (e.g. `https://pittsburgh.comedyconnector.app`).
+    - Add your site URL to **Authorized JavaScript origins** (e.g. `https://pgh.comedyconnector.app`).
     - Add `https://<your-netlify-site>.netlify.app/.netlify/identity/callback` to **Authorized redirect URIs**.
-        - Also add your custom domain: `https://pittsburgh.comedyconnector.app/.netlify/identity/callback`.
+        - Also add your custom domain: `https://pgh.comedyconnector.app/.netlify/identity/callback`.
     - Save — note the **Client ID** and **Client Secret**.
 
 2. **Enable Google in Netlify Identity**:
