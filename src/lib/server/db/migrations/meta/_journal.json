@@ -8,6 +8,20 @@
       "when": 1740261840000,
       "tag": "0001_add_fulltext_search",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743116400000,
+      "tag": "0002_freshness_overhaul",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774741436654,
+      "tag": "0003_marvelous_bill_hollister",
+      "breakpoints": true
     }
   ]
 }

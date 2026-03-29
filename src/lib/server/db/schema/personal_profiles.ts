@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, timestamp, boolean, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, uuid, timestamp, jsonb } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const personalProfiles = pgTable('personal_profiles', {
@@ -17,7 +17,6 @@ export const personalProfiles = pgTable('personal_profiles', {
 	lookingFor: text('looking_for'),
 	// Stored separately from Netlify Identity email so users can use a different contact email
 	contactEmail: text('contact_email'),
-	freshnessRemindersEnabled: boolean('freshness_reminders_enabled').notNull().default(true),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });

@@ -7,9 +7,11 @@
   NODE_VERSION = "22"
   PNPM_VERSION = "10"
 
-# 1st of each month at 9am EST (14:00 UTC)
+# Daily on the 1st–7th of each month at 10am EST (15:00 UTC).
+# Sends 50 emails/day across a 7-day window (350 users max).
+# See src/lib/config/reminders.ts for the rate-limit constants.
 [functions."freshness-reminder"]
-  schedule = "0 14 1 * *"
+  schedule = "0 15 1-7 * *"
 
 [[headers]]
   for = "/*"

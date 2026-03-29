@@ -83,34 +83,5 @@ export async function sendFeedback(params: FeedbackEmailParams): Promise<void> {
 	if (error) throw new Error(`Resend error: ${error.message}`);
 }
 
-export interface FreshnessReminderParams {
-	to: string;
-	name: string;
-	profileUrl: string;
-	siteUrl: string;
-}
-
-export async function sendFreshnessReminder(params: FreshnessReminderParams): Promise<void> {
-	const resend = getResend();
-	const { to, name, profileUrl, siteUrl } = params;
-
-	await resend.emails.send({
-		from: `Comedy Connector <noreply@${new URL(siteUrl).hostname}>`,
-		to,
-		subject: `Keep your Comedy Connector profile fresh!`,
-		html: `
-<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-  <h2 style="color: #7c3aed;">Hey ${name}!</h2>
-  <p>It's been a while — take a moment to make sure your Comedy Connector profile is up to date.</p>
-  <p>Updated profiles help the community find and connect with the right people.</p>
-  <a href="${profileUrl}" style="display:inline-block; background:#7c3aed; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; margin:16px 0;">
-    Update My Profile
-  </a>
-  <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
-    You're receiving this because you have freshness reminders enabled.
-    <a href="${profileUrl}/edit">Manage preferences</a>
-  </p>
-</div>`,
-		text: `Hey ${name}!\n\nIt's been a while — update your Comedy Connector profile to stay fresh:\n${profileUrl}\n\nTo stop these reminders, visit: ${profileUrl}/edit`
-	});
-}
+// Freshness reminder emails are now sent via src/lib/server/reminders.ts
+// and the netlify/functions/freshness-reminder.ts scheduled function.

@@ -61,10 +61,9 @@
 			<label for="lookingFor">LOOKING FOR</label>
 			<input id="lookingFor" name="lookingFor" type="text" value={form?.values?.lookingFor ?? ''} placeholder="e.g. A new bassist, someone strong in games..." />
 		</div>
-		<label class="checkbox-label">
-			<input id="freshnessReminders" name="freshnessRemindersEnabled" type="checkbox" value="true" checked />
-			<span>Send monthly reminders to keep team info fresh</span>
-		</label>
+		<p class="freshness-notice">
+			📬 <strong>Profile freshness reminders:</strong> Comedy Connector emails you once a month to help keep your team listing accurate. We won't use your email for spam or share it with third parties — these reminders exist solely to keep the community directory useful for everyone.
+		</p>
 		<div class="form-actions">
 			<button type="submit" class="btn-accent" disabled={saving}>{saving ? 'CREATING…' : 'CREATE TEAM'}</button>
 			<a href="/teams" class="btn-outline">CANCEL</a>
@@ -81,5 +80,6 @@
 	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 	.checks { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
+	.freshness-notice { font-size: 13px; color: var(--zine-muted); border: 1px solid var(--zine-border-color, #e5e7eb); border-left: 3px solid var(--zine-primary); padding: 12px 14px; margin: 0; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
 </style>
