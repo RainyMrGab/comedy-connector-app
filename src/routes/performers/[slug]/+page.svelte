@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { Sparkles, Mail, Instagram, Youtube, Globe, Users } from 'lucide-svelte';
+	import { Sparkles, Mail, Instagram, Globe, Users, Video, Youtube } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
@@ -15,7 +15,9 @@
 
 	const socialIcons: Record<string, typeof Mail> = {
 		instagram: Instagram,
-		youtube: Youtube,
+		tiktok: Video,
+		twitter: Globe,
+		bluesky: Globe,
 		website: Globe
 	};
 </script>

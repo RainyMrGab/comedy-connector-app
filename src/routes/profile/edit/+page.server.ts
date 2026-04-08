@@ -27,12 +27,12 @@ export const actions: Actions = {
 			training: String(formData.get('training') ?? ''),
 			lookingFor: String(formData.get('lookingFor') ?? ''),
 			contactEmail: String(formData.get('contactEmail') ?? ''),
+			photoUrl: String(formData.get('photoUrl') ?? ''),
 			socialLinks: {
 				instagram: String(formData.get('instagram') ?? ''),
 				tiktok: String(formData.get('tiktok') ?? ''),
-				facebook: String(formData.get('facebook') ?? ''),
 				twitter: String(formData.get('twitter') ?? ''),
-				youtube: String(formData.get('youtube') ?? ''),
+				bluesky: String(formData.get('bluesky') ?? ''),
 				website: String(formData.get('website') ?? '')
 			}
 		};
@@ -64,6 +64,7 @@ export const actions: Actions = {
 					training: data.training ?? null,
 					lookingFor: data.lookingFor ?? null,
 					contactEmail: data.contactEmail || null,
+					photoUrl: data.photoUrl || null,
 					socialLinks,
 					updatedAt: new Date()
 				})
@@ -77,6 +78,7 @@ export const actions: Actions = {
 				training: data.training ?? null,
 				lookingFor: data.lookingFor ?? null,
 				contactEmail: data.contactEmail || null,
+				photoUrl: data.photoUrl || null,
 				socialLinks
 			});
 		}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { UserCheck, Mail, Globe, Users } from 'lucide-svelte';
+	import { UserCheck, Mail, Globe, Users, Instagram, Video } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
@@ -12,6 +12,14 @@
 	let coachingRoles = $derived(data.coachingRoles);
 
 	let contactOpen = $state(false);
+
+	const socialIcons: Record<string, typeof Mail> = {
+		instagram: Instagram,
+		tiktok: Video,
+		twitter: Globe,
+		bluesky: Globe,
+		website: Globe
+	};
 </script>
 
 <svelte:head>
@@ -51,7 +59,10 @@
 						{#each Object.entries(profile.socialLinks) as [platform, url]}
 							{#if url}
 								<a href={url} target="_blank" rel="noopener noreferrer" class="social-link" aria-label={platform}>
-									<Globe size={12} />
+									{#if socialIcons[platform]}
+										{@const Icon = socialIcons[platform]}
+										<Icon size={12} />
+									{/if}
 									<span class="capitalize">{platform}</span>
 								</a>
 							{/if}

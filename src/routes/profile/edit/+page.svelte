@@ -50,13 +50,17 @@
 			<input id="lookingFor" name="lookingFor" type="text" value={form?.values?.lookingFor ?? profile?.lookingFor ?? ''} placeholder="e.g. Team to join, coach, book opener gigs..." />
 		</div>
 		<div class="form-field">
-			<label for="contactEmail">CONTACT EMAIL <small class="field-hint">(optional — shown to logged-in users)</small></label>
+			<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
+			<input id="photoUrl" name="photoUrl" type="url" value={form?.values?.photoUrl ?? profile?.photoUrl ?? ''} placeholder="https://..." />
+		</div>
+		<div class="form-field">
+			<label for="contactEmail">CONTACT EMAIL <small class="field-hint">(optional — used for in-app contact only, never shown publicly)</small></label>
 			<input id="contactEmail" name="contactEmail" type="email" value={form?.values?.contactEmail ?? profile?.contactEmail ?? ''} placeholder="Different from your login email if desired" />
 		</div>
 		<fieldset>
 			<legend>SOCIAL LINKS</legend>
 			<div class="social-grid">
-				{#each ['instagram', 'tiktok', 'youtube', 'facebook', 'twitter', 'website'] as platform}
+				{#each ['instagram', 'tiktok', 'twitter', 'bluesky', 'website'] as platform}
 					<div class="form-field">
 						<label for={platform}>{platform.toUpperCase()}</label>
 						<input id={platform} name={platform} type="url" value={profile?.socialLinks?.[platform] ?? ''} placeholder="https://..." />

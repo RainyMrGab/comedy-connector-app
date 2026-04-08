@@ -3,9 +3,8 @@ import { z } from 'zod';
 export const socialLinksSchema = z.object({
 	instagram: z.string().url().optional().or(z.literal('')),
 	tiktok: z.string().url().optional().or(z.literal('')),
-	facebook: z.string().url().optional().or(z.literal('')),
 	twitter: z.string().url().optional().or(z.literal('')),
-	youtube: z.string().url().optional().or(z.literal('')),
+	bluesky: z.string().url().optional().or(z.literal('')),
 	website: z.string().url().optional().or(z.literal(''))
 });
 
@@ -15,6 +14,7 @@ export const personalProfileSchema = z.object({
 	training: z.string().max(2000).optional(),
 	lookingFor: z.string().max(500).optional(),
 	contactEmail: z.string().email().optional().or(z.literal('')),
+	photoUrl: z.string().url().optional().or(z.literal('')),
 	socialLinks: socialLinksSchema.optional()
 });
 
