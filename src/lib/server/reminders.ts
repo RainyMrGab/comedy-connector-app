@@ -42,9 +42,9 @@ export interface FreshnessRecipient {
 		lookingFor: string | null;
 	};
 	performer: {
-		openToBookOpeners: boolean;
-		lookingForTeam: boolean;
-		lookingForCoach: boolean;
+		lookingForPracticeGroup: boolean;
+		lookingForSmallGroup: boolean;
+		lookingForIndieTeam: boolean;
 		lookingFor: string | null;
 		/** Names of teams the user is a current approved member of */
 		currentTeamNames: string[];
@@ -109,9 +109,9 @@ export async function getFreshnessRecipients(
 	const performerRows = await db
 		.select({
 			profileId: performerProfiles.profileId,
-			openToBookOpeners: performerProfiles.openToBookOpeners,
-			lookingForTeam: performerProfiles.lookingForTeam,
-			lookingForCoach: performerProfiles.lookingForCoach,
+			lookingForPracticeGroup: performerProfiles.lookingForPracticeGroup,
+			lookingForSmallGroup: performerProfiles.lookingForSmallGroup,
+			lookingForIndieTeam: performerProfiles.lookingForIndieTeam,
 			lookingFor: performerProfiles.lookingFor
 		})
 		.from(performerProfiles)
@@ -271,9 +271,9 @@ export async function getFreshnessRecipients(
 			},
 			performer: perf
 				? {
-						openToBookOpeners: perf.openToBookOpeners,
-						lookingForTeam: perf.lookingForTeam,
-						lookingForCoach: perf.lookingForCoach,
+						lookingForPracticeGroup: perf.lookingForPracticeGroup,
+						lookingForSmallGroup: perf.lookingForSmallGroup,
+						lookingForIndieTeam: perf.lookingForIndieTeam,
 						lookingFor: perf.lookingFor,
 						currentTeamNames: membershipsByProfile.get(row.profileId) ?? []
 					}
@@ -377,9 +377,9 @@ export function buildFreshnessEmailHtml(recipient: FreshnessRecipient, siteUrl: 
 	if (performer) {
 		html += sectionHeader('🎭', 'PERFORMER PROFILE', `${profileBase}/performer`);
 		html += `<p style="margin:6px 0; font-size:14px;"><span style="color:${MUTED}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Interest Flags</span><br>`;
-		html += flag('Open to book openers', performer.openToBookOpeners);
-		html += flag('Looking for team', performer.lookingForTeam);
-		html += flag('Looking for coach', performer.lookingForCoach);
+		html += flag('Looking for practice group', performer.lookingForPracticeGroup);
+		html += flag('Looking for small group partner', performer.lookingForSmallGroup);
+		html += flag('Looking for indie team', performer.lookingForIndieTeam);
 		html += `</p>`;
 		html += field('Looking For (notes)', val(performer.lookingFor));
 		if (performer.currentTeamNames.length > 0) {
@@ -463,9 +463,9 @@ export function buildFreshnessEmailText(recipient: FreshnessRecipient, siteUrl: 
 			``,
 			`── PERFORMER PROFILE ─────────────────`,
 			`Update: ${profileBase}/performer`,
-			`Open to book openers: ${performer.openToBookOpeners ? 'Yes' : 'No'}`,
-			`Looking for team: ${performer.lookingForTeam ? 'Yes' : 'No'}`,
-			`Looking for coach: ${performer.lookingForCoach ? 'Yes' : 'No'}`,
+			`Looking for practice group: ${performer.lookingForPracticeGroup ? 'Yes' : 'No'}`,
+			`Looking for small group partner: ${performer.lookingForSmallGroup ? 'Yes' : 'No'}`,
+			`Looking for indie team: ${performer.lookingForIndieTeam ? 'Yes' : 'No'}`,
 			`Looking For (notes): ${performer.lookingFor ?? 'not set'}`,
 			`Current teams: ${performer.currentTeamNames.join(', ') || 'none listed'}`
 		);

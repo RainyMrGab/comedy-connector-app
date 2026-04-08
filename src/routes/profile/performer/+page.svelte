@@ -53,16 +53,16 @@
 			<legend>I'M INTERESTED IN…</legend>
 			<div class="checks">
 				<label class="checkbox-label">
-					<input type="checkbox" name="openToBookOpeners" value="true" checked={performer?.openToBookOpeners ?? false} />
-					<span><strong>Book opener gigs</strong> — open for shows</span>
+					<input type="checkbox" name="lookingForPracticeGroup" value="true" checked={performer?.lookingForPracticeGroup ?? false} />
+					<span><strong>Joining a practice group</strong></span>
 				</label>
 				<label class="checkbox-label">
-					<input type="checkbox" name="lookingForTeam" value="true" checked={performer?.lookingForTeam ?? false} />
-					<span><strong>Looking for a team</strong> to join</span>
+					<input type="checkbox" name="lookingForSmallGroup" value="true" checked={performer?.lookingForSmallGroup ?? false} />
+					<span><strong>Small group partners</strong> (e.g. duo, trio)</span>
 				</label>
 				<label class="checkbox-label">
-					<input type="checkbox" name="lookingForCoach" value="true" checked={performer?.lookingForCoach ?? false} />
-					<span><strong>Looking for a coach</strong></span>
+					<input type="checkbox" name="lookingForIndieTeam" value="true" checked={performer?.lookingForIndieTeam ?? false} />
+					<span><strong>Joining an indie team</strong></span>
 				</label>
 			</div>
 		</fieldset>
@@ -73,18 +73,18 @@
 		</div>
 
 		<div class="form-field">
-			<p class="form-label" role="presentation">VIDEO HIGHLIGHTS <small class="field-hint">(up to 5 URLs)</small></p>
+			<p class="form-label" role="presentation">HIGHLIGHTS <small class="field-hint">(up to 5 links — video, photo, article, review…)</small></p>
 			<div class="video-list">
 				{#each videoUrls as url, i}
 					<div class="video-row">
-						<input type="url" name="videoHighlights" value={url} placeholder="https://youtube.com/watch?v=..." oninput={(e) => { videoUrls[i] = (e.target as HTMLInputElement).value; }} />
+						<input type="url" name="videoHighlights" value={url} placeholder="https://..." oninput={(e) => { videoUrls[i] = (e.target as HTMLInputElement).value; }} />
 						{#if videoUrls.length > 1}
-							<button type="button" class="btn-outline remove-video" onclick={() => removeVideo(i)} aria-label="Remove video">×</button>
+							<button type="button" class="btn-outline remove-video" onclick={() => removeVideo(i)} aria-label="Remove link">×</button>
 						{/if}
 					</div>
 				{/each}
 				{#if videoUrls.length < 5}
-					<button type="button" class="btn-outline add-btn" onclick={addVideo}>+ ADD VIDEO</button>
+					<button type="button" class="btn-outline add-btn" onclick={addVideo}>+ ADD LINK</button>
 				{/if}
 			</div>
 		</div>

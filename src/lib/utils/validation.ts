@@ -20,9 +20,9 @@ export const personalProfileSchema = z.object({
 
 export const performerProfileSchema = z.object({
 	videoHighlights: z.array(z.string().url()).max(5).optional(),
-	openToBookOpeners: z.boolean().optional(),
-	lookingForTeam: z.boolean().optional(),
-	lookingForCoach: z.boolean().optional(),
+	lookingForPracticeGroup: z.boolean().optional(),
+	lookingForSmallGroup: z.boolean().optional(),
+	lookingForIndieTeam: z.boolean().optional(),
 	lookingFor: z.string().max(500).optional()
 });
 

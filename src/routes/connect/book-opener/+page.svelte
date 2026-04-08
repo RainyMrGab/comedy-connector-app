@@ -9,8 +9,7 @@
 	let { data }: { data: PageData } = $props();
 
 	let query = $state('');
-	// openToBookOpeners is locked — this page always shows only book openers
-	const filters: SearchFilters = { openToBookOpeners: true };
+	const filters: SearchFilters = {};
 </script>
 
 <svelte:head>

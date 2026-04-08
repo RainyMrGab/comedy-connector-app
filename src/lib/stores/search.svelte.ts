@@ -2,9 +2,9 @@ export type SearchMode = 'performers' | 'coaches' | 'teams';
 
 export interface SearchFilters {
 	// Performer filters
-	openToBookOpeners?: boolean;
-	lookingForTeam?: boolean;
-	lookingForCoach?: boolean;
+	lookingForPracticeGroup?: boolean;
+	lookingForSmallGroup?: boolean;
+	lookingForIndieTeam?: boolean;
 	// Coach filters
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;

@@ -10,9 +10,9 @@ export interface SearchResult {
 	bio: string | null;
 	rank: number;
 	// Flags (performer)
-	openToBookOpeners?: boolean;
-	lookingForTeam?: boolean;
-	lookingForCoach?: boolean;
+	lookingForPracticeGroup?: boolean;
+	lookingForSmallGroup?: boolean;
+	lookingForIndieTeam?: boolean;
 	// Flags (coach)
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;
@@ -25,9 +25,9 @@ export interface SearchResult {
 }
 
 export interface SearchFilters {
-	openToBookOpeners?: boolean;
-	lookingForTeam?: boolean;
-	lookingForCoach?: boolean;
+	lookingForPracticeGroup?: boolean;
+	lookingForSmallGroup?: boolean;
+	lookingForIndieTeam?: boolean;
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;
 	availableForWorkshops?: boolean;
@@ -56,9 +56,9 @@ export async function searchPerformers(
 
 	// Build filter conditions for performerProfiles
 	const filterConds = [];
-	if (filters.openToBookOpeners) filterConds.push(eq(performerProfiles.openToBookOpeners, true));
-	if (filters.lookingForTeam) filterConds.push(eq(performerProfiles.lookingForTeam, true));
-	if (filters.lookingForCoach) filterConds.push(eq(performerProfiles.lookingForCoach, true));
+	if (filters.lookingForPracticeGroup) filterConds.push(eq(performerProfiles.lookingForPracticeGroup, true));
+	if (filters.lookingForSmallGroup) filterConds.push(eq(performerProfiles.lookingForSmallGroup, true));
+	if (filters.lookingForIndieTeam) filterConds.push(eq(performerProfiles.lookingForIndieTeam, true));
 
 	const rows = await db
 		.select({
@@ -67,9 +67,9 @@ export async function searchPerformers(
 			slug: personalProfiles.slug,
 			photoUrl: personalProfiles.photoUrl,
 			bio: personalProfiles.bio,
-			openToBookOpeners: performerProfiles.openToBookOpeners,
-			lookingForTeam: performerProfiles.lookingForTeam,
-			lookingForCoach: performerProfiles.lookingForCoach,
+			lookingForPracticeGroup: performerProfiles.lookingForPracticeGroup,
+			lookingForSmallGroup: performerProfiles.lookingForSmallGroup,
+			lookingForIndieTeam: performerProfiles.lookingForIndieTeam,
 			rank: tsQuery
 				? sql<number>`ts_rank(${personalProfiles}.search_vector, ${tsQuery})`
 				: sql<number>`0`
