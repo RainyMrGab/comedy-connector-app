@@ -14,8 +14,8 @@
 	// Combobox state for performer search
 	let memberSearch = $state('');
 	let coachSearch = $state('');
-	let memberResults = $state<Array<{ id: string; name: string; slug: string }>>([]);
-	let coachResults = $state<Array<{ id: string; name: string; slug: string }>>([]);
+	let memberResults = $state<Array<{ id: string; name: string; slug: string; photoUrl: string | null }>>([]);
+	let coachResults = $state<Array<{ id: string; name: string; slug: string; photoUrl: string | null }>>([]);
 	let selectedMember = $state<{ id: string; name: string } | null>(null);
 	let selectedCoach = $state<{ id: string; name: string } | null>(null);
 
@@ -62,6 +62,10 @@
 				<label for="description">DESCRIPTION</label>
 				<textarea id="description" name="description" rows="4">{team.description ?? ''}</textarea>
 			</div>
+			<div class="form-field">
+				<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
+				<input id="photoUrl" name="photoUrl" type="url" value={team.photoUrl ?? ''} placeholder="https://..." />
+			</div>
 			<div class="two-col">
 				<div class="form-field">
 					<label for="form">FORM / STYLE</label>
@@ -75,7 +79,7 @@
 			<fieldset>
 				<legend>TEAM STATUS</legend>
 				<div class="checks">
-					{#each [['isPracticeGroup', 'Practice Group'], ['openToNewMembers', 'Open to Members'], ['openToBookOpeners', 'Open to Book Openers'], ['seekingCoach', 'Seeking Coach']] as [name, label]}
+					{#each [['isPracticeGroup', 'Practice group'], ['openToNewMembers', 'Open to members'], ['openToBookOpeners', 'Available to book as opener'], ['seekingCoach', 'Seeking a coach']] as [name, label]}
 						<label class="checkbox-label">
 							<input type="checkbox" {name} value="true" checked={(team as any)[name]} />
 							<span>{label}</span>
@@ -85,7 +89,7 @@
 			</fieldset>
 			<div class="form-field">
 				<label for="lookingFor">LOOKING FOR</label>
-				<input id="lookingFor" name="lookingFor" type="text" value={team.lookingFor ?? ''} />
+				<input id="lookingFor" name="lookingFor" type="text" value={team.lookingFor ?? ''} placeholder="e.g. two strong character improvisers" />
 			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={savingTeam}>
@@ -153,7 +157,14 @@
 									memberSearch = result.name;
 									memberResults = [];
 								}}
-							>{result.name}</button>
+							>
+								{#if result.photoUrl}
+									<img src={result.photoUrl} alt="" class="combo-avatar" />
+								{:else}
+									<div class="combo-avatar combo-avatar-placeholder">{result.name[0]?.toUpperCase() ?? '?'}</div>
+								{/if}
+								{result.name}
+							</button>
 						{/each}
 					</div>
 				{/if}
@@ -230,7 +241,14 @@
 									coachSearch = result.name;
 									coachResults = [];
 								}}
-							>{result.name}</button>
+							>
+								{#if result.photoUrl}
+									<img src={result.photoUrl} alt="" class="combo-avatar" />
+								{:else}
+									<div class="combo-avatar combo-avatar-placeholder">{result.name[0]?.toUpperCase() ?? '?'}</div>
+								{/if}
+								{result.name}
+							</button>
 						{/each}
 					</div>
 				{/if}
@@ -270,8 +288,10 @@
 	.subsection-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); margin-bottom: 16px; }
 	.combo-wrap { position: relative; }
 	.combo-dropdown { position: absolute; z-index: 10; width: 100%; background: var(--zine-bg); border: var(--zine-border); border-top: none; box-shadow: var(--zine-shadow); }
-	.combo-option { display: block; width: 100%; text-align: left; padding: 8px 12px; font-family: var(--font-body); font-size: 13px; background: transparent; border: none; cursor: pointer; color: var(--zine-primary); }
+	.combo-option { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 12px; font-family: var(--font-body); font-size: 13px; background: transparent; border: none; cursor: pointer; color: var(--zine-primary); }
 	.combo-option:hover { background: var(--zine-surface); }
+	.combo-avatar { width: 28px; height: 28px; object-fit: cover; border-radius: 0; border: 1px solid var(--zine-primary); flex-shrink: 0; }
+	.combo-avatar-placeholder { display: flex; align-items: center; justify-content: center; background: var(--zine-primary); color: var(--zine-bg); font-size: 11px; font-weight: 700; }
 	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
 </style>

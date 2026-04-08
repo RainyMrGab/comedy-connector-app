@@ -37,6 +37,7 @@ export const coachProfileSchema = z.object({
 export const teamSchema = z.object({
 	name: z.string().min(2, 'Team name must be at least 2 characters').max(100),
 	description: z.string().max(2000).optional(),
+	photoUrl: z.string().url().optional().or(z.literal('')),
 	videoUrl: z.string().url().optional().or(z.literal('')),
 	form: z.string().max(100).optional(),
 	isPracticeGroup: z.boolean().optional(),

@@ -63,6 +63,7 @@ export const actions: Actions = {
 		const raw = {
 			name: team.name, // name locked after creation
 			description: String(formData.get('description') ?? ''),
+			photoUrl: String(formData.get('photoUrl') ?? ''),
 			videoUrl: String(formData.get('videoUrl') ?? ''),
 			form: String(formData.get('form') ?? ''),
 			isPracticeGroup: formData.get('isPracticeGroup') === 'true',
