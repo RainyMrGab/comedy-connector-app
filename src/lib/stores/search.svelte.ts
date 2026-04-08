@@ -8,7 +8,7 @@ export interface SearchFilters {
 	// Coach filters
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;
-	availableForWorkshops?: boolean;
+	availableForPracticeGroup?: boolean;
 	// Team filters
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;

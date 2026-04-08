@@ -53,7 +53,7 @@ export interface FreshnessRecipient {
 		availability: string | null;
 		availableForPrivate: boolean;
 		availableForTeams: boolean;
-		availableForWorkshops: boolean;
+		availableForPracticeGroup: boolean;
 	} | null;
 	/** Active teams where this user is the primary contact */
 	ownedTeams: Array<{
@@ -126,7 +126,7 @@ export async function getFreshnessRecipients(
 			availability: coachProfiles.availability,
 			availableForPrivate: coachProfiles.availableForPrivate,
 			availableForTeams: coachProfiles.availableForTeams,
-			availableForWorkshops: coachProfiles.availableForWorkshops
+			availableForPracticeGroup: coachProfiles.availableForPracticeGroup
 		})
 		.from(coachProfiles)
 		.where(inArray(coachProfiles.profileId, profileIds));
@@ -283,7 +283,7 @@ export async function getFreshnessRecipients(
 						availability: coach.availability,
 						availableForPrivate: coach.availableForPrivate,
 						availableForTeams: coach.availableForTeams,
-						availableForWorkshops: coach.availableForWorkshops
+						availableForPracticeGroup: coach.availableForPracticeGroup
 					}
 				: null,
 			ownedTeams: owned.map((t) => ({
@@ -399,7 +399,7 @@ export function buildFreshnessEmailHtml(recipient: FreshnessRecipient, siteUrl: 
 		html += `<p style="margin:6px 0; font-size:14px;"><span style="color:${MUTED}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Availability Flags</span><br>`;
 		html += flag('Available for private sessions', coach.availableForPrivate);
 		html += flag('Available for teams', coach.availableForTeams);
-		html += flag('Available for workshops', coach.availableForWorkshops);
+		html += flag('Coaching a practice group', coach.availableForPracticeGroup);
 		html += `</p>`;
 		html += field('Availability (notes)', val(coach.availability));
 		html += `</div>`;
@@ -478,7 +478,7 @@ export function buildFreshnessEmailText(recipient: FreshnessRecipient, siteUrl: 
 			`Update: ${profileBase}/coach`,
 			`Available for private sessions: ${coach.availableForPrivate ? 'Yes' : 'No'}`,
 			`Available for teams: ${coach.availableForTeams ? 'Yes' : 'No'}`,
-			`Available for workshops: ${coach.availableForWorkshops ? 'Yes' : 'No'}`,
+			`Coaching a practice group: ${coach.availableForPracticeGroup ? 'Yes' : 'No'}`,
 			`Availability (notes): ${coach.availability ?? 'not set'}`
 		);
 	}

@@ -30,7 +30,7 @@ export const coachProfileSchema = z.object({
 	coachingBio: z.string().max(2000).optional(),
 	availableForPrivate: z.boolean().optional(),
 	availableForTeams: z.boolean().optional(),
-	availableForWorkshops: z.boolean().optional(),
+	availableForPracticeGroup: z.boolean().optional(),
 	availability: z.string().max(500).optional()
 });
 

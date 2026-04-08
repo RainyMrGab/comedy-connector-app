@@ -86,7 +86,7 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		coachingBio: 'Long-form improv specialist. Available for private sessions and team coaching.',
 		availableForPrivate: true,
 		availableForTeams: true,
-		availableForWorkshops: false,
+		availableForPracticeGroup: false,
 		availability: 'Weekends preferred'
 	});
 

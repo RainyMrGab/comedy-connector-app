@@ -16,7 +16,7 @@ export interface SearchResult {
 	// Flags (coach)
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;
-	availableForWorkshops?: boolean;
+	availableForPracticeGroup?: boolean;
 	// Flags (team)
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;
@@ -30,7 +30,7 @@ export interface SearchFilters {
 	lookingForIndieTeam?: boolean;
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;
-	availableForWorkshops?: boolean;
+	availableForPracticeGroup?: boolean;
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;
 }
@@ -112,7 +112,7 @@ export async function searchCoaches(
 	const filterConds = [];
 	if (filters.availableForPrivate) filterConds.push(eq(coachProfiles.availableForPrivate, true));
 	if (filters.availableForTeams) filterConds.push(eq(coachProfiles.availableForTeams, true));
-	if (filters.availableForWorkshops) filterConds.push(eq(coachProfiles.availableForWorkshops, true));
+	if (filters.availableForPracticeGroup) filterConds.push(eq(coachProfiles.availableForPracticeGroup, true));
 
 	const rows = await db
 		.select({
@@ -123,7 +123,7 @@ export async function searchCoaches(
 			bio: coachProfiles.coachingBio,
 			availableForPrivate: coachProfiles.availableForPrivate,
 			availableForTeams: coachProfiles.availableForTeams,
-			availableForWorkshops: coachProfiles.availableForWorkshops,
+			availableForPracticeGroup: coachProfiles.availableForPracticeGroup,
 			rank: tsQuery
 				? sql<number>`ts_rank(${coachProfiles}.search_vector, ${tsQuery})`
 				: sql<number>`0`

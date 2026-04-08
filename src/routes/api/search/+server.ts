@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (url.searchParams.get('lookingForIndieTeam') === 'true') filters.lookingForIndieTeam = true;
 	if (url.searchParams.get('availableForPrivate') === 'true') filters.availableForPrivate = true;
 	if (url.searchParams.get('availableForTeams') === 'true') filters.availableForTeams = true;
-	if (url.searchParams.get('availableForWorkshops') === 'true') filters.availableForWorkshops = true;
+	if (url.searchParams.get('availableForPracticeGroup') === 'true') filters.availableForPracticeGroup = true;
 	if (url.searchParams.get('openToNewMembers') === 'true') filters.openToNewMembers = true;
 	if (url.searchParams.get('seekingCoach') === 'true') filters.seekingCoach = true;
 

@@ -23,9 +23,9 @@
 	</div>
 {:else if type === 'coaches'}
 	<div class="filter-row">
-		<button type="button" onclick={() => toggle('availableForPrivate')} class={filters.availableForPrivate ? 'filter-chip active' : 'filter-chip'}>Private Sessions</button>
+		<button type="button" onclick={() => toggle('availableForPrivate')} class={filters.availableForPrivate ? 'filter-chip active' : 'filter-chip'}>Sub Coaching</button>
+		<button type="button" onclick={() => toggle('availableForPracticeGroup')} class={filters.availableForPracticeGroup ? 'filter-chip active' : 'filter-chip'}>Practice Group</button>
 		<button type="button" onclick={() => toggle('availableForTeams')} class={filters.availableForTeams ? 'filter-chip active' : 'filter-chip'}>Team Coaching</button>
-		<button type="button" onclick={() => toggle('availableForWorkshops')} class={filters.availableForWorkshops ? 'filter-chip active' : 'filter-chip'}>Workshops</button>
 	</div>
 {:else if type === 'teams'}
 	<div class="filter-row">

@@ -32,7 +32,7 @@
 		if (f.lookingForIndieTeam) params.set('lookingForIndieTeam', 'true');
 		if (f.availableForPrivate) params.set('availableForPrivate', 'true');
 		if (f.availableForTeams) params.set('availableForTeams', 'true');
-		if (f.availableForWorkshops) params.set('availableForWorkshops', 'true');
+		if (f.availableForPracticeGroup) params.set('availableForPracticeGroup', 'true');
 		if (f.openToNewMembers) params.set('openToNewMembers', 'true');
 		if (f.seekingCoach) params.set('seekingCoach', 'true');
 		return params;
@@ -56,7 +56,7 @@
 			lookingForIndieTeam: filters.lookingForIndieTeam,
 			availableForPrivate: filters.availableForPrivate,
 			availableForTeams: filters.availableForTeams,
-			availableForWorkshops: filters.availableForWorkshops,
+			availableForPracticeGroup: filters.availableForPracticeGroup,
 			openToNewMembers: filters.openToNewMembers,
 			seekingCoach: filters.seekingCoach
 		};

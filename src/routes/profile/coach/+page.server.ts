@@ -33,7 +33,7 @@ export const actions: Actions = {
 			coachingBio: String(formData.get('coachingBio') ?? ''),
 			availableForPrivate: formData.get('availableForPrivate') === 'true',
 			availableForTeams: formData.get('availableForTeams') === 'true',
-			availableForWorkshops: formData.get('availableForWorkshops') === 'true',
+			availableForPracticeGroup: formData.get('availableForPracticeGroup') === 'true',
 			availability: String(formData.get('availability') ?? '')
 		};
 
