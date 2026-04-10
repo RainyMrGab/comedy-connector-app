@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	save: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
 		const profile = await getProfileByUserId(locals.user.id);
