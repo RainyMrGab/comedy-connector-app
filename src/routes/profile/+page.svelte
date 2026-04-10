@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Pencil, Sparkles, UserCheck } from 'lucide-svelte';
+	import { Pencil, Sparkles, UserCheck, Globe } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
@@ -32,6 +32,18 @@
 						<span class="zine-tag tag-muted"><UserCheck size={10} /> COACH</span>
 					{/if}
 				</div>
+				{#if profile.socialLinks && Object.keys(profile.socialLinks).length > 0}
+					<div class="social-row">
+						{#each Object.entries(profile.socialLinks) as [platform, url]}
+							{#if url}
+								<a href={url} target="_blank" rel="noopener noreferrer" class="social-link" aria-label={platform}>
+									<Globe size={11} />
+									<span>{platform}</span>
+								</a>
+							{/if}
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</div>
 		<a href="/profile/edit" class="btn-outline">
@@ -87,6 +99,9 @@
 	.name-block { flex: 1; }
 	.profile-name { font-family: var(--font-heading); font-size: 28px; color: var(--zine-primary); margin-bottom: 8px; }
 	.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+	.social-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+	.social-link { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--zine-primary); text-decoration: none; border: 1px solid var(--zine-primary); padding: 2px 6px; opacity: 0.6; }
+	.social-link:hover { opacity: 1; }
 	.zine-tag { font-family: var(--font-body); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--zine-primary); color: var(--zine-bg); padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
 	.tag-accent { background: var(--zine-muted); color: #fff; }
 	.tag-muted { background: var(--zine-muted); color: #fff; }

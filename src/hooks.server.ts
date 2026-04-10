@@ -1,7 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { resolveUser } from '$server/auth';
-import { db, IS_LOCAL, ensureLocalDbReady } from '$server/db';
+import { db, IS_LOCAL, ensureDatabaseReady } from '$server/db';
 import { users } from '$server/db/schema';
 
 /**
@@ -19,8 +19,9 @@ function touchLastSeen(userId: string, lastSeenAt: Date | null): void {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// Initialize local PGLite DB on first request (no-op in production)
-	await ensureLocalDbReady();
+	// Initialize database on first request (PGLite locally, Neon in production)
+	// This ensures proper synchronization to prevent race conditions
+	await ensureDatabaseReady();
 
 	if (IS_LOCAL) {
 		// Local dev: auth via dev_session cookie set by /dev-login
@@ -32,15 +33,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 		} else {
 			event.locals.user = null;
 		}
-		return resolve(event);
+	} else {
+		// Production: resolve user from Netlify Identity JWT
+		// (nf_jwt cookie set by the Identity widget, or Authorization: Bearer header)
+		const cookieToken = event.cookies.get('nf_jwt');
+		const authHeader = event.request.headers.get('authorization');
+		event.locals.user = await resolveUser(cookieToken, authHeader);
+		if (event.locals.user) touchLastSeen(event.locals.user.id, event.locals.user.lastSeenAt ?? null);
 	}
 
-	// Production: resolve user from Netlify Identity JWT
-	// (nf_jwt cookie set by the Identity widget, or Authorization: Bearer header)
-	const cookieToken = event.cookies.get('nf_jwt');
-	const authHeader = event.request.headers.get('authorization');
-	event.locals.user = await resolveUser(cookieToken, authHeader);
-	if (event.locals.user) touchLastSeen(event.locals.user.id, event.locals.user.lastSeenAt ?? null);
-
-	return resolve(event);
+	try {
+		return await resolve(event);
+	} catch (err) {
+		console.error(`Error handling ${event.request.method} ${event.url.pathname}:`, err);
+		throw err;
+	}
 };

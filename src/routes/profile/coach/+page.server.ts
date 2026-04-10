@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	save: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
 		const profile = await getProfileByUserId(locals.user.id);
@@ -33,7 +33,7 @@ export const actions: Actions = {
 			coachingBio: String(formData.get('coachingBio') ?? ''),
 			availableForPrivate: formData.get('availableForPrivate') === 'true',
 			availableForTeams: formData.get('availableForTeams') === 'true',
-			availableForWorkshops: formData.get('availableForWorkshops') === 'true',
+			availableForPracticeGroup: formData.get('availableForPracticeGroup') === 'true',
 			availability: String(formData.get('availability') ?? '')
 		};
 

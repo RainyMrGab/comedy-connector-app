@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { UserCheck, Mail, Globe, Users } from 'lucide-svelte';
+	import { UserCheck, Mail, Globe, Users, Instagram, Video, Copy, Check } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
@@ -12,6 +12,23 @@
 	let coachingRoles = $derived(data.coachingRoles);
 
 	let contactOpen = $state(false);
+	let copied = $state(false);
+
+	const profileUrl = $derived(`${cityConfig.siteUrl}/coaches/${profile.slug}`);
+
+	function copyProfileUrl() {
+		navigator.clipboard.writeText(profileUrl);
+		copied = true;
+		setTimeout(() => { copied = false; }, 2000);
+	}
+
+	const socialIcons: Record<string, typeof Mail> = {
+		instagram: Instagram,
+		tiktok: Video,
+		twitter: Globe,
+		bluesky: Globe,
+		website: Globe
+	};
 </script>
 
 <svelte:head>
@@ -34,13 +51,13 @@
 				<div class="tag-row">
 					<span class="zine-tag tag-accent"><UserCheck size={10} /> COACH</span>
 					{#if coach.availableForPrivate}
-						<span class="zine-tag">PRIVATE SESSIONS</span>
+						<span class="zine-tag">SUB COACHING</span>
+					{/if}
+					{#if coach.availableForPracticeGroup}
+						<span class="zine-tag">PRACTICE GROUP</span>
 					{/if}
 					{#if coach.availableForTeams}
 						<span class="zine-tag">TEAM COACHING</span>
-					{/if}
-					{#if coach.availableForWorkshops}
-						<span class="zine-tag">WORKSHOPS</span>
 					{/if}
 				</div>
 				{#if coach.availability}
@@ -51,7 +68,10 @@
 						{#each Object.entries(profile.socialLinks) as [platform, url]}
 							{#if url}
 								<a href={url} target="_blank" rel="noopener noreferrer" class="social-link" aria-label={platform}>
-									<Globe size={12} />
+									{#if socialIcons[platform]}
+										{@const Icon = socialIcons[platform]}
+										<Icon size={12} />
+									{/if}
 									<span class="capitalize">{platform}</span>
 								</a>
 							{/if}
@@ -79,6 +99,17 @@
 		recipientType="personal_profile"
 		recipientName={profile.name}
 	/>
+
+	<div class="profile-url-row">
+		<span class="profile-url-text">{profileUrl}</span>
+		<button class="btn-copy" onclick={copyProfileUrl} aria-label="Copy profile URL">
+			{#if copied}
+				<Check size={13} /> Copied!
+			{:else}
+				<Copy size={13} /> Copy link
+			{/if}
+		</button>
+	</div>
 
 	{#if coach.coachingBio}
 		<section class="detail-section">
@@ -194,6 +225,38 @@
 	.social-link:hover { opacity: 1; color: var(--zine-muted); border-color: var(--zine-muted); }
 
 	.header-actions { flex-shrink: 0; }
+
+	.profile-url-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 24px;
+		padding: 8px 12px;
+		background: var(--zine-surface);
+		border: var(--zine-border);
+		flex-wrap: wrap;
+	}
+
+	.profile-url-text { font-size: 11px; color: var(--zine-muted); word-break: break-all; flex: 1; }
+
+	.btn-copy {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--zine-primary);
+		border: 1px solid var(--zine-primary);
+		background: transparent;
+		padding: 4px 10px;
+		cursor: pointer;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.btn-copy:hover { background: var(--zine-primary); color: var(--zine-bg); }
 
 	.detail-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--zine-surface); }
 

@@ -3,9 +3,8 @@ import { z } from 'zod';
 export const socialLinksSchema = z.object({
 	instagram: z.string().url().optional().or(z.literal('')),
 	tiktok: z.string().url().optional().or(z.literal('')),
-	facebook: z.string().url().optional().or(z.literal('')),
 	twitter: z.string().url().optional().or(z.literal('')),
-	youtube: z.string().url().optional().or(z.literal('')),
+	bluesky: z.string().url().optional().or(z.literal('')),
 	website: z.string().url().optional().or(z.literal(''))
 });
 
@@ -15,14 +14,15 @@ export const personalProfileSchema = z.object({
 	training: z.string().max(2000).optional(),
 	lookingFor: z.string().max(500).optional(),
 	contactEmail: z.string().email().optional().or(z.literal('')),
+	photoUrl: z.string().url().optional().or(z.literal('')),
 	socialLinks: socialLinksSchema.optional()
 });
 
 export const performerProfileSchema = z.object({
 	videoHighlights: z.array(z.string().url()).max(5).optional(),
-	openToBookOpeners: z.boolean().optional(),
-	lookingForTeam: z.boolean().optional(),
-	lookingForCoach: z.boolean().optional(),
+	lookingForPracticeGroup: z.boolean().optional(),
+	lookingForSmallGroup: z.boolean().optional(),
+	lookingForIndieTeam: z.boolean().optional(),
 	lookingFor: z.string().max(500).optional()
 });
 
@@ -30,13 +30,14 @@ export const coachProfileSchema = z.object({
 	coachingBio: z.string().max(2000).optional(),
 	availableForPrivate: z.boolean().optional(),
 	availableForTeams: z.boolean().optional(),
-	availableForWorkshops: z.boolean().optional(),
+	availableForPracticeGroup: z.boolean().optional(),
 	availability: z.string().max(500).optional()
 });
 
 export const teamSchema = z.object({
 	name: z.string().min(2, 'Team name must be at least 2 characters').max(100),
 	description: z.string().max(2000).optional(),
+	photoUrl: z.string().url().optional().or(z.literal('')),
 	videoUrl: z.string().url().optional().or(z.literal('')),
 	form: z.string().max(100).optional(),
 	isPracticeGroup: z.boolean().optional(),

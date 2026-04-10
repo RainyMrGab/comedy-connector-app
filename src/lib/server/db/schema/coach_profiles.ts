@@ -12,7 +12,7 @@ export const coachProfiles = pgTable('coach_profiles', {
 	// Interest flags
 	availableForPrivate: boolean('available_for_private').notNull().default(false),
 	availableForTeams: boolean('available_for_teams').notNull().default(false),
-	availableForWorkshops: boolean('available_for_workshops').notNull().default(false),
+	availableForPracticeGroup: boolean('available_for_practice_group').notNull().default(false),
 	availability: text('availability'),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()

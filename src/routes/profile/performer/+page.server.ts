@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	save: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
 		const profile = await getProfileByUserId(locals.user.id);
@@ -36,9 +36,9 @@ export const actions: Actions = {
 
 		const raw = {
 			videoHighlights,
-			openToBookOpeners: formData.get('openToBookOpeners') === 'true',
-			lookingForTeam: formData.get('lookingForTeam') === 'true',
-			lookingForCoach: formData.get('lookingForCoach') === 'true',
+			lookingForPracticeGroup: formData.get('lookingForPracticeGroup') === 'true',
+			lookingForSmallGroup: formData.get('lookingForSmallGroup') === 'true',
+			lookingForIndieTeam: formData.get('lookingForIndieTeam') === 'true',
 			lookingFor: String(formData.get('lookingFor') ?? '')
 		};
 

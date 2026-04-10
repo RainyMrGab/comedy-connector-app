@@ -51,7 +51,7 @@
 		<fieldset>
 			<legend>TEAM STATUS</legend>
 			<div class="checks">
-				<label class="checkbox-label"><input type="checkbox" name="isPracticeGroup" value="true" /><span>Practice group (not a performing team)</span></label>
+				<label class="checkbox-label"><input type="checkbox" name="isPracticeGroup" value="true" /><span>Practice group</span></label>
 				<label class="checkbox-label"><input type="checkbox" name="openToNewMembers" value="true" /><span>Open to new members</span></label>
 				<label class="checkbox-label"><input type="checkbox" name="openToBookOpeners" value="true" /><span>Available to book as opener</span></label>
 				<label class="checkbox-label"><input type="checkbox" name="seekingCoach" value="true" /><span>Seeking a coach</span></label>
@@ -78,7 +78,7 @@
 	.field-note { font-size: 11px; opacity: 0.6; margin-top: 4px; }
 	.zine-form { display: flex; flex-direction: column; gap: 24px; }
 	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-	.checks { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+	.checks { display: flex; flex-direction: column; gap: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
 	.freshness-notice { font-size: 13px; color: var(--zine-muted); border: 1px solid var(--zine-border-color, #e5e7eb); border-left: 3px solid var(--zine-primary); padding: 12px 14px; margin: 0; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }

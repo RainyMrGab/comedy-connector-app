@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { Users, UserCheck, Mail, Pencil, Video } from 'lucide-svelte';
+	import { Users, UserCheck, Mail, Pencil, Video, Globe } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
@@ -13,6 +13,14 @@
 	let isTeamMember = $derived(data.isTeamMember);
 
 	let contactOpen = $state(false);
+
+	function getYoutubeEmbedUrl(url: string): string | null {
+		const watchMatch = url.match(/youtube\.com\/watch\?v=([\w-]+)/);
+		if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+		const shortMatch = url.match(/youtu\.be\/([\w-]+)/);
+		if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+		return null;
+	}
 </script>
 
 <svelte:head>
@@ -110,11 +118,24 @@
 	{/if}
 
 	{#if team.videoUrl}
+		{@const embedUrl = getYoutubeEmbedUrl(team.videoUrl)}
 		<section class="detail-section">
 			<h2 class="section-label">VIDEO</h2>
-			<a href={team.videoUrl} target="_blank" rel="noopener noreferrer" class="video-link">
-				<Video size={14} /> Watch highlight video
-			</a>
+			{#if embedUrl}
+				<div class="embed-wrap">
+					<iframe
+						src={embedUrl}
+						title="Team highlight video"
+						frameborder="0"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+						allowfullscreen
+					></iframe>
+				</div>
+			{:else}
+				<a href={team.videoUrl} target="_blank" rel="noopener noreferrer" class="video-link">
+					<Globe size={14} /> Watch highlight video
+				</a>
+			{/if}
 		</section>
 	{/if}
 
@@ -284,6 +305,8 @@
 
 	.video-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--zine-muted); text-decoration: none; }
 	.video-link:hover { color: var(--zine-accent); }
+	.embed-wrap { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
+	.embed-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: var(--zine-border); }
 
 	/* MEMBERS */
 	.member-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }

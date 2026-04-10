@@ -22,12 +22,12 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 
 	const filters: SearchFilters = {};
-	if (url.searchParams.get('openToBookOpeners') === 'true') filters.openToBookOpeners = true;
-	if (url.searchParams.get('lookingForTeam') === 'true') filters.lookingForTeam = true;
-	if (url.searchParams.get('lookingForCoach') === 'true') filters.lookingForCoach = true;
+	if (url.searchParams.get('lookingForPracticeGroup') === 'true') filters.lookingForPracticeGroup = true;
+	if (url.searchParams.get('lookingForSmallGroup') === 'true') filters.lookingForSmallGroup = true;
+	if (url.searchParams.get('lookingForIndieTeam') === 'true') filters.lookingForIndieTeam = true;
 	if (url.searchParams.get('availableForPrivate') === 'true') filters.availableForPrivate = true;
 	if (url.searchParams.get('availableForTeams') === 'true') filters.availableForTeams = true;
-	if (url.searchParams.get('availableForWorkshops') === 'true') filters.availableForWorkshops = true;
+	if (url.searchParams.get('availableForPracticeGroup') === 'true') filters.availableForPracticeGroup = true;
 	if (url.searchParams.get('openToNewMembers') === 'true') filters.openToNewMembers = true;
 	if (url.searchParams.get('seekingCoach') === 'true') filters.seekingCoach = true;
 

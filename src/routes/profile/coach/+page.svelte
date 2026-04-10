@@ -28,6 +28,7 @@
 
 	<form
 		method="POST"
+		action="?/save"
 		use:enhance={() => {
 			saving = true;
 			return async ({ update }) => {
@@ -43,25 +44,25 @@
 		</div>
 
 		<fieldset>
-			<legend>AVAILABLE FOR…</legend>
+			<legend>INTERESTED IN…</legend>
 			<div class="checks">
 				<label class="checkbox-label">
 					<input type="checkbox" name="availableForPrivate" value="true" checked={coach?.availableForPrivate ?? false} />
-					<span><strong>Private sessions</strong> — 1-on-1 coaching</span>
+					<span><strong>Sub / one-off coaching</strong></span>
+				</label>
+				<label class="checkbox-label">
+					<input type="checkbox" name="availableForPracticeGroup" value="true" checked={coach?.availableForPracticeGroup ?? false} />
+					<span><strong>Coaching a practice group</strong></span>
 				</label>
 				<label class="checkbox-label">
 					<input type="checkbox" name="availableForTeams" value="true" checked={coach?.availableForTeams ?? false} />
-					<span><strong>Team coaching</strong> — coaching improv teams</span>
-				</label>
-				<label class="checkbox-label">
-					<input type="checkbox" name="availableForWorkshops" value="true" checked={coach?.availableForWorkshops ?? false} />
-					<span><strong>Workshops</strong> — group workshops</span>
+					<span><strong>Coaching a team</strong></span>
 				</label>
 			</div>
 		</fieldset>
 
 		<div class="form-field">
-			<label for="availability">AVAILABILITY / SCHEDULING NOTES</label>
+			<label for="availability">AVAILABILITY</label>
 			<input id="availability" name="availability" type="text" value={coach?.availability ?? ''} placeholder="e.g. Weekends only, currently full, accepting new clients..." />
 		</div>
 
@@ -78,6 +79,6 @@
 	.page-title { font-family: var(--font-heading); font-size: 32px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }
 	.remove-btn { color: var(--zine-accent); border-color: var(--zine-accent); font-size: 11px; }
 	.zine-form { display: flex; flex-direction: column; gap: 24px; }
-	.checks { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+	.checks { display: flex; flex-direction: column; gap: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
 </style>

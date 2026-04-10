@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { Sparkles, Mail, Instagram, Youtube, Globe, Users } from 'lucide-svelte';
+	import { Sparkles, Mail, Instagram, Globe, Users, Video, Copy, Check } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
@@ -12,10 +12,33 @@
 	let memberships = $derived(data.memberships);
 
 	let contactOpen = $state(false);
+	let copied = $state(false);
+
+	const profileUrl = $derived(`${cityConfig.siteUrl}/performers/${profile.slug}`);
+
+	function copyProfileUrl() {
+		navigator.clipboard.writeText(profileUrl);
+		copied = true;
+		setTimeout(() => { copied = false; }, 2000);
+	}
+
+	function getYoutubeEmbedUrl(url: string): string | null {
+		const watchMatch = url.match(/youtube\.com\/watch\?v=([\w-]+)/);
+		if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+		const shortMatch = url.match(/youtu\.be\/([\w-]+)/);
+		if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+		return null;
+	}
+
+	function isImageUrl(url: string): boolean {
+		return /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url);
+	}
 
 	const socialIcons: Record<string, typeof Mail> = {
 		instagram: Instagram,
-		youtube: Youtube,
+		tiktok: Video,
+		twitter: Globe,
+		bluesky: Globe,
 		website: Globe
 	};
 </script>
@@ -42,14 +65,14 @@
 					{#if performer}
 						<span class="zine-tag tag-accent"><Sparkles size={10} /> PERFORMER</span>
 					{/if}
-					{#if performer?.openToBookOpeners}
-						<span class="zine-tag">OPEN TO BOOK OPENERS</span>
+					{#if performer?.lookingForPracticeGroup}
+						<span class="zine-tag">SEEKING PRACTICE GROUP</span>
 					{/if}
-					{#if performer?.lookingForTeam}
-						<span class="zine-tag">LOOKING FOR TEAM</span>
+					{#if performer?.lookingForSmallGroup}
+						<span class="zine-tag">SEEKING SMALL GROUP</span>
 					{/if}
-					{#if performer?.lookingForCoach}
-						<span class="zine-tag">SEEKING COACH</span>
+					{#if performer?.lookingForIndieTeam}
+						<span class="zine-tag">SEEKING INDIE TEAM</span>
 					{/if}
 				</div>
 				{#if profile.socialLinks && Object.keys(profile.socialLinks).length > 0}
@@ -89,6 +112,17 @@
 		recipientName={profile.name}
 	/>
 
+	<div class="profile-url-row">
+		<span class="profile-url-text">{profileUrl}</span>
+		<button class="btn-copy" onclick={copyProfileUrl} aria-label="Copy profile URL">
+			{#if copied}
+				<Check size={13} /> Copied!
+			{:else}
+				<Copy size={13} /> Copy link
+			{/if}
+		</button>
+	</div>
+
 	{#if profile.bio}
 		<section class="detail-section">
 			<h2 class="section-label">ABOUT</h2>
@@ -112,12 +146,27 @@
 
 	{#if performer?.videoHighlights && performer.videoHighlights.length > 0}
 		<section class="detail-section">
-			<h2 class="section-label">VIDEO HIGHLIGHTS</h2>
-			<div class="link-list">
+			<h2 class="section-label">HIGHLIGHTS</h2>
+			<div class="highlights-list">
 				{#each performer.videoHighlights as url}
-					<a href={url} target="_blank" rel="noopener noreferrer" class="video-link">
-						<Youtube size={14} /> {url}
-					</a>
+					{@const embedUrl = getYoutubeEmbedUrl(url)}
+					{#if embedUrl}
+						<div class="embed-wrap">
+							<iframe
+								src={embedUrl}
+								title="Video highlight"
+								frameborder="0"
+								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+								allowfullscreen
+							></iframe>
+						</div>
+					{:else if isImageUrl(url)}
+						<img src={url} alt="Highlight" class="highlight-img" />
+					{:else}
+						<a href={url} target="_blank" rel="noopener noreferrer" class="highlight-link">
+							<Globe size={14} /> {url}
+						</a>
+					{/if}
 				{/each}
 			</div>
 		</section>
@@ -280,13 +329,71 @@
 		white-space: pre-line;
 	}
 
-	.link-list {
+	.profile-url-row {
 		display: flex;
-		flex-direction: column;
-		gap: 6px;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 24px;
+		padding: 8px 12px;
+		background: var(--zine-surface);
+		border: var(--zine-border);
+		flex-wrap: wrap;
 	}
 
-	.video-link {
+	.profile-url-text {
+		font-size: 11px;
+		color: var(--zine-muted);
+		word-break: break-all;
+		flex: 1;
+	}
+
+	.btn-copy {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--zine-primary);
+		border: 1px solid var(--zine-primary);
+		background: transparent;
+		padding: 4px 10px;
+		cursor: pointer;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.btn-copy:hover { background: var(--zine-primary); color: var(--zine-bg); }
+
+	.highlights-list {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.embed-wrap {
+		position: relative;
+		width: 100%;
+		padding-bottom: 56.25%;
+		height: 0;
+	}
+
+	.embed-wrap iframe {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		border: var(--zine-border);
+	}
+
+	.highlight-img {
+		max-width: 100%;
+		border: var(--zine-border);
+	}
+
+	.highlight-link {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -296,9 +403,7 @@
 		word-break: break-all;
 	}
 
-	.video-link:hover {
-		color: var(--zine-accent);
-	}
+	.highlight-link:hover { color: var(--zine-accent); }
 
 	/* MEMBER LIST */
 	.member-list {

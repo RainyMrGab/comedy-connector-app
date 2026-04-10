@@ -27,12 +27,12 @@
 	function buildParams(q: string, f: SearchFilters, cursor?: SearchCursor): URLSearchParams {
 		const params = new URLSearchParams({ type, q });
 		if (cursor) params.set('cursor', JSON.stringify(cursor));
-		if (f.openToBookOpeners) params.set('openToBookOpeners', 'true');
-		if (f.lookingForTeam) params.set('lookingForTeam', 'true');
-		if (f.lookingForCoach) params.set('lookingForCoach', 'true');
+		if (f.lookingForPracticeGroup) params.set('lookingForPracticeGroup', 'true');
+		if (f.lookingForSmallGroup) params.set('lookingForSmallGroup', 'true');
+		if (f.lookingForIndieTeam) params.set('lookingForIndieTeam', 'true');
 		if (f.availableForPrivate) params.set('availableForPrivate', 'true');
 		if (f.availableForTeams) params.set('availableForTeams', 'true');
-		if (f.availableForWorkshops) params.set('availableForWorkshops', 'true');
+		if (f.availableForPracticeGroup) params.set('availableForPracticeGroup', 'true');
 		if (f.openToNewMembers) params.set('openToNewMembers', 'true');
 		if (f.seekingCoach) params.set('seekingCoach', 'true');
 		return params;
@@ -51,12 +51,12 @@
 	$effect(() => {
 		const q = query;
 		const filterSnapshot = {
-			openToBookOpeners: filters.openToBookOpeners,
-			lookingForTeam: filters.lookingForTeam,
-			lookingForCoach: filters.lookingForCoach,
+			lookingForPracticeGroup: filters.lookingForPracticeGroup,
+			lookingForSmallGroup: filters.lookingForSmallGroup,
+			lookingForIndieTeam: filters.lookingForIndieTeam,
 			availableForPrivate: filters.availableForPrivate,
 			availableForTeams: filters.availableForTeams,
-			availableForWorkshops: filters.availableForWorkshops,
+			availableForPracticeGroup: filters.availableForPracticeGroup,
 			openToNewMembers: filters.openToNewMembers,
 			seekingCoach: filters.seekingCoach
 		};

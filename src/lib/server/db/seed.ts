@@ -63,9 +63,9 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 	});
 	await db.insert(performerProfiles).values({
 		profileId: PERFORMER_PROFILE_ID,
-		openToBookOpeners: true,
-		lookingForTeam: true,
-		lookingForCoach: false
+		lookingForPracticeGroup: true,
+		lookingForSmallGroup: false,
+		lookingForIndieTeam: true
 	});
 
 	// User 2: coach with full profile
@@ -86,7 +86,7 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		coachingBio: 'Long-form improv specialist. Available for private sessions and team coaching.',
 		availableForPrivate: true,
 		availableForTeams: true,
-		availableForWorkshops: false,
+		availableForPracticeGroup: false,
 		availability: 'Weekends preferred'
 	});
 

@@ -51,23 +51,23 @@
 		{#if result.form}
 			<span class="ztag">{result.form}</span>
 		{/if}
-		{#if result.openToBookOpeners}
-			<span class="ztag">BOOK OPENERS</span>
+		{#if result.lookingForPracticeGroup}
+			<span class="ztag">PRACTICE GROUP</span>
 		{/if}
-		{#if result.lookingForTeam}
-			<span class="ztag">SEEKING TEAM</span>
+		{#if result.lookingForSmallGroup}
+			<span class="ztag">SMALL GROUP</span>
 		{/if}
-		{#if result.lookingForCoach}
-			<span class="ztag">SEEKING COACH</span>
+		{#if result.lookingForIndieTeam}
+			<span class="ztag">INDIE TEAM</span>
 		{/if}
 		{#if result.availableForPrivate}
-			<span class="ztag">PRIVATE SESSIONS</span>
+			<span class="ztag">SUB COACHING</span>
+		{/if}
+		{#if result.availableForPracticeGroup}
+			<span class="ztag">PRACTICE GROUP</span>
 		{/if}
 		{#if result.availableForTeams}
 			<span class="ztag">TEAM COACHING</span>
-		{/if}
-		{#if result.availableForWorkshops}
-			<span class="ztag">WORKSHOPS</span>
 		{/if}
 		{#if result.openToNewMembers}
 			<span class="ztag">OPEN TO MEMBERS</span>

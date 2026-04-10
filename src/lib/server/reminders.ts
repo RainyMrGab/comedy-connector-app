@@ -42,9 +42,9 @@ export interface FreshnessRecipient {
 		lookingFor: string | null;
 	};
 	performer: {
-		openToBookOpeners: boolean;
-		lookingForTeam: boolean;
-		lookingForCoach: boolean;
+		lookingForPracticeGroup: boolean;
+		lookingForSmallGroup: boolean;
+		lookingForIndieTeam: boolean;
 		lookingFor: string | null;
 		/** Names of teams the user is a current approved member of */
 		currentTeamNames: string[];
@@ -53,7 +53,7 @@ export interface FreshnessRecipient {
 		availability: string | null;
 		availableForPrivate: boolean;
 		availableForTeams: boolean;
-		availableForWorkshops: boolean;
+		availableForPracticeGroup: boolean;
 	} | null;
 	/** Active teams where this user is the primary contact */
 	ownedTeams: Array<{
@@ -109,9 +109,9 @@ export async function getFreshnessRecipients(
 	const performerRows = await db
 		.select({
 			profileId: performerProfiles.profileId,
-			openToBookOpeners: performerProfiles.openToBookOpeners,
-			lookingForTeam: performerProfiles.lookingForTeam,
-			lookingForCoach: performerProfiles.lookingForCoach,
+			lookingForPracticeGroup: performerProfiles.lookingForPracticeGroup,
+			lookingForSmallGroup: performerProfiles.lookingForSmallGroup,
+			lookingForIndieTeam: performerProfiles.lookingForIndieTeam,
 			lookingFor: performerProfiles.lookingFor
 		})
 		.from(performerProfiles)
@@ -126,7 +126,7 @@ export async function getFreshnessRecipients(
 			availability: coachProfiles.availability,
 			availableForPrivate: coachProfiles.availableForPrivate,
 			availableForTeams: coachProfiles.availableForTeams,
-			availableForWorkshops: coachProfiles.availableForWorkshops
+			availableForPracticeGroup: coachProfiles.availableForPracticeGroup
 		})
 		.from(coachProfiles)
 		.where(inArray(coachProfiles.profileId, profileIds));
@@ -271,9 +271,9 @@ export async function getFreshnessRecipients(
 			},
 			performer: perf
 				? {
-						openToBookOpeners: perf.openToBookOpeners,
-						lookingForTeam: perf.lookingForTeam,
-						lookingForCoach: perf.lookingForCoach,
+						lookingForPracticeGroup: perf.lookingForPracticeGroup,
+						lookingForSmallGroup: perf.lookingForSmallGroup,
+						lookingForIndieTeam: perf.lookingForIndieTeam,
 						lookingFor: perf.lookingFor,
 						currentTeamNames: membershipsByProfile.get(row.profileId) ?? []
 					}
@@ -283,7 +283,7 @@ export async function getFreshnessRecipients(
 						availability: coach.availability,
 						availableForPrivate: coach.availableForPrivate,
 						availableForTeams: coach.availableForTeams,
-						availableForWorkshops: coach.availableForWorkshops
+						availableForPracticeGroup: coach.availableForPracticeGroup
 					}
 				: null,
 			ownedTeams: owned.map((t) => ({
@@ -377,9 +377,9 @@ export function buildFreshnessEmailHtml(recipient: FreshnessRecipient, siteUrl: 
 	if (performer) {
 		html += sectionHeader('🎭', 'PERFORMER PROFILE', `${profileBase}/performer`);
 		html += `<p style="margin:6px 0; font-size:14px;"><span style="color:${MUTED}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Interest Flags</span><br>`;
-		html += flag('Open to book openers', performer.openToBookOpeners);
-		html += flag('Looking for team', performer.lookingForTeam);
-		html += flag('Looking for coach', performer.lookingForCoach);
+		html += flag('Looking for practice group', performer.lookingForPracticeGroup);
+		html += flag('Looking for small group partner', performer.lookingForSmallGroup);
+		html += flag('Looking for indie team', performer.lookingForIndieTeam);
 		html += `</p>`;
 		html += field('Looking For (notes)', val(performer.lookingFor));
 		if (performer.currentTeamNames.length > 0) {
@@ -399,7 +399,7 @@ export function buildFreshnessEmailHtml(recipient: FreshnessRecipient, siteUrl: 
 		html += `<p style="margin:6px 0; font-size:14px;"><span style="color:${MUTED}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Availability Flags</span><br>`;
 		html += flag('Available for private sessions', coach.availableForPrivate);
 		html += flag('Available for teams', coach.availableForTeams);
-		html += flag('Available for workshops', coach.availableForWorkshops);
+		html += flag('Coaching a practice group', coach.availableForPracticeGroup);
 		html += `</p>`;
 		html += field('Availability (notes)', val(coach.availability));
 		html += `</div>`;
@@ -463,9 +463,9 @@ export function buildFreshnessEmailText(recipient: FreshnessRecipient, siteUrl: 
 			``,
 			`── PERFORMER PROFILE ─────────────────`,
 			`Update: ${profileBase}/performer`,
-			`Open to book openers: ${performer.openToBookOpeners ? 'Yes' : 'No'}`,
-			`Looking for team: ${performer.lookingForTeam ? 'Yes' : 'No'}`,
-			`Looking for coach: ${performer.lookingForCoach ? 'Yes' : 'No'}`,
+			`Looking for practice group: ${performer.lookingForPracticeGroup ? 'Yes' : 'No'}`,
+			`Looking for small group partner: ${performer.lookingForSmallGroup ? 'Yes' : 'No'}`,
+			`Looking for indie team: ${performer.lookingForIndieTeam ? 'Yes' : 'No'}`,
 			`Looking For (notes): ${performer.lookingFor ?? 'not set'}`,
 			`Current teams: ${performer.currentTeamNames.join(', ') || 'none listed'}`
 		);
@@ -478,7 +478,7 @@ export function buildFreshnessEmailText(recipient: FreshnessRecipient, siteUrl: 
 			`Update: ${profileBase}/coach`,
 			`Available for private sessions: ${coach.availableForPrivate ? 'Yes' : 'No'}`,
 			`Available for teams: ${coach.availableForTeams ? 'Yes' : 'No'}`,
-			`Available for workshops: ${coach.availableForWorkshops ? 'Yes' : 'No'}`,
+			`Coaching a practice group: ${coach.availableForPracticeGroup ? 'Yes' : 'No'}`,
 			`Availability (notes): ${coach.availability ?? 'not set'}`
 		);
 	}

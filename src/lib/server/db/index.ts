@@ -30,7 +30,32 @@ export async function ensureLocalDbReady(): Promise<void> {
 }
 
 /**
- * Drizzle database instance. In production, lazily initializes the Neon connection.
+ * Initializes the production Neon connection on first call.
+ * Uses _initPromise to prevent race conditions from concurrent requests.
+ */
+async function ensureProductionDbReady(): Promise<void> {
+	if (_db) return;
+	if (!_initPromise) {
+		_initPromise = (async () => {
+			const url = process.env.NETLIFY_DATABASE_URL;
+			if (!url) {
+				throw new Error(
+					'NETLIFY_DATABASE_URL is not set. Set it in Netlify dashboard under Site settings → Environment.'
+				);
+			}
+			const sql = neon(url);
+			_db = drizzle(sql, { schema });
+		})().catch((err) => {
+			_initPromise = null; // allow retry on next request
+			throw err;
+		});
+	}
+	await _initPromise;
+}
+
+/**
+ * Drizzle database instance. In production, lazily initializes the Neon connection
+ * with proper synchronization to prevent race conditions.
  * In local dev, populated by ensureLocalDbReady() before first use.
  */
 export const db = new Proxy({} as ReturnType<typeof drizzle>, {
@@ -39,10 +64,27 @@ export const db = new Proxy({} as ReturnType<typeof drizzle>, {
 			if (IS_LOCAL) {
 				throw new Error('Local DB not ready — ensureLocalDbReady() must be awaited first');
 			}
-			const url = process.env.NETLIFY_DATABASE_URL!;
-			const sql = neon(url);
-			_db = drizzle(sql, { schema });
+			// Production: synchronously trigger async init, but accessing db._someMethod
+			// during initialization window will throw. This is safer than silently failing.
+			// In practice, ensureDatabaseReady() should be called in hooks.server.ts
+			throw new Error(
+				'Database not initialized. This should not happen if ensureDatabaseReady() was awaited in hooks.server.ts'
+			);
 		}
 		return Reflect.get(_db!, prop);
 	}
 });
+
+/**
+ * Ensures database is ready before first use.
+ * In local dev: initializes PGLite
+ * In production: initializes Neon connection with proper sync to prevent race conditions
+ * Must be awaited in hooks.server.ts before any DB access.
+ */
+export async function ensureDatabaseReady(): Promise<void> {
+	if (IS_LOCAL) {
+		await ensureLocalDbReady();
+	} else {
+		await ensureProductionDbReady();
+	}
+}

@@ -21,7 +21,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			.select({
 				id: personalProfiles.id,
 				name: personalProfiles.name,
-				slug: personalProfiles.slug
+				slug: personalProfiles.slug,
+				photoUrl: personalProfiles.photoUrl
 			})
 			.from(coachProfiles)
 			.innerJoin(personalProfiles, eq(coachProfiles.profileId, personalProfiles.id))
@@ -35,7 +36,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		.select({
 			id: personalProfiles.id,
 			name: personalProfiles.name,
-			slug: personalProfiles.slug
+			slug: personalProfiles.slug,
+			photoUrl: personalProfiles.photoUrl
 		})
 		.from(performerProfiles)
 		.innerJoin(personalProfiles, eq(performerProfiles.profileId, personalProfiles.id))
