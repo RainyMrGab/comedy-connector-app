@@ -276,7 +276,7 @@
 	.edit-section { margin-bottom: 48px; }
 	.section-label { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); border-bottom: 1px solid var(--zine-muted); padding-bottom: 6px; margin-bottom: 20px; }
 	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-	.checks { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+	.checks { display: flex; flex-direction: column; gap: 10px; }
 	.roster-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 	.roster-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--zine-surface); border: var(--zine-border); }
 	.roster-info { display: flex; align-items: center; gap: 8px; }

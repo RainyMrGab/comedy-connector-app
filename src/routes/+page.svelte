@@ -289,15 +289,6 @@
     text-align: center;
   }
 
-  .cta-eyebrow {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: var(--zine-primary);
-    opacity: 0.7;
-    margin: 0;
-  }
-
   .cta-heading {
     font-family: var(--font-heading);
     font-size: 42px;

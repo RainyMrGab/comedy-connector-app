@@ -79,6 +79,6 @@
 	.page-title { font-family: var(--font-heading); font-size: 32px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }
 	.remove-btn { color: var(--zine-accent); border-color: var(--zine-accent); font-size: 11px; }
 	.zine-form { display: flex; flex-direction: column; gap: 24px; }
-	.checks { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+	.checks { display: flex; flex-direction: column; gap: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
 </style>

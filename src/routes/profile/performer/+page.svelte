@@ -104,7 +104,7 @@
 	.remove-btn { color: var(--zine-accent); border-color: var(--zine-accent); font-size: 11px; }
 	.field-hint { font-size: 11px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
 	.zine-form { display: flex; flex-direction: column; gap: 24px; }
-	.checks { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+	.checks { display: flex; flex-direction: column; gap: 12px; }
 	.video-list { display: flex; flex-direction: column; gap: 8px; }
 	.video-row { display: flex; gap: 8px; }
 	.video-row input { flex: 1; }
