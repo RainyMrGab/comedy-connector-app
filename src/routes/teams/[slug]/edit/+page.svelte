@@ -98,12 +98,25 @@
 						<span class="roster-name">{member.name ?? member.memberName ?? 'Unknown'}</span>
 						{#if member.approvalStatus === 'pending'}
 							<span class="status-tag">PENDING</span>
+						{:else if !member.isCurrent}
+							<span class="status-tag status-tag-alumni">ALUMNI</span>
 						{/if}
 					</div>
-					<form method="POST" action="?/removeMember" use:enhance>
-						<input type="hidden" name="memberId" value={member.id} />
-						<button type="submit" class="btn-remove">REMOVE</button>
-					</form>
+					<div class="roster-actions">
+						{#if member.approvalStatus === 'approved'}
+							<form method="POST" action="?/setMemberStatus" use:enhance>
+								<input type="hidden" name="memberId" value={member.id} />
+								<input type="hidden" name="isCurrent" value={member.isCurrent ? 'false' : 'true'} />
+								<button type="submit" class="btn-toggle">
+									{member.isCurrent ? 'SET ALUMNI' : 'SET ACTIVE'}
+								</button>
+							</form>
+						{/if}
+						<form method="POST" action="?/removeMember" use:enhance>
+							<input type="hidden" name="memberId" value={member.id} />
+							<button type="submit" class="btn-remove">REMOVE</button>
+						</form>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -158,12 +171,25 @@
 						<span class="roster-name">{coach.name ?? coach.coachName ?? 'Unknown'}</span>
 						{#if coach.approvalStatus === 'pending'}
 							<span class="status-tag">PENDING</span>
+						{:else if !coach.isCurrent}
+							<span class="status-tag status-tag-alumni">ALUMNI</span>
 						{/if}
 					</div>
-					<form method="POST" action="?/removeCoach" use:enhance>
-						<input type="hidden" name="coachId" value={coach.id} />
-						<button type="submit" class="btn-remove">REMOVE</button>
-					</form>
+					<div class="roster-actions">
+						{#if coach.approvalStatus === 'approved'}
+							<form method="POST" action="?/setCoachStatus" use:enhance>
+								<input type="hidden" name="coachId" value={coach.id} />
+								<input type="hidden" name="isCurrent" value={coach.isCurrent ? 'false' : 'true'} />
+								<button type="submit" class="btn-toggle">
+									{coach.isCurrent ? 'SET ALUMNI' : 'SET ACTIVE'}
+								</button>
+							</form>
+						{/if}
+						<form method="POST" action="?/removeCoach" use:enhance>
+							<input type="hidden" name="coachId" value={coach.id} />
+							<button type="submit" class="btn-remove">REMOVE</button>
+						</form>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -219,10 +245,14 @@
 	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 	.checks { display: flex; flex-direction: column; gap: 10px; }
 	.roster-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-	.roster-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--zine-surface); border: var(--zine-border); }
-	.roster-info { display: flex; align-items: center; gap: 8px; }
+	.roster-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; background: var(--zine-surface); border: var(--zine-border); }
+	.roster-info { display: flex; align-items: center; gap: 8px; flex: 1; }
 	.roster-name { font-size: 13px; font-weight: 700; }
+	.roster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 	.status-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-highlight); background: var(--zine-primary); padding: 2px 6px; }
+	.status-tag-alumni { background: var(--zine-muted); color: #fff; }
+	.btn-toggle { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-muted); border: 1px solid var(--zine-muted); background: transparent; padding: 4px 10px; cursor: pointer; }
+	.btn-toggle:hover { background: var(--zine-muted); color: #fff; }
 	.btn-remove { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-accent); border: 1px solid var(--zine-accent); background: transparent; padding: 4px 10px; cursor: pointer; }
 	.btn-remove:hover { background: var(--zine-accent); color: #fff; }
 	.subsection { border: var(--zine-border); padding: 20px; background: var(--zine-surface); }

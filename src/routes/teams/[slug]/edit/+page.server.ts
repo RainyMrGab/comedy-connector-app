@@ -167,6 +167,42 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
+	// Toggle isCurrent for a member
+	setMemberStatus: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const team = await getTeamBySlug(params.slug);
+		if (!team) return fail(404, { error: 'Not found' });
+
+		const formData = await request.formData();
+		const memberId = formData.get('memberId')?.toString();
+		const isCurrent = formData.get('isCurrent') === 'true';
+		if (!memberId) return fail(400, { error: 'Missing memberId' });
+
+		await db
+			.update(teamMembers)
+			.set({ isCurrent, updatedAt: new Date() })
+			.where(and(eq(teamMembers.id, memberId), eq(teamMembers.teamId, team.id)));
+		return { success: true };
+	},
+
+	// Toggle isCurrent for a coach
+	setCoachStatus: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const team = await getTeamBySlug(params.slug);
+		if (!team) return fail(404, { error: 'Not found' });
+
+		const formData = await request.formData();
+		const coachId = formData.get('coachId')?.toString();
+		const isCurrent = formData.get('isCurrent') === 'true';
+		if (!coachId) return fail(400, { error: 'Missing coachId' });
+
+		await db
+			.update(teamCoaches)
+			.set({ isCurrent, updatedAt: new Date() })
+			.where(and(eq(teamCoaches.id, coachId), eq(teamCoaches.teamId, team.id)));
+		return { success: true };
+	},
+
 	// Remove a coach
 	removeCoach: async ({ request, params, locals }) => {
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
