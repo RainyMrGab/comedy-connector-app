@@ -1,15 +1,17 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { authStore } from '$stores/auth.svelte';
-	import { Users, UserCheck, Mail, Pencil, Video, Globe } from 'lucide-svelte';
+	import { Users, UserCheck, Mail, Pencil, Globe } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let team = $derived(data.team);
-	let members = $derived(data.members);
-	let coaches = $derived(data.coaches);
+	let currentMembers = $derived(data.currentMembers);
+	let alumniMembers = $derived(data.alumniMembers);
+	let currentCoaches = $derived(data.currentCoaches);
+	let alumniCoaches = $derived(data.alumniCoaches);
 	let isTeamMember = $derived(data.isTeamMember);
 
 	let contactOpen = $state(false);
@@ -47,9 +49,6 @@
 					{/if}
 				</div>
 				<div class="tag-row">
-					{#if team.form}
-						<span class="zine-tag">{team.form.toUpperCase()}</span>
-					{/if}
 					{#if team.isPracticeGroup}
 						<span class="zine-tag">PRACTICE GROUP</span>
 					{/if}
@@ -110,6 +109,13 @@
 		</section>
 	{/if}
 
+	{#if team.form}
+		<section class="detail-section">
+			<h2 class="section-label">FORM / STYLE</h2>
+			<p class="section-body">{team.form}</p>
+		</section>
+	{/if}
+
 	{#if team.lookingFor}
 		<section class="detail-section">
 			<h2 class="section-label">LOOKING FOR</h2>
@@ -139,12 +145,14 @@
 		</section>
 	{/if}
 
-	{#if members.length > 0}
+	<!-- MEMBERS (current) -->
+	{#if currentMembers.length > 0}
 		<section class="detail-section">
-			<h2 class="section-label">MEMBERS ({members.length})</h2>
+			<h2 class="section-label">MEMBERS ({currentMembers.length})</h2>
 			<div class="member-grid">
-				{#each members as member}
-					{#if member.profileId && member.slug}
+				{#each currentMembers as member}
+					{@const isLinked = !!(member.profileId && member.slug)}
+					{#if isLinked}
 						<a href="/performers/{member.slug}" class="member-card">
 							{#if member.photoUrl}
 								<img src={member.photoUrl} alt={member.name} class="member-avatar" />
@@ -182,11 +190,12 @@
 		</section>
 	{/if}
 
-	{#if coaches.length > 0}
+	<!-- COACHES (current) -->
+	{#if currentCoaches.length > 0}
 		<section class="detail-section">
 			<h2 class="section-label">COACHES</h2>
 			<div class="member-list">
-				{#each coaches as coach}
+				{#each currentCoaches as coach}
 					{#if coach.profileId && coach.slug}
 						<a href="/coaches/{coach.slug}" class="member-row">
 							{#if coach.photoUrl}
@@ -217,6 +226,88 @@
 			</div>
 		</section>
 	{/if}
+
+	<!-- ALUMNI MEMBERS -->
+	{#if alumniMembers.length > 0}
+		<section class="detail-section">
+			<h2 class="section-label">ALUMNI</h2>
+			<div class="member-grid">
+				{#each alumniMembers as member}
+					{@const isLinked = !!(member.profileId && member.slug)}
+					{#if isLinked}
+						<a href="/performers/{member.slug}" class="member-card member-card-alumni">
+							{#if member.photoUrl}
+								<img src={member.photoUrl} alt={member.name} class="member-avatar" />
+							{:else}
+								<div class="member-avatar member-avatar-placeholder">
+									{(member.name ?? '?')[0].toUpperCase()}
+								</div>
+							{/if}
+							<div>
+								<p class="member-name">{member.name}</p>
+								{#if member.startYear}
+									<p class="member-date">
+										{formatDateRange(member.startYear, member.startMonth, member.endYear, member.endMonth, member.isCurrent)}
+									</p>
+								{/if}
+							</div>
+						</a>
+					{:else}
+						<div class="member-card member-card-unlinked member-card-alumni">
+							<div class="member-avatar member-avatar-placeholder">
+								<Users size={14} />
+							</div>
+							<div>
+								<p class="member-name">{member.memberName ?? 'Unknown'}</p>
+								{#if member.startYear}
+									<p class="member-date">
+										{formatDateRange(member.startYear, member.startMonth, member.endYear, member.endMonth, member.isCurrent)}
+									</p>
+								{/if}
+							</div>
+						</div>
+					{/if}
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- PREVIOUS COACHES -->
+	{#if alumniCoaches.length > 0}
+		<section class="detail-section">
+			<h2 class="section-label">PREVIOUS COACHES</h2>
+			<div class="member-list">
+				{#each alumniCoaches as coach}
+					{#if coach.profileId && coach.slug}
+						<a href="/coaches/{coach.slug}" class="member-row member-row-alumni">
+							{#if coach.photoUrl}
+								<img src={coach.photoUrl} alt={coach.name} class="member-avatar" />
+							{:else}
+								<div class="member-avatar member-avatar-placeholder">
+									<UserCheck size={14} />
+								</div>
+							{/if}
+							<div>
+								<p class="member-name">{coach.name}</p>
+								{#if coach.startYear}
+									<p class="member-date">
+										{formatDateRange(coach.startYear, coach.startMonth, coach.endYear, coach.endMonth, coach.isCurrent)}
+									</p>
+								{/if}
+							</div>
+						</a>
+					{:else}
+						<div class="member-row member-row-alumni">
+							<div class="member-avatar member-avatar-placeholder">
+								<UserCheck size={14} />
+							</div>
+							<p class="member-name">{coach.coachName ?? 'Unknown'}</p>
+						</div>
+					{/if}
+				{/each}
+			</div>
+		</section>
+	{/if}
 </div>
 
 <style>
@@ -236,9 +327,7 @@
 	}
 
 	.avatar-name { display: flex; align-items: flex-start; gap: 20px; flex: 1; }
-
 	.avatar { width: 80px; height: 80px; object-fit: cover; border: var(--zine-border); flex-shrink: 0; }
-
 	.avatar-placeholder {
 		display: flex;
 		align-items: center;
@@ -248,11 +337,8 @@
 	}
 
 	.name-block { flex: 1; }
-
 	.title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-
 	.profile-name { font-family: var(--font-heading); font-size: 32px; color: var(--zine-primary); margin: 0; }
-
 	.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
 	.zine-tag {
@@ -268,13 +354,11 @@
 		align-items: center;
 		gap: 4px;
 	}
-
 	.tag-muted { background: var(--zine-muted); color: #fff; }
 	.tag-warning { background: var(--zine-accent); color: #fff; }
 
 	.header-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 
-	/* STUB CALLOUT */
 	.stub-callout {
 		padding: 20px 24px;
 		background: #fffbeb;
@@ -285,13 +369,10 @@
 		flex-direction: column;
 		gap: 8px;
 	}
-
 	.stub-title { font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: #b45309; }
 	.stub-body { font-size: 13px; color: var(--zine-primary); }
 
-	/* SECTIONS */
 	.detail-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--zine-surface); }
-
 	.section-label {
 		font-family: var(--font-body);
 		font-size: 10px;
@@ -300,7 +381,6 @@
 		color: var(--zine-muted);
 		margin-bottom: 8px;
 	}
-
 	.section-body { font-size: 15px; line-height: 1.7; white-space: pre-line; }
 
 	.video-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--zine-muted); text-decoration: none; }
@@ -308,7 +388,6 @@
 	.embed-wrap { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
 	.embed-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: var(--zine-border); }
 
-	/* MEMBERS */
 	.member-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
 	.member-card {
@@ -322,9 +401,9 @@
 		color: var(--zine-primary);
 		transition: box-shadow 0.1s, transform 0.1s;
 	}
-
 	.member-card:hover { box-shadow: var(--zine-shadow); transform: translate(-1px, -1px); }
 	.member-card-unlinked { opacity: 0.65; cursor: default; }
+	.member-card-alumni { opacity: 0.6; }
 
 	.member-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -339,11 +418,10 @@
 		color: var(--zine-primary);
 		transition: box-shadow 0.1s, transform 0.1s;
 	}
-
 	.member-row:hover { box-shadow: var(--zine-shadow); transform: translate(-1px, -1px); }
+	.member-row-alumni { opacity: 0.6; }
 
 	.member-avatar { width: 40px; height: 40px; object-fit: cover; border: 1px solid var(--zine-primary); flex-shrink: 0; }
-
 	.member-avatar-placeholder {
 		display: flex;
 		align-items: center;

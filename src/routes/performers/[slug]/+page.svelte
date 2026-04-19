@@ -178,7 +178,13 @@
 			<div class="member-list">
 				{#each memberships as m}
 					<a href="/teams/{m.teamSlug}" class="member-row">
-						<Users size={16} />
+						{#if m.teamPhotoUrl}
+							<img src={m.teamPhotoUrl} alt={m.teamName} class="team-thumb" />
+						{:else}
+							<div class="team-thumb team-thumb-placeholder">
+								<Users size={16} />
+							</div>
+						{/if}
 						<div>
 							<p class="member-name">{m.teamName}</p>
 							{#if m.startYear}
@@ -427,6 +433,22 @@
 	.member-row:hover {
 		box-shadow: var(--zine-shadow);
 		transform: translate(-1px, -1px);
+	}
+
+	.team-thumb {
+		width: 40px;
+		height: 40px;
+		object-fit: cover;
+		border: 1px solid var(--zine-primary);
+		flex-shrink: 0;
+	}
+
+	.team-thumb-placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--zine-primary);
+		color: var(--zine-bg);
 	}
 
 	.member-name {

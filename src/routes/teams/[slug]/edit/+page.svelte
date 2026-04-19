@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import ProfileSearch from '$components/ui/ProfileSearch.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let team = $derived(data.team);
@@ -11,25 +12,8 @@
 	let addingMember = $state(false);
 	let addingCoach = $state(false);
 
-	// Combobox state for performer search
-	let memberSearch = $state('');
-	let coachSearch = $state('');
-	let memberResults = $state<Array<{ id: string; name: string; slug: string; photoUrl: string | null }>>([]);
-	let coachResults = $state<Array<{ id: string; name: string; slug: string; photoUrl: string | null }>>([]);
-	let selectedMember = $state<{ id: string; name: string } | null>(null);
-	let selectedCoach = $state<{ id: string; name: string } | null>(null);
-
-	async function searchPerformers(query: string) {
-		if (!query.trim()) { memberResults = []; return; }
-		const res = await fetch(`/api/profiles/search?q=${encodeURIComponent(query)}&type=performer`);
-		if (res.ok) memberResults = await res.json();
-	}
-
-	async function searchCoaches(query: string) {
-		if (!query.trim()) { coachResults = []; return; }
-		const res = await fetch(`/api/profiles/search?q=${encodeURIComponent(query)}&type=coach`);
-		if (res.ok) coachResults = await res.json();
-	}
+	let selectedMember = $state<{ id: string; name: string; slug: string; photoUrl: string | null } | null>(null);
+	let selectedCoach = $state<{ id: string; name: string; slug: string; photoUrl: string | null } | null>(null);
 </script>
 
 <svelte:head>
@@ -58,6 +42,10 @@
 			}}
 			class="zine-form"
 		>
+			<div class="form-field">
+				<label for="name">TEAM NAME <span class="required">*</span></label>
+				<input id="name" name="name" type="text" value={team.name} required />
+			</div>
 			<div class="form-field">
 				<label for="description">DESCRIPTION</label>
 				<textarea id="description" name="description" rows="4">{team.description ?? ''}</textarea>
@@ -110,12 +98,25 @@
 						<span class="roster-name">{member.name ?? member.memberName ?? 'Unknown'}</span>
 						{#if member.approvalStatus === 'pending'}
 							<span class="status-tag">PENDING</span>
+						{:else if !member.isCurrent}
+							<span class="status-tag status-tag-alumni">ALUMNI</span>
 						{/if}
 					</div>
-					<form method="POST" action="?/removeMember" use:enhance>
-						<input type="hidden" name="memberId" value={member.id} />
-						<button type="submit" class="btn-remove">REMOVE</button>
-					</form>
+					<div class="roster-actions">
+						{#if member.approvalStatus === 'approved'}
+							<form method="POST" action="?/setMemberStatus" use:enhance>
+								<input type="hidden" name="memberId" value={member.id} />
+								<input type="hidden" name="isCurrent" value={member.isCurrent ? 'false' : 'true'} />
+								<button type="submit" class="btn-toggle">
+									{member.isCurrent ? 'SET ALUMNI' : 'SET ACTIVE'}
+								</button>
+							</form>
+						{/if}
+						<form method="POST" action="?/removeMember" use:enhance>
+							<input type="hidden" name="memberId" value={member.id} />
+							<button type="submit" class="btn-remove">REMOVE</button>
+						</form>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -128,53 +129,29 @@
 				return async ({ update }) => {
 					await update();
 					addingMember = false;
-					memberSearch = '';
 					selectedMember = null;
-					memberResults = [];
 				};
 			}}
 			class="subsection zine-form"
 		>
 			<p class="subsection-title">ADD MEMBER</p>
-			<div class="form-field combo-wrap">
-				<label for="memberSearch">SEARCH APP USERS</label>
-				<input
-					id="memberSearch"
-					type="text"
-					placeholder="Type a name to search performers..."
-					bind:value={memberSearch}
-					oninput={() => searchPerformers(memberSearch)}
-					autocomplete="off"
-				/>
-				{#if memberResults.length > 0}
-					<div class="combo-dropdown">
-						{#each memberResults as result}
-							<button
-								type="button"
-								class="combo-option"
-								onclick={() => {
-									selectedMember = { id: result.id, name: result.name };
-									memberSearch = result.name;
-									memberResults = [];
-								}}
-							>
-								{#if result.photoUrl}
-									<img src={result.photoUrl} alt="" class="combo-avatar" />
-								{:else}
-									<div class="combo-avatar combo-avatar-placeholder">{result.name[0]?.toUpperCase() ?? '?'}</div>
-								{/if}
-								{result.name}
-							</button>
-						{/each}
-					</div>
-				{/if}
-				{#if selectedMember}
-					<input type="hidden" name="profileId" value={selectedMember.id} />
-				{/if}
-			</div>
+			<ProfileSearch
+				type="performer"
+				label="SEARCH APP USERS"
+				inputId="memberSearch"
+				placeholder="Type a name to search performers..."
+				fieldName="profileId"
+				bind:selected={selectedMember}
+			/>
 			<div class="form-field">
 				<label for="memberName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
-				<input id="memberName" name="memberName" type="text" placeholder="Full name..." />
+				<input
+					id="memberName"
+					name="memberName"
+					type="text"
+					placeholder="Full name..."
+					oninput={() => { selectedMember = null; }}
+				/>
 			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={addingMember}>
@@ -194,12 +171,25 @@
 						<span class="roster-name">{coach.name ?? coach.coachName ?? 'Unknown'}</span>
 						{#if coach.approvalStatus === 'pending'}
 							<span class="status-tag">PENDING</span>
+						{:else if !coach.isCurrent}
+							<span class="status-tag status-tag-alumni">ALUMNI</span>
 						{/if}
 					</div>
-					<form method="POST" action="?/removeCoach" use:enhance>
-						<input type="hidden" name="coachId" value={coach.id} />
-						<button type="submit" class="btn-remove">REMOVE</button>
-					</form>
+					<div class="roster-actions">
+						{#if coach.approvalStatus === 'approved'}
+							<form method="POST" action="?/setCoachStatus" use:enhance>
+								<input type="hidden" name="coachId" value={coach.id} />
+								<input type="hidden" name="isCurrent" value={coach.isCurrent ? 'false' : 'true'} />
+								<button type="submit" class="btn-toggle">
+									{coach.isCurrent ? 'SET ALUMNI' : 'SET ACTIVE'}
+								</button>
+							</form>
+						{/if}
+						<form method="POST" action="?/removeCoach" use:enhance>
+							<input type="hidden" name="coachId" value={coach.id} />
+							<button type="submit" class="btn-remove">REMOVE</button>
+						</form>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -212,53 +202,29 @@
 				return async ({ update }) => {
 					await update();
 					addingCoach = false;
-					coachSearch = '';
 					selectedCoach = null;
-					coachResults = [];
 				};
 			}}
 			class="subsection zine-form"
 		>
 			<p class="subsection-title">ADD COACH</p>
-			<div class="form-field combo-wrap">
-				<label for="coachSearch">SEARCH COACHES</label>
-				<input
-					id="coachSearch"
-					type="text"
-					placeholder="Type a name to search coaches..."
-					bind:value={coachSearch}
-					oninput={() => searchCoaches(coachSearch)}
-					autocomplete="off"
-				/>
-				{#if coachResults.length > 0}
-					<div class="combo-dropdown">
-						{#each coachResults as result}
-							<button
-								type="button"
-								class="combo-option"
-								onclick={() => {
-									selectedCoach = { id: result.id, name: result.name };
-									coachSearch = result.name;
-									coachResults = [];
-								}}
-							>
-								{#if result.photoUrl}
-									<img src={result.photoUrl} alt="" class="combo-avatar" />
-								{:else}
-									<div class="combo-avatar combo-avatar-placeholder">{result.name[0]?.toUpperCase() ?? '?'}</div>
-								{/if}
-								{result.name}
-							</button>
-						{/each}
-					</div>
-				{/if}
-				{#if selectedCoach}
-					<input type="hidden" name="profileId" value={selectedCoach.id} />
-				{/if}
-			</div>
+			<ProfileSearch
+				type="coach"
+				label="SEARCH COACHES"
+				inputId="coachSearch"
+				placeholder="Type a name to search coaches..."
+				fieldName="profileId"
+				bind:selected={selectedCoach}
+			/>
 			<div class="form-field">
 				<label for="coachName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
-				<input id="coachName" name="coachName" type="text" placeholder="Full name..." />
+				<input
+					id="coachName"
+					name="coachName"
+					type="text"
+					placeholder="Full name..."
+					oninput={() => { selectedCoach = null; }}
+				/>
 			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={addingCoach}>
@@ -270,6 +236,7 @@
 </div>
 
 <style>
+	.required { color: var(--zine-accent); }
 	.edit-page { max-width: 720px; margin: 0 auto; padding: 48px 32px; }
 	.page-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
 	.page-title { font-family: var(--font-heading); font-size: 36px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }
@@ -278,20 +245,18 @@
 	.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 	.checks { display: flex; flex-direction: column; gap: 10px; }
 	.roster-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-	.roster-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--zine-surface); border: var(--zine-border); }
-	.roster-info { display: flex; align-items: center; gap: 8px; }
+	.roster-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; background: var(--zine-surface); border: var(--zine-border); }
+	.roster-info { display: flex; align-items: center; gap: 8px; flex: 1; }
 	.roster-name { font-size: 13px; font-weight: 700; }
+	.roster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 	.status-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-highlight); background: var(--zine-primary); padding: 2px 6px; }
+	.status-tag-alumni { background: var(--zine-muted); color: #fff; }
+	.btn-toggle { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-muted); border: 1px solid var(--zine-muted); background: transparent; padding: 4px 10px; cursor: pointer; }
+	.btn-toggle:hover { background: var(--zine-muted); color: #fff; }
 	.btn-remove { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--zine-accent); border: 1px solid var(--zine-accent); background: transparent; padding: 4px 10px; cursor: pointer; }
 	.btn-remove:hover { background: var(--zine-accent); color: #fff; }
 	.subsection { border: var(--zine-border); padding: 20px; background: var(--zine-surface); }
 	.subsection-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); margin-bottom: 16px; }
-	.combo-wrap { position: relative; }
-	.combo-dropdown { position: absolute; z-index: 10; width: 100%; background: var(--zine-bg); border: var(--zine-border); border-top: none; box-shadow: var(--zine-shadow); }
-	.combo-option { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 12px; font-family: var(--font-body); font-size: 13px; background: transparent; border: none; cursor: pointer; color: var(--zine-primary); }
-	.combo-option:hover { background: var(--zine-surface); }
-	.combo-avatar { width: 28px; height: 28px; object-fit: cover; border-radius: 0; border: 1px solid var(--zine-primary); flex-shrink: 0; }
-	.combo-avatar-placeholder { display: flex; align-items: center; justify-content: center; background: var(--zine-primary); color: var(--zine-bg); font-size: 11px; font-weight: 700; }
 	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
 </style>

@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { db } from '$server/db';
 import { teams, teamMembers, teamCoaches, personalProfiles } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getTeamBySlug, getTeamMembers, getOrCreateStubTeam } from '$server/teams';
+import { getTeamBySlug, getTeamMembers, getOrCreateStubTeam, resolveTeamSlug } from '$server/teams';
 import { getProfileByUserId } from '$server/profiles';
 import { teamSchema } from '$utils/validation';
 
@@ -61,7 +61,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const raw = {
-			name: team.name, // name locked after creation
+			name: String(formData.get('name') ?? team.name),
 			description: String(formData.get('description') ?? ''),
 			photoUrl: String(formData.get('photoUrl') ?? ''),
 			videoUrl: String(formData.get('videoUrl') ?? ''),
@@ -76,8 +76,18 @@ export const actions: Actions = {
 		const result = teamSchema.safeParse(raw);
 		if (!result.success) return fail(400, { errors: result.error.flatten().fieldErrors });
 
-		await db.update(teams).set({ ...result.data, updatedAt: new Date() }).where(eq(teams.id, team.id));
-		return { success: true };
+		// Regenerate slug if name changed (resolveTeamSlug skips the current team for uniqueness)
+		const newSlug =
+			result.data.name !== team.name
+				? await resolveTeamSlug(result.data.name, team.id)
+				: team.slug;
+
+		await db
+			.update(teams)
+			.set({ ...result.data, slug: newSlug, updatedAt: new Date() })
+			.where(eq(teams.id, team.id));
+
+		redirect(302, `/teams/${newSlug}`);
 	},
 
 	// Add a member (by profileId or name)
@@ -87,8 +97,9 @@ export const actions: Actions = {
 		if (!team) return fail(404, { error: 'Not found' });
 
 		const formData = await request.formData();
-		const profileId = formData.get('profileId')?.toString() || null;
 		const memberName = formData.get('memberName')?.toString() || null;
+		// If memberName is provided, treat as name-only (ignore profileId to prevent stale state from overriding intent)
+		const profileId = memberName ? null : (formData.get('profileId')?.toString() || null);
 		const isCurrent = formData.get('isCurrent') !== 'false';
 
 		if (!profileId && !memberName) {
@@ -137,8 +148,9 @@ export const actions: Actions = {
 		if (!team) return fail(404, { error: 'Not found' });
 
 		const formData = await request.formData();
-		const profileId = formData.get('profileId')?.toString() || null;
 		const coachName = formData.get('coachName')?.toString() || null;
+		// If coachName is provided, treat as name-only (ignore profileId)
+		const profileId = coachName ? null : (formData.get('profileId')?.toString() || null);
 		const isCurrent = formData.get('isCurrent') !== 'false';
 
 		if (!profileId && !coachName) return fail(400, { error: 'Provide a coach or a name' });
@@ -152,6 +164,42 @@ export const actions: Actions = {
 			approvalStatus
 		});
 
+		return { success: true };
+	},
+
+	// Toggle isCurrent for a member
+	setMemberStatus: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const team = await getTeamBySlug(params.slug);
+		if (!team) return fail(404, { error: 'Not found' });
+
+		const formData = await request.formData();
+		const memberId = formData.get('memberId')?.toString();
+		const isCurrent = formData.get('isCurrent') === 'true';
+		if (!memberId) return fail(400, { error: 'Missing memberId' });
+
+		await db
+			.update(teamMembers)
+			.set({ isCurrent, updatedAt: new Date() })
+			.where(and(eq(teamMembers.id, memberId), eq(teamMembers.teamId, team.id)));
+		return { success: true };
+	},
+
+	// Toggle isCurrent for a coach
+	setCoachStatus: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const team = await getTeamBySlug(params.slug);
+		if (!team) return fail(404, { error: 'Not found' });
+
+		const formData = await request.formData();
+		const coachId = formData.get('coachId')?.toString();
+		const isCurrent = formData.get('isCurrent') === 'true';
+		if (!coachId) return fail(400, { error: 'Missing coachId' });
+
+		await db
+			.update(teamCoaches)
+			.set({ isCurrent, updatedAt: new Date() })
+			.where(and(eq(teamCoaches.id, coachId), eq(teamCoaches.teamId, team.id)));
 		return { success: true };
 	},
 

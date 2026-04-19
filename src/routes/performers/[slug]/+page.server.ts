@@ -24,6 +24,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				teamName: teams.name,
 				teamSlug: teams.slug,
 				teamStatus: teams.status,
+				teamPhotoUrl: teams.photoUrl,
 				startYear: teamMembers.startYear,
 				startMonth: teamMembers.startMonth,
 				endYear: teamMembers.endYear,
