@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$server/db';
 import { teamCoaches, personalProfiles } from '$server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { getTeamBySlug, getTeamMembers } from '$server/teams';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -46,10 +46,15 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		}
 	}
 
+	const approvedMembers = members.filter((m) => m.approvalStatus === 'approved');
+	const approvedCoaches = coaches.filter((c) => c.approvalStatus === 'approved');
+
 	return {
 		team,
-		members: members.filter((m) => m.approvalStatus === 'approved'),
-		coaches: coaches.filter((c) => c.approvalStatus === 'approved'),
+		currentMembers: approvedMembers.filter((m) => m.isCurrent),
+		alumniMembers: approvedMembers.filter((m) => !m.isCurrent),
+		currentCoaches: approvedCoaches.filter((c) => c.isCurrent),
+		alumniCoaches: approvedCoaches.filter((c) => !c.isCurrent),
 		isTeamMember
 	};
 };

@@ -38,6 +38,10 @@
 			<label for="description">DESCRIPTION</label>
 			<textarea id="description" name="description" rows="4" placeholder="Tell us about your team...">{form?.values?.description ?? ''}</textarea>
 		</div>
+		<div class="form-field">
+			<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
+			<input id="photoUrl" name="photoUrl" type="url" value={form?.values?.photoUrl ?? ''} placeholder="https://..." />
+		</div>
 		<div class="two-col">
 			<div class="form-field">
 				<label for="form">FORM / STYLE</label>
@@ -81,5 +85,6 @@
 	.checks { display: flex; flex-direction: column; gap: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
 	.freshness-notice { font-size: 13px; color: var(--zine-muted); border: 1px solid var(--zine-border-color, #e5e7eb); border-left: 3px solid var(--zine-primary); padding: 12px 14px; margin: 0; }
+	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
 </style>

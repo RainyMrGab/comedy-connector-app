@@ -2,12 +2,24 @@
 	import { enhance } from '$app/forms';
 	import type { PageData } from './$types';
 	import EmptyState from '$components/ui/EmptyState.svelte';
+	import { toastStore } from '$stores/toast.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let pendingMemberships = $derived(data.pendingMemberships);
 	let pendingCoachRoles = $derived(data.pendingCoachRoles);
 
 	const total = $derived(pendingMemberships.length + pendingCoachRoles.length);
+
+	function respondEnhance() {
+		return async ({ result, update }: { result: { type: string; data?: { message?: string; error?: string } }; update: () => Promise<void> }) => {
+			if (result.type === 'success' && result.data?.message) {
+				toastStore.success(result.data.message);
+			} else if (result.type === 'failure' && result.data?.error) {
+				toastStore.error(result.data.error);
+			}
+			await update();
+		};
+	}
 </script>
 
 <svelte:head>
@@ -32,10 +44,14 @@
 						<p class="approval-date">Added {new Date(m.createdAt).toLocaleDateString()}</p>
 					</div>
 					<div class="approval-actions">
-						<form method="POST" action="/api/approvals/{m.id}?type=membership" use:enhance>
+						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
+							<input type="hidden" name="id" value={m.id} />
+							<input type="hidden" name="type" value="membership" />
 							<button type="submit" name="action" value="approve" class="btn-approve">APPROVE</button>
 						</form>
-						<form method="POST" action="/api/approvals/{m.id}?type=membership" use:enhance>
+						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
+							<input type="hidden" name="id" value={m.id} />
+							<input type="hidden" name="type" value="membership" />
 							<button type="submit" name="action" value="reject" class="btn-reject">REJECT</button>
 						</form>
 					</div>
@@ -54,10 +70,14 @@
 						<p class="approval-date">Added {new Date(c.createdAt).toLocaleDateString()}</p>
 					</div>
 					<div class="approval-actions">
-						<form method="POST" action="/api/approvals/{c.id}?type=coach" use:enhance>
+						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
+							<input type="hidden" name="id" value={c.id} />
+							<input type="hidden" name="type" value="coach" />
 							<button type="submit" name="action" value="approve" class="btn-approve">APPROVE</button>
 						</form>
-						<form method="POST" action="/api/approvals/{c.id}?type=coach" use:enhance>
+						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
+							<input type="hidden" name="id" value={c.id} />
+							<input type="hidden" name="type" value="coach" />
 							<button type="submit" name="action" value="reject" class="btn-reject">REJECT</button>
 						</form>
 					</div>

@@ -1,7 +1,7 @@
-import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import { redirect, fail } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { teamMembers, teamCoaches, teams, personalProfiles } from '$server/db/schema';
+import { teamMembers, teamCoaches, teams } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getProfileByUserId } from '$server/profiles';
 
@@ -51,4 +51,53 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	]);
 
 	return { pendingMemberships, pendingCoachRoles };
+};
+
+export const actions: Actions = {
+	respond: async ({ request, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+
+		const userProfile = await getProfileByUserId(locals.user.id);
+		if (!userProfile) return fail(404, { error: 'Profile not found' });
+
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
+		const type = formData.get('type')?.toString();
+		const action = formData.get('action')?.toString();
+
+		if (!id || (type !== 'membership' && type !== 'coach') || (action !== 'approve' && action !== 'reject')) {
+			return fail(400, { error: 'Invalid request' });
+		}
+
+		const approvalStatus = action === 'approve' ? 'approved' : 'rejected';
+
+		if (type === 'membership') {
+			const row = await db
+				.select({ id: teamMembers.id })
+				.from(teamMembers)
+				.where(and(eq(teamMembers.id, id), eq(teamMembers.profileId, userProfile.id)))
+				.limit(1);
+			if (!row[0]) return fail(403, { error: 'Not authorized' });
+
+			await db
+				.update(teamMembers)
+				.set({ approvalStatus, updatedAt: new Date() })
+				.where(eq(teamMembers.id, id));
+		} else {
+			const row = await db
+				.select({ id: teamCoaches.id })
+				.from(teamCoaches)
+				.where(and(eq(teamCoaches.id, id), eq(teamCoaches.profileId, userProfile.id)))
+				.limit(1);
+			if (!row[0]) return fail(403, { error: 'Not authorized' });
+
+			await db
+				.update(teamCoaches)
+				.set({ approvalStatus, updatedAt: new Date() })
+				.where(eq(teamCoaches.id, id));
+		}
+
+		const verb = action === 'approve' ? 'approved' : 'rejected';
+		return { success: true, message: `Request ${verb}.` };
+	}
 };

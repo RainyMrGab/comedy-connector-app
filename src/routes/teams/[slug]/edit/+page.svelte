@@ -59,6 +59,10 @@
 			class="zine-form"
 		>
 			<div class="form-field">
+				<label for="name">TEAM NAME <span class="required">*</span></label>
+				<input id="name" name="name" type="text" value={team.name} required />
+			</div>
+			<div class="form-field">
 				<label for="description">DESCRIPTION</label>
 				<textarea id="description" name="description" rows="4">{team.description ?? ''}</textarea>
 			</div>
@@ -174,7 +178,13 @@
 			</div>
 			<div class="form-field">
 				<label for="memberName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
-				<input id="memberName" name="memberName" type="text" placeholder="Full name..." />
+				<input
+					id="memberName"
+					name="memberName"
+					type="text"
+					placeholder="Full name..."
+					oninput={() => { selectedMember = null; memberSearch = ''; memberResults = []; }}
+				/>
 			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={addingMember}>
@@ -258,7 +268,13 @@
 			</div>
 			<div class="form-field">
 				<label for="coachName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
-				<input id="coachName" name="coachName" type="text" placeholder="Full name..." />
+				<input
+					id="coachName"
+					name="coachName"
+					type="text"
+					placeholder="Full name..."
+					oninput={() => { selectedCoach = null; coachSearch = ''; coachResults = []; }}
+				/>
 			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={addingCoach}>
@@ -270,6 +286,7 @@
 </div>
 
 <style>
+	.required { color: var(--zine-accent); }
 	.edit-page { max-width: 720px; margin: 0 auto; padding: 48px 32px; }
 	.page-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
 	.page-title { font-family: var(--font-heading); font-size: 36px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }

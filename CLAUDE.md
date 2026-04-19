@@ -6,6 +6,17 @@ Social platform for local comedy communities (performers, coaches, teams). Deplo
 
 - DO NOT COMMIT unless told specifically to do so
 
+## UX Convention — Action Feedback
+
+Whenever a user takes an action (form submit, approve, reject, delete, etc.), the frontend must show a clear result: either a success confirmation (toast, redirect to result page, or both) or a descriptive error message. Never silently succeed or fail.
+
+When possible, redirect to the logical "result" page after an action:
+- Editing a team → redirect to the team view page
+- Approving/rejecting a request → refresh the approvals page (remove the resolved item)
+- Creating something → redirect to the new item's view page
+
+Use `toastStore.success(msg)` / `toastStore.error(msg)` for inline feedback, combined with `await update()` in `use:enhance` callbacks to refresh page data.
+
 ## Commands
 
 ```bash

@@ -20,6 +20,7 @@ export const actions: Actions = {
 		const raw = {
 			name: String(formData.get('name') ?? ''),
 			description: String(formData.get('description') ?? ''),
+			photoUrl: String(formData.get('photoUrl') ?? ''),
 			videoUrl: String(formData.get('videoUrl') ?? ''),
 			form: String(formData.get('form') ?? ''),
 			isPracticeGroup: formData.get('isPracticeGroup') === 'true',
