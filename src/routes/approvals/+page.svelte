@@ -7,6 +7,7 @@
 	let { data }: { data: PageData } = $props();
 	let pendingMemberships = $derived(data.pendingMemberships);
 	let pendingCoachRoles = $derived(data.pendingCoachRoles);
+	let pendingTags = $derived(data.pendingTags);
 
 	const total = $derived(pendingMemberships.length + pendingCoachRoles.length);
 
@@ -85,6 +86,39 @@
 			{/each}
 		</section>
 	{/if}
+
+	{#if pendingTags !== null && pendingTags.length > 0}
+		<section class="approval-section">
+			<h2 class="section-label">TAG APPROVALS ({pendingTags.length})</h2>
+			{#each pendingTags as tag}
+				<div class="approval-row">
+					<div class="tag-approval-info">
+						<span class="tag-name">{tag.name}</span>
+						<span class="domain-badge">{tag.domain.toUpperCase()}</span>
+						{#if tag.entityName && tag.entitySlug}
+							<span class="approval-meta">
+								Suggested for <a href="/{tag.domain === 'team' ? 'teams' : tag.domain + 's'}/{tag.entitySlug}" class="entity-link">{tag.entityName}</a>
+							</span>
+						{/if}
+						{#if tag.suggestedByEmail}
+							<span class="approval-meta">by {tag.suggestedByEmail}</span>
+						{/if}
+						<p class="approval-date">{new Date(tag.createdAt).toLocaleDateString()}</p>
+					</div>
+					<div class="approval-actions">
+						<form method="POST" action="?/approveTag" use:enhance={respondEnhance}>
+							<input type="hidden" name="id" value={tag.id} />
+							<button type="submit" class="btn-approve">APPROVE</button>
+						</form>
+						<form method="POST" action="?/rejectTag" use:enhance={respondEnhance}>
+							<input type="hidden" name="id" value={tag.id} />
+							<button type="submit" class="btn-reject">REJECT</button>
+						</form>
+					</div>
+				</div>
+			{/each}
+		</section>
+	{/if}
 </div>
 
 <style>
@@ -100,4 +134,10 @@
 	.approval-actions { display: flex; gap: 8px; }
 	.btn-approve { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; background: var(--zine-muted); color: #fff; border: var(--zine-border); padding: 6px 14px; cursor: pointer; }
 	.btn-reject { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; background: transparent; color: var(--zine-accent); border: 2px solid var(--zine-accent); padding: 6px 14px; cursor: pointer; }
+	.tag-approval-info { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1; }
+	.tag-name { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; background: var(--zine-primary); color: var(--zine-bg); padding: 2px 8px; text-transform: uppercase; }
+	.domain-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; background: var(--zine-surface); border: var(--zine-border); color: var(--zine-muted); padding: 2px 6px; }
+	.approval-meta { font-size: 11px; color: var(--zine-muted); }
+	.entity-link { color: var(--zine-primary); font-weight: 700; text-decoration: none; }
+	.entity-link:hover { color: var(--zine-muted); }
 </style>

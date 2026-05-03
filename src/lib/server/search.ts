@@ -1,6 +1,14 @@
 import { db } from '$server/db';
-import { personalProfiles, performerProfiles, coachProfiles, teams, teamMembers } from '$server/db/schema';
-import { sql, eq, and, desc } from 'drizzle-orm';
+import {
+	personalProfiles,
+	performerProfiles,
+	coachProfiles,
+	teams,
+	teamMembers,
+	entityTags,
+	tags
+} from '$server/db/schema';
+import { sql, eq, and, desc, inArray } from 'drizzle-orm';
 
 export interface SearchResult {
 	id: string;
@@ -22,6 +30,12 @@ export interface SearchResult {
 	seekingCoach?: boolean;
 	form?: string | null;
 	status?: string;
+	tags?: SearchResultTag[];
+}
+
+export interface SearchResultTag {
+	id: string;
+	name: string;
 }
 
 export interface SearchFilters {
@@ -33,6 +47,7 @@ export interface SearchFilters {
 	availableForPracticeGroup?: boolean;
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;
+	tags?: string[]; // array of tag IDs, AND semantics
 }
 
 export interface SearchCursor {
@@ -41,6 +56,38 @@ export interface SearchCursor {
 }
 
 const PAGE_SIZE = 20;
+
+async function loadApprovedTags(
+	domain: 'performer' | 'coach' | 'team',
+	entityIds: string[]
+): Promise<Map<string, SearchResultTag[]>> {
+	if (entityIds.length === 0) return new Map();
+
+	const rows = await db
+		.select({
+			entityId: entityTags.entityId,
+			id: tags.id,
+			name: tags.name
+		})
+		.from(entityTags)
+		.innerJoin(tags, eq(entityTags.tagId, tags.id))
+		.where(
+			and(
+				eq(entityTags.domain, domain),
+				eq(tags.status, 'approved'),
+				inArray(entityTags.entityId, entityIds)
+			)
+		)
+		.orderBy(tags.name);
+
+	const byEntity = new Map<string, SearchResultTag[]>();
+	for (const row of rows) {
+		const current = byEntity.get(row.entityId) ?? [];
+		current.push({ id: row.id, name: row.name });
+		byEntity.set(row.entityId, current);
+	}
+	return byEntity;
+}
 
 /**
  * Search performers using Postgres full-text search.
@@ -59,10 +106,22 @@ export async function searchPerformers(
 	if (filters.lookingForPracticeGroup) filterConds.push(eq(performerProfiles.lookingForPracticeGroup, true));
 	if (filters.lookingForSmallGroup) filterConds.push(eq(performerProfiles.lookingForSmallGroup, true));
 	if (filters.lookingForIndieTeam) filterConds.push(eq(performerProfiles.lookingForIndieTeam, true));
+	for (const tagId of filters.tags ?? []) {
+		filterConds.push(sql`EXISTS (
+			SELECT 1
+			FROM entity_tags et
+			INNER JOIN tags t ON t.id = et.tag_id
+			WHERE et.entity_id = ${performerProfiles.id}
+				AND et.tag_id = ${tagId}::uuid
+				AND et.domain = 'performer'
+				AND t.status = 'approved'
+		)`);
+	}
 
 	const rows = await db
 		.select({
 			id: personalProfiles.id,
+			tagEntityId: performerProfiles.id,
 			name: personalProfiles.name,
 			slug: personalProfiles.slug,
 			photoUrl: personalProfiles.photoUrl,
@@ -92,7 +151,16 @@ export async function searchPerformers(
 		.limit(limit + 1);
 
 	const hasMore = rows.length > limit;
-	const results = rows.slice(0, limit).map((r) => ({ ...r, rank: Number(r.rank) }));
+	const pageRows = rows.slice(0, limit);
+	const tagsByEntity = await loadApprovedTags(
+		'performer',
+		pageRows.map((row) => row.tagEntityId)
+	);
+	const results = pageRows.map(({ tagEntityId, ...r }) => ({
+		...r,
+		rank: Number(r.rank),
+		tags: tagsByEntity.get(tagEntityId) ?? []
+	}));
 	const nextCursor =
 		hasMore && results.length > 0
 			? { rank: results[results.length - 1].rank, id: results[results.length - 1].id }
@@ -113,10 +181,22 @@ export async function searchCoaches(
 	if (filters.availableForPrivate) filterConds.push(eq(coachProfiles.availableForPrivate, true));
 	if (filters.availableForTeams) filterConds.push(eq(coachProfiles.availableForTeams, true));
 	if (filters.availableForPracticeGroup) filterConds.push(eq(coachProfiles.availableForPracticeGroup, true));
+	for (const tagId of filters.tags ?? []) {
+		filterConds.push(sql`EXISTS (
+			SELECT 1
+			FROM entity_tags et
+			INNER JOIN tags t ON t.id = et.tag_id
+			WHERE et.entity_id = ${coachProfiles.id}
+				AND et.tag_id = ${tagId}::uuid
+				AND et.domain = 'coach'
+				AND t.status = 'approved'
+		)`);
+	}
 
 	const rows = await db
 		.select({
 			id: personalProfiles.id,
+			tagEntityId: coachProfiles.id,
 			name: personalProfiles.name,
 			slug: personalProfiles.slug,
 			photoUrl: personalProfiles.photoUrl,
@@ -146,7 +226,16 @@ export async function searchCoaches(
 		.limit(limit + 1);
 
 	const hasMore = rows.length > limit;
-	const results = rows.slice(0, limit).map((r) => ({ ...r, rank: Number(r.rank) }));
+	const pageRows = rows.slice(0, limit);
+	const tagsByEntity = await loadApprovedTags(
+		'coach',
+		pageRows.map((row) => row.tagEntityId)
+	);
+	const results = pageRows.map(({ tagEntityId, ...r }) => ({
+		...r,
+		rank: Number(r.rank),
+		tags: tagsByEntity.get(tagEntityId) ?? []
+	}));
 	const nextCursor =
 		hasMore && results.length > 0
 			? { rank: results[results.length - 1].rank, id: results[results.length - 1].id }
@@ -173,6 +262,17 @@ export async function searchTeams(
 	const filterConds = [];
 	if (filters.openToNewMembers) filterConds.push(eq(teams.openToNewMembers, true));
 	if (filters.seekingCoach) filterConds.push(eq(teams.seekingCoach, true));
+	for (const tagId of filters.tags ?? []) {
+		filterConds.push(sql`EXISTS (
+			SELECT 1
+			FROM entity_tags et
+			INNER JOIN tags t ON t.id = et.tag_id
+			WHERE et.entity_id = ${teams.id}
+				AND et.tag_id = ${tagId}::uuid
+				AND et.domain = 'team'
+				AND t.status = 'approved'
+		)`);
+	}
 
 	const rows = await db
 		.select({
@@ -208,7 +308,16 @@ export async function searchTeams(
 		.limit(limit + 1);
 
 	const hasMore = rows.length > limit;
-	const results = rows.slice(0, limit).map((r) => ({ ...r, rank: Number(r.rank) }));
+	const pageRows = rows.slice(0, limit);
+	const tagsByEntity = await loadApprovedTags(
+		'team',
+		pageRows.map((row) => row.id)
+	);
+	const results = pageRows.map((r) => ({
+		...r,
+		rank: Number(r.rank),
+		tags: tagsByEntity.get(r.id) ?? []
+	}));
 	const nextCursor =
 		hasMore && results.length > 0
 			? { rank: results[results.length - 1].rank, id: results[results.length - 1].id }

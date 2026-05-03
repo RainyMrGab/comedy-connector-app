@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { users, personalProfiles, performerProfiles, teamMembers, teams } from '$server/db/schema';
+import { users, personalProfiles, performerProfiles, teamMembers, teams, tags, entityTags } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getProfileBySlug } from '$server/profiles';
 
@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		error(404, 'Performer not found');
 	}
 
-	const [performer, memberships, profileUser] = await Promise.all([
+	const [performerRows, memberships, profileUser] = await Promise.all([
 		db
 			.select()
 			.from(performerProfiles)
@@ -39,10 +39,21 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		db.select({ id: users.id, admin: users.admin }).from(users).where(eq(users.id, profile.userId)).limit(1)
 	]);
 
+	const performer = performerRows[0] ?? null;
+
+	const profileTags = performer
+		? await db
+				.select({ id: entityTags.id, name: tags.name })
+				.from(entityTags)
+				.innerJoin(tags, eq(entityTags.tagId, tags.id))
+				.where(and(eq(entityTags.entityId, performer.id), eq(entityTags.domain, 'performer'), eq(tags.status, 'approved')))
+		: [];
+
 	return {
 		profile,
-		performer: performer[0] ?? null,
+		performer,
 		memberships,
+		profileTags,
 		isViewerAdmin: locals.user?.admin ?? false,
 		isTargetAdmin: profileUser[0]?.admin ?? false,
 		targetUserId: profileUser[0]?.id ?? null

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/pglite';
 import * as schema from './schema/index.js';
-import { users, personalProfiles, performerProfiles, coachProfiles } from './schema/index.js';
+import { users, personalProfiles, performerProfiles, coachProfiles, tags } from './schema/index.js';
 
 type LocalDb = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -278,5 +278,28 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			identityId: 'dev-scooter-identity',
 			email: 'scooter@dev.local'
 		});
+	}
+
+	// Seed approved tags for each domain (idempotent: skip if any performer tags already exist)
+	const existingTags = await db
+		.select({ id: tags.id })
+		.from(tags)
+		.where(eq(tags.domain, 'performer'))
+		.limit(1);
+
+	if (existingTags.length === 0) {
+		const performerTagNames = ['long-form', 'short-form', 'arcade', 'ucb', '5-years', '10-years', '15-years', '20-years'];
+		const coachTagNames = ['long-form', 'short-form', 'harold'];
+		const teamTagNames = ['long-form', 'short-form', 'arcade', 'ucb', 'house-team', 'indie', 'city-paper-best-of-pgh'];
+
+		for (const name of performerTagNames) {
+			await db.insert(tags).values({ name, domain: 'performer', status: 'approved' }).onConflictDoNothing();
+		}
+		for (const name of coachTagNames) {
+			await db.insert(tags).values({ name, domain: 'coach', status: 'approved' }).onConflictDoNothing();
+		}
+		for (const name of teamTagNames) {
+			await db.insert(tags).values({ name, domain: 'team', status: 'approved' }).onConflictDoNothing();
+		}
 	}
 }

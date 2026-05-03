@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { users, coachProfiles, teamCoaches, teams } from '$server/db/schema';
+import { users, coachProfiles, teamCoaches, teams, tags, entityTags } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getProfileBySlug } from '$server/profiles';
 
@@ -33,10 +33,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (!coach[0]) error(404, 'Coach not found');
 
+	const profileTags = await db
+		.select({ id: entityTags.id, name: tags.name })
+		.from(entityTags)
+		.innerJoin(tags, eq(entityTags.tagId, tags.id))
+		.where(and(eq(entityTags.entityId, coach[0].id), eq(entityTags.domain, 'coach'), eq(tags.status, 'approved')));
+
 	return {
 		profile,
 		coach: coach[0],
 		coachingRoles,
+		profileTags,
 		isViewerAdmin: locals.user?.admin ?? false,
 		isTargetAdmin: profileUser[0]?.admin ?? false,
 		targetUserId: profileUser[0]?.id ?? null

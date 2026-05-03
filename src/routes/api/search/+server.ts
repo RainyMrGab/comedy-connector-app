@@ -30,6 +30,8 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (url.searchParams.get('availableForPracticeGroup') === 'true') filters.availableForPracticeGroup = true;
 	if (url.searchParams.get('openToNewMembers') === 'true') filters.openToNewMembers = true;
 	if (url.searchParams.get('seekingCoach') === 'true') filters.seekingCoach = true;
+	const tags = url.searchParams.getAll('tags').filter(Boolean);
+	if (tags.length) filters.tags = tags;
 
 	try {
 		if (type === 'coaches') {

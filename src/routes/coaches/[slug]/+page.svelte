@@ -13,6 +13,7 @@
 	let profile = $derived(data.profile);
 	let coach = $derived(data.coach);
 	let coachingRoles = $derived(data.coachingRoles);
+	let profileTags = $derived(data.profileTags);
 	let isViewerAdmin = $derived(data.isViewerAdmin);
 	let isTargetAdmin = $state(untrack(() => data.isTargetAdmin));
 
@@ -54,6 +55,25 @@
 			<div class="name-block">
 				<h1 class="profile-name">{profile.name}</h1>
 				<div class="tag-row">
+					{#if isViewerAdmin && isTargetAdmin}
+						<span class="zine-tag tag-admin"><ShieldCheck size={10} /> ADMIN</span>
+					{:else if isViewerAdmin}
+						<form method="POST" action="?/makeAdmin" use:enhance={() => {
+							return async ({ result, update }) => {
+								if (result.type === 'success') {
+									isTargetAdmin = true;
+									toastStore.success('User is now an admin.');
+								} else {
+									toastStore.error('Failed to make admin.');
+								}
+								await update();
+							};
+						}}>
+							<button type="submit" class="zine-tag tag-admin make-admin-chip">
+								<ShieldCheck size={10} /> MAKE ADMIN
+							</button>
+						</form>
+					{/if}
 					<span class="zine-tag tag-accent"><UserCheck size={10} /> COACH</span>
 					{#if coach.availableForPrivate}
 						<span class="zine-tag">SUB COACHING</span>
@@ -64,6 +84,9 @@
 					{#if coach.availableForTeams}
 						<span class="zine-tag">TEAM COACHING</span>
 					{/if}
+					{#each profileTags ?? [] as tag}
+						<span class="zine-tag">{tag.name}</span>
+					{/each}
 				</div>
 				{#if coach.availability}
 					<p class="availability">{coach.availability}</p>
@@ -86,27 +109,6 @@
 			</div>
 		</div>
 		<div class="header-actions">
-			{#if isViewerAdmin}
-				{#if isTargetAdmin}
-					<span class="zine-tag tag-admin"><ShieldCheck size={10} /> ADMIN</span>
-				{:else}
-					<form method="POST" action="?/makeAdmin" use:enhance={() => {
-						return async ({ result, update }) => {
-							if (result.type === 'success') {
-								isTargetAdmin = true;
-								toastStore.success('User is now an admin.');
-							} else {
-								toastStore.error('Failed to make admin.');
-							}
-							await update();
-						};
-					}}>
-						<button type="submit" class="btn-outline btn-sm">
-							<ShieldCheck size={14} /> MAKE ADMIN
-						</button>
-					</form>
-				{/if}
-			{/if}
 			{#if authStore.isAuthenticated}
 				<button onclick={() => (contactOpen = true)} class="btn-accent">
 					<Mail size={16} /> CONTACT
@@ -232,7 +234,8 @@
 
 	.tag-accent { background: var(--zine-muted); color: #fff; }
 	.tag-admin { background: #1e40af; color: #fff; }
-	.btn-sm { font-size: 10px; padding: 4px 10px; }
+	.make-admin-chip { border: 0; cursor: pointer; }
+	.make-admin-chip:hover { background: var(--zine-muted); }
 
 	.availability { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
 

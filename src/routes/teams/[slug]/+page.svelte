@@ -13,6 +13,7 @@
 	let currentCoaches = $derived(data.currentCoaches);
 	let alumniCoaches = $derived(data.alumniCoaches);
 	let isTeamMember = $derived(data.isTeamMember);
+	let teamTags = $derived(data.teamTags);
 
 	let contactOpen = $state(false);
 
@@ -61,6 +62,9 @@
 					{#if team.seekingCoach}
 						<span class="zine-tag">SEEKING COACH</span>
 					{/if}
+					{#each teamTags ?? [] as tag}
+						<span class="zine-tag">{tag.name}</span>
+					{/each}
 				</div>
 			</div>
 		</div>

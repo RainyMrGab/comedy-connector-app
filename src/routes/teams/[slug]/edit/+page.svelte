@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import ProfileSearch from '$components/ui/ProfileSearch.svelte';
+	import TagEditor from '$components/ui/TagEditor.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let team = $derived(data.team);
@@ -85,6 +86,12 @@
 				</button>
 			</div>
 		</form>
+	</section>
+
+	<!-- Tags -->
+	<section class="edit-section">
+		<h2 class="section-label">TAGS</h2>
+		<TagEditor domain="team" entityId={team.id} initialTags={data.teamTags} />
 	</section>
 
 	<!-- Members -->

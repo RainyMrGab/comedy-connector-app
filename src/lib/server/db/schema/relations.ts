@@ -7,6 +7,8 @@ import { teams } from './teams';
 import { teamMembers } from './team_members';
 import { teamCoaches } from './team_coaches';
 import { contactMessages } from './contact_messages';
+import { tags } from './tags';
+import { entityTags } from './entity_tags';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
 	personalProfile: one(personalProfiles, {
@@ -86,6 +88,25 @@ export const teamCoachesRelations = relations(teamCoaches, ({ one }) => ({
 export const contactMessagesRelations = relations(contactMessages, ({ one }) => ({
 	sender: one(users, {
 		fields: [contactMessages.senderUserId],
+		references: [users.id]
+	})
+}));
+
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+	suggestedBy: one(users, {
+		fields: [tags.suggestedByUserId],
+		references: [users.id]
+	}),
+	entityTags: many(entityTags)
+}));
+
+export const entityTagsRelations = relations(entityTags, ({ one }) => ({
+	tag: one(tags, {
+		fields: [entityTags.tagId],
+		references: [tags.id]
+	}),
+	addedBy: one(users, {
+		fields: [entityTags.addedByUserId],
 		references: [users.id]
 	})
 }));

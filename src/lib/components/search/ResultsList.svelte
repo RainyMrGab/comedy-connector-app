@@ -35,6 +35,7 @@
 		if (f.availableForPracticeGroup) params.set('availableForPracticeGroup', 'true');
 		if (f.openToNewMembers) params.set('openToNewMembers', 'true');
 		if (f.seekingCoach) params.set('seekingCoach', 'true');
+		(f.tags ?? []).forEach((id) => params.append('tags', id));
 		return params;
 	}
 
@@ -58,7 +59,8 @@
 			availableForTeams: filters.availableForTeams,
 			availableForPracticeGroup: filters.availableForPracticeGroup,
 			openToNewMembers: filters.openToNewMembers,
-			seekingCoach: filters.seekingCoach
+			seekingCoach: filters.seekingCoach,
+			tags: filters.tags ? [...filters.tags] : undefined
 		};
 
 		if (isInitialRender) {
