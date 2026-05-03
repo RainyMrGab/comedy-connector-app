@@ -1,15 +1,15 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { teamMembers, teamCoaches, teams } from '$server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { teamMembers, teamCoaches, teams, tags, entityTags, users, personalProfiles, performerProfiles, coachProfiles } from '$server/db/schema';
+import { eq, and, inArray } from 'drizzle-orm';
 import { getProfileByUserId } from '$server/profiles';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 
 	const userProfile = await getProfileByUserId(locals.user.id);
-	if (!userProfile) return { pendingMemberships: [], pendingCoachRoles: [] };
+	if (!userProfile) return { pendingMemberships: [], pendingCoachRoles: [], pendingTags: null };
 
 	const [pendingMemberships, pendingCoachRoles] = await Promise.all([
 		// Team membership requests pending approval from this user
@@ -50,8 +50,91 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			)
 	]);
 
-	return { pendingMemberships, pendingCoachRoles };
+	// Admin-only: load pending tags with entity context
+	let pendingTags: PendingTag[] | null = null;
+	if (locals.user.admin) {
+		pendingTags = await loadPendingTags();
+	}
+
+	return { pendingMemberships, pendingCoachRoles, pendingTags };
 };
+
+interface PendingTag {
+	id: string;
+	name: string;
+	domain: 'performer' | 'coach' | 'team';
+	suggestedByEmail: string | null;
+	entityName: string | null;
+	entitySlug: string | null;
+	createdAt: Date;
+}
+
+async function loadPendingTags(): Promise<PendingTag[]> {
+	const rawTags = await db
+		.select({
+			id: tags.id,
+			name: tags.name,
+			domain: tags.domain,
+			suggestedOnEntityId: tags.suggestedOnEntityId,
+			suggestedByEmail: users.email,
+			createdAt: tags.createdAt
+		})
+		.from(tags)
+		.leftJoin(users, eq(tags.suggestedByUserId, users.id))
+		.where(eq(tags.status, 'pending'))
+		.orderBy(tags.createdAt);
+
+	if (rawTags.length === 0) return [];
+
+	// Look up entity names grouped by domain
+	const performerIds = rawTags.filter((t) => t.domain === 'performer' && t.suggestedOnEntityId).map((t) => t.suggestedOnEntityId!);
+	const coachIds = rawTags.filter((t) => t.domain === 'coach' && t.suggestedOnEntityId).map((t) => t.suggestedOnEntityId!);
+	const teamIds = rawTags.filter((t) => t.domain === 'team' && t.suggestedOnEntityId).map((t) => t.suggestedOnEntityId!);
+
+	const [performerEntities, coachEntities, teamEntities] = await Promise.all([
+		performerIds.length
+			? db
+					.select({ id: performerProfiles.id, name: personalProfiles.name, slug: personalProfiles.slug })
+					.from(performerProfiles)
+					.innerJoin(personalProfiles, eq(personalProfiles.id, performerProfiles.profileId))
+					.where(inArray(performerProfiles.id, performerIds))
+			: [],
+		coachIds.length
+			? db
+					.select({ id: coachProfiles.id, name: personalProfiles.name, slug: personalProfiles.slug })
+					.from(coachProfiles)
+					.innerJoin(personalProfiles, eq(personalProfiles.id, coachProfiles.profileId))
+					.where(inArray(coachProfiles.id, coachIds))
+			: [],
+		teamIds.length
+			? db
+					.select({ id: teams.id, name: teams.name, slug: teams.slug })
+					.from(teams)
+					.where(inArray(teams.id, teamIds))
+			: []
+	]);
+
+	const performerMap = new Map(performerEntities.map((e) => [e.id, e]));
+	const coachMap = new Map(coachEntities.map((e) => [e.id, e]));
+	const teamMap = new Map(teamEntities.map((e) => [e.id, e]));
+
+	return rawTags.map((t) => {
+		let entity: { name: string; slug: string } | undefined;
+		if (t.domain === 'performer' && t.suggestedOnEntityId) entity = performerMap.get(t.suggestedOnEntityId);
+		else if (t.domain === 'coach' && t.suggestedOnEntityId) entity = coachMap.get(t.suggestedOnEntityId);
+		else if (t.domain === 'team' && t.suggestedOnEntityId) entity = teamMap.get(t.suggestedOnEntityId);
+
+		return {
+			id: t.id,
+			name: t.name,
+			domain: t.domain,
+			suggestedByEmail: t.suggestedByEmail ?? null,
+			entityName: entity?.name ?? null,
+			entitySlug: entity?.slug ?? null,
+			createdAt: t.createdAt
+		};
+	});
+}
 
 export const actions: Actions = {
 	respond: async ({ request, locals }) => {
@@ -99,5 +182,38 @@ export const actions: Actions = {
 
 		const verb = action === 'approve' ? 'approved' : 'rejected';
 		return { success: true, message: `Request ${verb}.` };
+	},
+
+	approveTag: async ({ request, locals }) => {
+		if (!locals.user?.admin) return fail(403, { error: 'Forbidden' });
+
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
+		if (!id) return fail(400, { error: 'Missing id' });
+
+		await db.update(tags).set({ status: 'approved', updatedAt: new Date() }).where(eq(tags.id, id));
+		return { success: true, message: 'Tag approved.' };
+	},
+
+	rejectTag: async ({ request, locals }) => {
+		if (!locals.user?.admin) return fail(403, { error: 'Forbidden' });
+
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
+		if (!id) return fail(400, { error: 'Missing id' });
+
+		await db.update(tags).set({ status: 'rejected', updatedAt: new Date() }).where(eq(tags.id, id));
+		return { success: true, message: 'Tag rejected.' };
+	},
+
+	deleteEntityTag: async ({ request, locals }) => {
+		if (!locals.user?.admin) return fail(403, { error: 'Forbidden' });
+
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
+		if (!id) return fail(400, { error: 'Missing id' });
+
+		await db.delete(entityTags).where(eq(entityTags.id, id));
+		return { success: true, message: 'Tag assignment removed.' };
 	}
 };

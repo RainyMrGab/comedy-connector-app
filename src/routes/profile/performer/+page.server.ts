@@ -1,8 +1,8 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '$server/db';
-import { personalProfiles, performerProfiles } from '$server/db/schema';
-import { eq } from 'drizzle-orm';
+import { personalProfiles, performerProfiles, tags, entityTags } from '$server/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { getProfileByUserId } from '$server/profiles';
 import { performerProfileSchema } from '$utils/validation';
 
@@ -18,7 +18,22 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		.where(eq(performerProfiles.profileId, profile.id))
 		.limit(1);
 
-	return { profile, performer: existing[0] ?? null };
+	const performer = existing[0] ?? null;
+
+	const performerTags = performer
+		? await db
+				.select({
+					id: entityTags.id,
+					tagId: entityTags.tagId,
+					name: tags.name,
+					status: tags.status
+				})
+				.from(entityTags)
+				.innerJoin(tags, eq(entityTags.tagId, tags.id))
+				.where(and(eq(entityTags.entityId, performer.id), eq(entityTags.domain, 'performer')))
+		: [];
+
+	return { profile, performer, performerTags };
 };
 
 export const actions: Actions = {

@@ -1,15 +1,15 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$server/db';
-import { teamCoaches, personalProfiles } from '$server/db/schema';
-import { eq } from 'drizzle-orm';
+import { teamCoaches, personalProfiles, tags, entityTags } from '$server/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { getTeamBySlug, getTeamMembers } from '$server/teams';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const team = await getTeamBySlug(params.slug);
 	if (!team) error(404, 'Team not found');
 
-	const [members, coaches] = await Promise.all([
+	const [members, coaches, teamTags] = await Promise.all([
 		getTeamMembers(team.id),
 		db
 			.select({
@@ -28,7 +28,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			})
 			.from(teamCoaches)
 			.leftJoin(personalProfiles, eq(teamCoaches.profileId, personalProfiles.id))
-			.where(eq(teamCoaches.teamId, team.id))
+			.where(eq(teamCoaches.teamId, team.id)),
+		db
+			.select({ id: entityTags.id, name: tags.name })
+			.from(entityTags)
+			.innerJoin(tags, eq(entityTags.tagId, tags.id))
+			.where(and(eq(entityTags.entityId, team.id), eq(entityTags.domain, 'team'), eq(tags.status, 'approved')))
 	]);
 
 	// Is the current logged-in user a member or the creator?
@@ -55,6 +60,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		alumniMembers: approvedMembers.filter((m) => !m.isCurrent),
 		currentCoaches: approvedCoaches.filter((c) => c.isCurrent),
 		alumniCoaches: approvedCoaches.filter((c) => !c.isCurrent),
-		isTeamMember
+		isTeamMember,
+		teamTags
 	};
 };

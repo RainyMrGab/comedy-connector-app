@@ -1,17 +1,17 @@
-import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import { error, fail } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { personalProfiles, performerProfiles, teamMembers, teams } from '$server/db/schema';
+import { users, personalProfiles, performerProfiles, teamMembers, teams, tags, entityTags } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getProfileBySlug } from '$server/profiles';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const profile = await getProfileBySlug(params.slug);
 	if (!profile) {
 		error(404, 'Performer not found');
 	}
 
-	const [performer, memberships] = await Promise.all([
+	const [performerRows, memberships, profileUser] = await Promise.all([
 		db
 			.select()
 			.from(performerProfiles)
@@ -35,12 +35,39 @@ export const load: PageServerLoad = async ({ params }) => {
 			.innerJoin(teams, eq(teamMembers.teamId, teams.id))
 			.where(
 				and(eq(teamMembers.profileId, profile.id), eq(teamMembers.approvalStatus, 'approved'))
-			)
+			),
+		db.select({ id: users.id, admin: users.admin }).from(users).where(eq(users.id, profile.userId)).limit(1)
 	]);
+
+	const performer = performerRows[0] ?? null;
+
+	const profileTags = performer
+		? await db
+				.select({ id: entityTags.id, name: tags.name })
+				.from(entityTags)
+				.innerJoin(tags, eq(entityTags.tagId, tags.id))
+				.where(and(eq(entityTags.entityId, performer.id), eq(entityTags.domain, 'performer'), eq(tags.status, 'approved')))
+		: [];
 
 	return {
 		profile,
-		performer: performer[0] ?? null,
-		memberships
+		performer,
+		memberships,
+		profileTags,
+		isViewerAdmin: locals.user?.admin ?? false,
+		isTargetAdmin: profileUser[0]?.admin ?? false,
+		targetUserId: profileUser[0]?.id ?? null
 	};
+};
+
+export const actions: Actions = {
+	makeAdmin: async ({ locals, params }) => {
+		if (!locals.user?.admin) return fail(403, { error: 'Forbidden' });
+
+		const profile = await getProfileBySlug(params.slug);
+		if (!profile) return fail(404, { error: 'Profile not found' });
+
+		await db.update(users).set({ admin: true }).where(eq(users.id, profile.userId));
+		return { success: true };
+	}
 };

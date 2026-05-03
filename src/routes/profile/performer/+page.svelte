@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
 	import type { PageData, ActionData } from './$types';
+	import TagEditor from '$components/ui/TagEditor.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let performer = $derived(data.performer);
@@ -72,6 +73,13 @@
 			<label for="lookingFor">MORE ABOUT WHAT YOU'RE LOOKING FOR</label>
 			<input id="lookingFor" name="lookingFor" type="text" value={performer?.lookingFor ?? ''} placeholder="Any specifics about what you're seeking..." />
 		</div>
+
+		{#if performer}
+			<div class="form-field">
+				<p class="form-label" role="presentation">TAGS</p>
+				<TagEditor domain="performer" entityId={performer.id} initialTags={data.performerTags} />
+			</div>
+		{/if}
 
 		<div class="form-field">
 			<p class="form-label" role="presentation">HIGHLIGHTS <small class="field-hint">(up to 5 links — video, photo, article, review…)</small></p>

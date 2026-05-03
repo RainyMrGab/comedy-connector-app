@@ -1,15 +1,21 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { enhance } from '$app/forms';
+	import { untrack } from 'svelte';
 	import { authStore } from '$stores/auth.svelte';
-	import { Sparkles, Mail, Instagram, Globe, Users, Video, Copy, Check } from 'lucide-svelte';
+	import { Sparkles, Mail, Instagram, Globe, Users, Video, Copy, Check, ShieldCheck } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
+	import { toastStore } from '$stores/toast.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
 	let performer = $derived(data.performer);
 	let memberships = $derived(data.memberships);
+	let profileTags = $derived(data.profileTags);
+	let isViewerAdmin = $derived(data.isViewerAdmin);
+	let isTargetAdmin = $state(untrack(() => data.isTargetAdmin));
 
 	let contactOpen = $state(false);
 	let copied = $state(false);
@@ -62,6 +68,25 @@
 			<div class="name-block">
 				<h1 class="profile-name">{profile.name}</h1>
 				<div class="tag-row">
+					{#if isViewerAdmin && isTargetAdmin}
+						<span class="zine-tag tag-admin"><ShieldCheck size={10} /> ADMIN</span>
+					{:else if isViewerAdmin}
+						<form method="POST" action="?/makeAdmin" use:enhance={() => {
+							return async ({ result, update }) => {
+								if (result.type === 'success') {
+									isTargetAdmin = true;
+									toastStore.success('User is now an admin.');
+								} else {
+									toastStore.error('Failed to make admin.');
+								}
+								await update();
+							};
+						}}>
+							<button type="submit" class="zine-tag tag-admin make-admin-chip">
+								<ShieldCheck size={10} /> MAKE ADMIN
+							</button>
+						</form>
+					{/if}
 					{#if performer}
 						<span class="zine-tag tag-accent"><Sparkles size={10} /> PERFORMER</span>
 					{/if}
@@ -74,6 +99,9 @@
 					{#if performer?.lookingForIndieTeam}
 						<span class="zine-tag">SEEKING INDIE TEAM</span>
 					{/if}
+					{#each profileTags ?? [] as tag}
+						<span class="zine-tag">{tag.name}</span>
+					{/each}
 				</div>
 				{#if profile.socialLinks && Object.keys(profile.socialLinks).length > 0}
 					<div class="tag-row">
@@ -283,6 +311,9 @@
 
 	.tag-accent { background: var(--zine-muted); color: #fff; }
 	.tag-warning { background: var(--zine-accent); color: #fff; }
+	.tag-admin { background: #1e40af; color: #fff; }
+	.make-admin-chip { border: 0; cursor: pointer; }
+	.make-admin-chip:hover { background: var(--zine-muted); }
 
 	.tag-warning {
 		color: #b45309;

@@ -4,12 +4,15 @@
 	import SearchBar from '$components/search/SearchBar.svelte';
 	import FilterPanel from '$components/search/FilterPanel.svelte';
 	import ResultsList from '$components/search/ResultsList.svelte';
+	import TagSearch from '$components/search/TagSearch.svelte';
 	import { cityConfig } from '$config/city';
 
 	let { data }: { data: PageData } = $props();
 
 	let query = $state('');
-	let filters = $state<SearchFilters>({});
+	let baseFilters = $state<SearchFilters>({});
+	let selectedTags = $state<{ id: string; name: string }[]>([]);
+	let filters = $derived<SearchFilters>({ ...baseFilters, tags: selectedTags.map((t) => t.id) });
 </script>
 
 <svelte:head>
@@ -22,7 +25,8 @@
 		<h1 class="page-title">COACHES</h1>
 		<div class="search-row">
 			<SearchBar placeholder="Search coaches..." onchange={(q) => (query = q)} />
-			<FilterPanel type="coaches" {filters} onchange={(f) => (filters = f)} />
+			<FilterPanel type="coaches" filters={baseFilters} onchange={(f) => (baseFilters = f)} />
+			<TagSearch domain="coach" {selectedTags} onchange={(t) => (selectedTags = t)} />
 		</div>
 	</div>
 

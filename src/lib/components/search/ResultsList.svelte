@@ -33,8 +33,10 @@
 		if (f.availableForPrivate) params.set('availableForPrivate', 'true');
 		if (f.availableForTeams) params.set('availableForTeams', 'true');
 		if (f.availableForPracticeGroup) params.set('availableForPracticeGroup', 'true');
+		if (f.openToBookOpeners) params.set('openToBookOpeners', 'true');
 		if (f.openToNewMembers) params.set('openToNewMembers', 'true');
 		if (f.seekingCoach) params.set('seekingCoach', 'true');
+		(f.tags ?? []).forEach((id) => params.append('tags', id));
 		return params;
 	}
 
@@ -57,8 +59,10 @@
 			availableForPrivate: filters.availableForPrivate,
 			availableForTeams: filters.availableForTeams,
 			availableForPracticeGroup: filters.availableForPracticeGroup,
+			openToBookOpeners: filters.openToBookOpeners,
 			openToNewMembers: filters.openToNewMembers,
-			seekingCoach: filters.seekingCoach
+			seekingCoach: filters.seekingCoach,
+			tags: filters.tags ? [...filters.tags] : undefined
 		};
 
 		if (isInitialRender) {

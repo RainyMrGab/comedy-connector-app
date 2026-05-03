@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, uuid, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -6,6 +6,7 @@ export const users = pgTable('users', {
 	email: text('email').notNull(),
 	// 'email', 'google', etc. — set on signup via identity-signup webhook.
 	authProvider: text('auth_provider').default('email'),
+	admin: boolean('admin').notNull().default(false),
 	// Set on each login (debounced to once/day). Used to exclude recently-active users from freshness polls.
 	lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

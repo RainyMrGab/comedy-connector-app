@@ -69,12 +69,18 @@
 		{#if result.availableForTeams}
 			<span class="ztag">TEAM COACHING</span>
 		{/if}
+		{#if result.openToBookOpeners}
+			<span class="ztag">OPENER</span>
+		{/if}
 		{#if result.openToNewMembers}
 			<span class="ztag">OPEN TO MEMBERS</span>
 		{/if}
 		{#if result.seekingCoach}
 			<span class="ztag">SEEKING COACH</span>
 		{/if}
+		{#each result.tags ?? [] as tag (tag.id)}
+			<span class="ztag entity-tag">{tag.name}</span>
+		{/each}
 	</div>
 </a>
 
@@ -90,4 +96,5 @@
 	.card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 	.ztag { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--zine-primary); color: var(--zine-bg); padding: 2px 8px; }
 	.ztag.stub { background: var(--zine-accent); color: #fff; }
+	.ztag.entity-tag { background: var(--zine-muted); color: #fff; }
 </style>

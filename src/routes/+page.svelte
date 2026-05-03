@@ -8,19 +8,19 @@
       icon: Sparkles,
       label: 'BOOK AN OPENER',
       desc: 'Find teams interested in opening for your show.',
-      href: '/connect/book-opener'
+      href: '/teams?openToBookOpeners=true'
     },
     {
       icon: GraduationCap,
       label: 'FIND A COACH',
       desc: 'Browse coaches by style, availability, and focus area.',
-      href: '/connect/find-coach'
+      href: '/coaches'
     },
     {
       icon: Handshake,
       label: 'JOIN A TEAM',
       desc: 'Find teams and practice groups looking for new players.',
-      href: '/connect/join-team'
+      href: '/teams?openToNewMembers=true'
     }
   ];
 

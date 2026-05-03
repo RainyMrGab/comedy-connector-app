@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '$server/db';
-import { teams, teamMembers, teamCoaches, personalProfiles } from '$server/db/schema';
+import { teams, teamMembers, teamCoaches, personalProfiles, tags, entityTags } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getTeamBySlug, getTeamMembers, getOrCreateStubTeam, resolveTeamSlug } from '$server/teams';
 import { getProfileByUserId } from '$server/profiles';
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 
 	if (!isMember) error(403, 'You must be a team member to edit this team');
 
-	const [members, coaches] = await Promise.all([
+	const [members, coaches, teamTags] = await Promise.all([
 		getTeamMembers(team.id),
 		db
 			.select({
@@ -46,10 +46,15 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			})
 			.from(teamCoaches)
 			.leftJoin(personalProfiles, eq(teamCoaches.profileId, personalProfiles.id))
-			.where(eq(teamCoaches.teamId, team.id))
+			.where(eq(teamCoaches.teamId, team.id)),
+		db
+			.select({ id: entityTags.id, tagId: entityTags.tagId, name: tags.name, status: tags.status })
+			.from(entityTags)
+			.innerJoin(tags, eq(entityTags.tagId, tags.id))
+			.where(and(eq(entityTags.entityId, team.id), eq(entityTags.domain, 'team')))
 	]);
 
-	return { team, members, coaches, userProfile };
+	return { team, members, coaches, userProfile, teamTags };
 };
 
 export const actions: Actions = {

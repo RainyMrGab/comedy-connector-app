@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import TagEditor from '$components/ui/TagEditor.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let coach = $derived(data.coach);
@@ -60,6 +61,13 @@
 				</label>
 			</div>
 		</fieldset>
+
+		{#if coach}
+			<div class="form-field">
+				<p class="form-label" role="presentation">TAGS</p>
+				<TagEditor domain="coach" entityId={coach.id} initialTags={data.coachTags} />
+			</div>
+		{/if}
 
 		<div class="form-field">
 			<label for="availability">AVAILABILITY</label>

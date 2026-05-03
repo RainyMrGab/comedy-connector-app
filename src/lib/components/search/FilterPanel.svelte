@@ -29,6 +29,7 @@
 	</div>
 {:else if type === 'teams'}
 	<div class="filter-row">
+		<button type="button" onclick={() => toggle('openToBookOpeners')} class={filters.openToBookOpeners ? 'filter-chip active' : 'filter-chip'}>Opener</button>
 		<button type="button" onclick={() => toggle('openToNewMembers')} class={filters.openToNewMembers ? 'filter-chip active' : 'filter-chip'}>Open to New Members</button>
 		<button type="button" onclick={() => toggle('seekingCoach')} class={filters.seekingCoach ? 'filter-chip active' : 'filter-chip'}>Seeking Coach</button>
 	</div>
