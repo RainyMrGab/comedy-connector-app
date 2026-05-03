@@ -1,8 +1,20 @@
 import type { Handle } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
+import { env } from '$env/dynamic/private';
 import { resolveUser } from '$server/auth';
 import { db, IS_LOCAL, ensureDatabaseReady } from '$server/db';
 import { users } from '$server/db/schema';
+
+/**
+ * If INITIAL_ADMIN_EMAIL is set and matches the logged-in user who isn't yet an admin,
+ * promote them. Allows first-deploy bootstrap without a DB GUI.
+ */
+async function bootstrapAdminIfNeeded(user: (typeof users.$inferSelect) | null): Promise<void> {
+	if (!user || user.admin || !env.INITIAL_ADMIN_EMAIL) return;
+	if (user.email !== env.INITIAL_ADMIN_EMAIL) return;
+	await db.update(users).set({ admin: true }).where(eq(users.id, user.id));
+	user.admin = true;
+}
 
 /**
  * Fire-and-forget update of lastSeenAt for freshness poll eligibility.
@@ -29,7 +41,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		if (userId) {
 			const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 			event.locals.user = user ?? null;
-			if (user) touchLastSeen(user.id, user.lastSeenAt ?? null);
+			if (user) {
+				await bootstrapAdminIfNeeded(user);
+				touchLastSeen(user.id, user.lastSeenAt ?? null);
+			}
 		} else {
 			event.locals.user = null;
 		}
@@ -39,7 +54,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const cookieToken = event.cookies.get('nf_jwt');
 		const authHeader = event.request.headers.get('authorization');
 		event.locals.user = await resolveUser(cookieToken, authHeader);
-		if (event.locals.user) touchLastSeen(event.locals.user.id, event.locals.user.lastSeenAt ?? null);
+		if (event.locals.user) {
+			await bootstrapAdminIfNeeded(event.locals.user);
+			touchLastSeen(event.locals.user.id, event.locals.user.lastSeenAt ?? null);
+		}
 	}
 
 	try {

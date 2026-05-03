@@ -1,15 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { enhance } from '$app/forms';
+	import { untrack } from 'svelte';
 	import { authStore } from '$stores/auth.svelte';
-	import { UserCheck, Mail, Globe, Users, Instagram, Video, Copy, Check } from 'lucide-svelte';
+	import { UserCheck, Mail, Globe, Users, Instagram, Video, Copy, Check, ShieldCheck } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
+	import { toastStore } from '$stores/toast.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
 	let coach = $derived(data.coach);
 	let coachingRoles = $derived(data.coachingRoles);
+	let isViewerAdmin = $derived(data.isViewerAdmin);
+	let isTargetAdmin = $state(untrack(() => data.isTargetAdmin));
 
 	let contactOpen = $state(false);
 	let copied = $state(false);
@@ -81,6 +86,27 @@
 			</div>
 		</div>
 		<div class="header-actions">
+			{#if isViewerAdmin}
+				{#if isTargetAdmin}
+					<span class="zine-tag tag-admin"><ShieldCheck size={10} /> ADMIN</span>
+				{:else}
+					<form method="POST" action="?/makeAdmin" use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								isTargetAdmin = true;
+								toastStore.success('User is now an admin.');
+							} else {
+								toastStore.error('Failed to make admin.');
+							}
+							await update();
+						};
+					}}>
+						<button type="submit" class="btn-outline btn-sm">
+							<ShieldCheck size={14} /> MAKE ADMIN
+						</button>
+					</form>
+				{/if}
+			{/if}
 			{#if authStore.isAuthenticated}
 				<button onclick={() => (contactOpen = true)} class="btn-accent">
 					<Mail size={16} /> CONTACT
@@ -205,6 +231,8 @@
 	}
 
 	.tag-accent { background: var(--zine-muted); color: #fff; }
+	.tag-admin { background: #1e40af; color: #fff; }
+	.btn-sm { font-size: 10px; padding: 4px 10px; }
 
 	.availability { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
 

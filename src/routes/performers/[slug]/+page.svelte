@@ -1,15 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { enhance } from '$app/forms';
+	import { untrack } from 'svelte';
 	import { authStore } from '$stores/auth.svelte';
-	import { Sparkles, Mail, Instagram, Globe, Users, Video, Copy, Check } from 'lucide-svelte';
+	import { Sparkles, Mail, Instagram, Globe, Users, Video, Copy, Check, ShieldCheck } from 'lucide-svelte';
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
+	import { toastStore } from '$stores/toast.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
 	let performer = $derived(data.performer);
 	let memberships = $derived(data.memberships);
+	let isViewerAdmin = $derived(data.isViewerAdmin);
+	let isTargetAdmin = $state(untrack(() => data.isTargetAdmin));
 
 	let contactOpen = $state(false);
 	let copied = $state(false);
@@ -93,6 +98,27 @@
 			</div>
 		</div>
 		<div class="header-actions">
+			{#if isViewerAdmin}
+				{#if isTargetAdmin}
+					<span class="zine-tag tag-admin"><ShieldCheck size={10} /> ADMIN</span>
+				{:else}
+					<form method="POST" action="?/makeAdmin" use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								isTargetAdmin = true;
+								toastStore.success('User is now an admin.');
+							} else {
+								toastStore.error('Failed to make admin.');
+							}
+							await update();
+						};
+					}}>
+						<button type="submit" class="btn-outline btn-sm">
+							<ShieldCheck size={14} /> MAKE ADMIN
+						</button>
+					</form>
+				{/if}
+			{/if}
 			{#if authStore.isAuthenticated}
 				<button onclick={() => (contactOpen = true)} class="btn-accent">
 					<Mail size={16} /> CONTACT
@@ -283,10 +309,16 @@
 
 	.tag-accent { background: var(--zine-muted); color: #fff; }
 	.tag-warning { background: var(--zine-accent); color: #fff; }
+	.tag-admin { background: #1e40af; color: #fff; }
 
 	.tag-warning {
 		color: #b45309;
 		border-color: #b45309;
+	}
+
+	.btn-sm {
+		font-size: 10px;
+		padding: 4px 10px;
 	}
 
 	.social-link {

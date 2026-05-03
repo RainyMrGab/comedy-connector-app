@@ -35,7 +35,7 @@ export const DEV_USERS = [
 	{
 		id: PERFORMER_USER_ID,
 		email: 'performer@dev.local',
-		label: 'Dev Performer — has performer profile'
+		label: 'Dev Performer (Admin) — has performer profile'
 	},
 	{
 		id: COACH_USER_ID,
@@ -102,11 +102,12 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		.limit(1);
 
 	if (existingBase.length === 0) {
-		// User 1: performer with full profile
+		// User 1: performer with full profile (admin)
 		await db.insert(users).values({
 			id: PERFORMER_USER_ID,
 			identityId: 'dev-performer-identity',
-			email: 'performer@dev.local'
+			email: 'performer@dev.local',
+			admin: true
 		});
 		await db.insert(personalProfiles).values({
 			id: PERFORMER_PROFILE_ID,
@@ -152,6 +153,9 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			email: 'newuser@dev.local'
 		});
 	}
+
+	// Ensure dev performer is always admin (handles existing DBs after migration)
+	await db.update(users).set({ admin: true }).where(eq(users.id, PERFORMER_USER_ID));
 
 	// Seed muppet users (separate idempotency check so existing DBs get them without a full reset)
 	const existingMuppets = await db
