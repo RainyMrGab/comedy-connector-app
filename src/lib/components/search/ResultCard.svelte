@@ -69,6 +69,9 @@
 		{#if result.availableForTeams}
 			<span class="ztag">TEAM COACHING</span>
 		{/if}
+		{#if result.openToBookOpeners}
+			<span class="ztag">OPENER</span>
+		{/if}
 		{#if result.openToNewMembers}
 			<span class="ztag">OPEN TO MEMBERS</span>
 		{/if}

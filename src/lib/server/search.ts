@@ -26,6 +26,7 @@ export interface SearchResult {
 	availableForTeams?: boolean;
 	availableForPracticeGroup?: boolean;
 	// Flags (team)
+	openToBookOpeners?: boolean;
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;
 	form?: string | null;
@@ -45,6 +46,7 @@ export interface SearchFilters {
 	availableForPrivate?: boolean;
 	availableForTeams?: boolean;
 	availableForPracticeGroup?: boolean;
+	openToBookOpeners?: boolean;
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;
 	tags?: string[]; // array of tag IDs, AND semantics
@@ -260,6 +262,7 @@ export async function searchTeams(
 	const stubsWithMembers = [...new Set(stubIds.map((s) => s.teamId))];
 
 	const filterConds = [];
+	if (filters.openToBookOpeners) filterConds.push(eq(teams.openToBookOpeners, true));
 	if (filters.openToNewMembers) filterConds.push(eq(teams.openToNewMembers, true));
 	if (filters.seekingCoach) filterConds.push(eq(teams.seekingCoach, true));
 	for (const tagId of filters.tags ?? []) {
@@ -283,6 +286,7 @@ export async function searchTeams(
 			bio: teams.description,
 			form: teams.form,
 			status: teams.status,
+			openToBookOpeners: teams.openToBookOpeners,
 			openToNewMembers: teams.openToNewMembers,
 			seekingCoach: teams.seekingCoach,
 			rank: tsQuery ? sql<number>`ts_rank(${teams}.search_vector, ${tsQuery})` : sql<number>`0`

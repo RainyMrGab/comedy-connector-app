@@ -20,7 +20,6 @@
 					<li><a href="/performers">Performers</a></li>
 					<li><a href="/coaches">Coaches</a></li>
 					<li><a href="/teams">Teams</a></li>
-					<li><a href="/connect">Connect</a></li>
 					<li><a href="/resources">Resources</a></li>
 				</ul>
 			</div>

@@ -45,9 +45,7 @@
 			<a href="/coaches">COACHES</a>
 			<span class="dot" aria-hidden="true">·</span>
 			<a href="/teams">TEAMS</a>
-			<a href="/connect" class="connect-link">
-				<span class="star">★</span> CONNECT <span class="star">★</span>
-			</a>
+			<span class="dot" aria-hidden="true">·</span>
 			<a href="/resources">RESOURCES</a>
 		</nav>
 
@@ -107,9 +105,6 @@
 				<a href="/performers" onclick={closeMobileMenu}>PERFORMERS</a>
 				<a href="/coaches" onclick={closeMobileMenu}>COACHES</a>
 				<a href="/teams" onclick={closeMobileMenu}>TEAMS</a>
-				<a href="/connect" onclick={closeMobileMenu} class="connect-link">
-					<span class="star">★</span> CONNECT <span class="star">★</span>
-				</a>
 				<a href="/resources" onclick={closeMobileMenu}>RESOURCES</a>
 			</nav>
 			<div class="mobile-auth">
@@ -199,16 +194,6 @@
 		color: var(--zine-primary);
 		font-size: 14px;
 		opacity: 0.5;
-	}
-
-	.connect-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-	}
-
-	.star {
-		color: var(--zine-muted);
 	}
 
 	.desktop-auth {

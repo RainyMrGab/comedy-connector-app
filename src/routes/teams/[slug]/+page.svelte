@@ -57,7 +57,7 @@
 						<span class="zine-tag tag-muted">OPEN TO MEMBERS</span>
 					{/if}
 					{#if team.openToBookOpeners}
-						<span class="zine-tag">AVAILABLE TO BOOK</span>
+						<span class="zine-tag">OPENER</span>
 					{/if}
 					{#if team.seekingCoach}
 						<span class="zine-tag">SEEKING COACH</span>

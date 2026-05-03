@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { SearchFilters } from '$server/search';
+	import { untrack } from 'svelte';
 	import SearchBar from '$components/search/SearchBar.svelte';
 	import FilterPanel from '$components/search/FilterPanel.svelte';
 	import ResultsList from '$components/search/ResultsList.svelte';
@@ -12,7 +13,7 @@
 	let { data }: { data: PageData } = $props();
 
 	let query = $state('');
-	let baseFilters = $state<SearchFilters>({});
+	let baseFilters = $state<SearchFilters>(untrack(() => data.initialFilters ?? {}));
 	let selectedTags = $state<{ id: string; name: string }[]>([]);
 	let filters = $derived<SearchFilters>({ ...baseFilters, tags: selectedTags.map((t) => t.id) });
 </script>

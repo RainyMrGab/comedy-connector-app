@@ -10,6 +10,7 @@ export interface SearchFilters {
 	availableForTeams?: boolean;
 	availableForPracticeGroup?: boolean;
 	// Team filters
+	openToBookOpeners?: boolean;
 	openToNewMembers?: boolean;
 	seekingCoach?: boolean;
 }

@@ -392,6 +392,7 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 				'A polished ensemble built around big characters, earnest songs, and balcony-tested punchlines.',
 			form: 'Longform',
 			openToBookOpeners: true,
+			openToNewMembers: true,
 			primaryContactProfileId: KERMIT_PROFILE_ID
 		});
 	} else {
