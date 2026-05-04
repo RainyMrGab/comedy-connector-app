@@ -39,7 +39,7 @@
 		"@neondatabase/serverless": "^0.10.4",
 		"@skeletonlabs/skeleton": "^4.0.0",
 		"@skeletonlabs/skeleton-svelte": "^4.11.0",
-		"drizzle-orm": "^0.39.3",
+		"drizzle-orm": "^0.45.2",
 		"lucide-svelte": "^0.483.0",
 		"netlify-identity-widget": "^1.9.2",
 		"resend": "^4.1.2",
