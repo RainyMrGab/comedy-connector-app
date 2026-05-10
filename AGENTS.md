@@ -1,9 +1,9 @@
-# Comedy Connector — Claude Context
+# Comedy Connector — Codex Context
 
 Social platform for local comedy communities (performers, coaches, teams). Deploys free on Netlify; configurable per
 city via env vars.
 
-## Claude Instructions
+## Codex Instructions
 
 - DO NOT COMMIT unless told specifically to do so
 
