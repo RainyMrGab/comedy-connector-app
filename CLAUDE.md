@@ -37,6 +37,23 @@ pnpm db:studio         # Drizzle Studio GUI (production Neon DB)
 pnpm db:studio:local   # Drizzle Studio GUI (local PGLite DB at .local-db/)
 ```
 
+## Agent Environment Notes
+
+- New agent worktrees may start with a minimal shell where `node`, `npx`, `pnpm`, and `corepack` are not on `PATH`.
+  First try the user's NVM installs under `$HOME/.nvm/versions/node`, e.g. choose a current LTS/current install and run
+  `PATH="$HOME/.nvm/versions/node/<version>/bin:$PATH" corepack enable`, then run `pnpm`.
+- Prefer the repo's declared package manager (`packageManager` in `package.json`) through Corepack. For this repo,
+  `pnpm --version` should resolve to `10.30.1`.
+- If `node` is needed only for tooling and NVM is unavailable, Codex may have a bundled runtime from
+  `load_workspace_dependencies`, but it may not include `pnpm` or `corepack`.
+- Networked package operations and audit calls often require explicit permission. If `pnpm audit`, `pnpm update`,
+  `pnpm add`, or `pnpm install` fails with DNS/registry errors, rerun the same command with escalated permissions
+  instead of working around the package manager.
+- Starting `pnpm dev` may require permission to bind to localhost. If `listen EPERM` occurs, rerun with escalation.
+  Stop any dev server you started before finishing the turn.
+- macOS process inspection commands such as `ps` may be blocked by permissions. Track server sessions started by the
+  agent and stop those sessions directly when possible.
+
 **Note on `db:*` commands**: These require `NETLIFY_DATABASE_URL` to be set. Add it to your `.env` file (it's
 gitignored). When using `pnpm dev:netlify`, Netlify CLI injects it automatically — but drizzle-kit commands run outside
 that context and read from `.env` directly.
