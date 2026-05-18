@@ -48,11 +48,17 @@
 						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
 							<input type="hidden" name="id" value={m.id} />
 							<input type="hidden" name="type" value="membership" />
+							{#if m.inviteToken}
+								<input type="hidden" name="inviteToken" value={m.inviteToken} />
+							{/if}
 							<button type="submit" name="action" value="approve" class="btn-approve">APPROVE</button>
 						</form>
 						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
 							<input type="hidden" name="id" value={m.id} />
 							<input type="hidden" name="type" value="membership" />
+							{#if m.inviteToken}
+								<input type="hidden" name="inviteToken" value={m.inviteToken} />
+							{/if}
 							<button type="submit" name="action" value="reject" class="btn-reject">REJECT</button>
 						</form>
 					</div>
@@ -74,11 +80,17 @@
 						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
 							<input type="hidden" name="id" value={c.id} />
 							<input type="hidden" name="type" value="coach" />
+							{#if c.inviteToken}
+								<input type="hidden" name="inviteToken" value={c.inviteToken} />
+							{/if}
 							<button type="submit" name="action" value="approve" class="btn-approve">APPROVE</button>
 						</form>
 						<form method="POST" action="?/respond" use:enhance={respondEnhance}>
 							<input type="hidden" name="id" value={c.id} />
 							<input type="hidden" name="type" value="coach" />
+							{#if c.inviteToken}
+								<input type="hidden" name="inviteToken" value={c.inviteToken} />
+							{/if}
 							<button type="submit" name="action" value="reject" class="btn-reject">REJECT</button>
 						</form>
 					</div>

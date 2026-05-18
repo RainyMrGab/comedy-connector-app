@@ -1,53 +1,74 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { teamMembers, teamCoaches, teams, tags, entityTags, users, personalProfiles, performerProfiles, coachProfiles } from '$server/db/schema';
-import { eq, and, inArray } from 'drizzle-orm';
-import { getProfileByUserId } from '$server/profiles';
+import { teamMembers, teamCoaches, teams, tags, entityTags, users, performerProfiles, coachProfiles, personalProfiles } from '$server/db/schema';
+import { eq, and, inArray, or, type SQL } from 'drizzle-orm';
+import { getProfileByUserId, ensureUserProfile } from '$server/profiles';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
+	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname + url.search)}`);
 
 	const userProfile = await getProfileByUserId(locals.user.id);
-	if (!userProfile) return { pendingMemberships: [], pendingCoachRoles: [], pendingTags: null };
+	const inviteToken = url.searchParams.get('invite')?.trim();
+	const inviteEmails = [locals.user.email, userProfile?.contactEmail]
+		.filter((email): email is string => Boolean(email))
+		.map((email) => email.toLowerCase());
+
+	const membershipConditions: SQL[] = [];
+	if (userProfile) membershipConditions.push(eq(teamMembers.profileId, userProfile.id));
+	for (const email of inviteEmails) membershipConditions.push(eq(teamMembers.inviteEmail, email));
+	if (inviteToken) membershipConditions.push(eq(teamMembers.inviteToken, inviteToken));
+
+	const coachConditions: SQL[] = [];
+	if (userProfile) coachConditions.push(eq(teamCoaches.profileId, userProfile.id));
+	for (const email of inviteEmails) coachConditions.push(eq(teamCoaches.inviteEmail, email));
+	if (inviteToken) coachConditions.push(eq(teamCoaches.inviteToken, inviteToken));
 
 	const [pendingMemberships, pendingCoachRoles] = await Promise.all([
 		// Team membership requests pending approval from this user
-		db
-			.select({
-				id: teamMembers.id,
-				teamId: teams.id,
-				teamName: teams.name,
-				teamSlug: teams.slug,
-				isCurrent: teamMembers.isCurrent,
-				createdAt: teamMembers.createdAt
-			})
-			.from(teamMembers)
-			.innerJoin(teams, eq(teamMembers.teamId, teams.id))
-			.where(
-				and(
-					eq(teamMembers.profileId, userProfile.id),
-					eq(teamMembers.approvalStatus, 'pending')
-				)
-			),
+		membershipConditions.length > 0
+			? db
+					.select({
+						id: teamMembers.id,
+						teamId: teams.id,
+						teamName: teams.name,
+						teamSlug: teams.slug,
+						isCurrent: teamMembers.isCurrent,
+						inviteEmail: teamMembers.inviteEmail,
+						inviteToken: teamMembers.inviteToken,
+						createdAt: teamMembers.createdAt
+					})
+					.from(teamMembers)
+					.innerJoin(teams, eq(teamMembers.teamId, teams.id))
+					.where(
+						and(
+							or(...membershipConditions),
+							eq(teamMembers.approvalStatus, 'pending')
+						)
+					)
+			: [],
 		// Coach role requests pending approval from this user
-		db
-			.select({
-				id: teamCoaches.id,
-				teamId: teams.id,
-				teamName: teams.name,
-				teamSlug: teams.slug,
-				isCurrent: teamCoaches.isCurrent,
-				createdAt: teamCoaches.createdAt
-			})
-			.from(teamCoaches)
-			.innerJoin(teams, eq(teamCoaches.teamId, teams.id))
-			.where(
-				and(
-					eq(teamCoaches.profileId, userProfile.id),
-					eq(teamCoaches.approvalStatus, 'pending')
-				)
-			)
+		coachConditions.length > 0
+			? db
+					.select({
+						id: teamCoaches.id,
+						teamId: teams.id,
+						teamName: teams.name,
+						teamSlug: teams.slug,
+						isCurrent: teamCoaches.isCurrent,
+						inviteEmail: teamCoaches.inviteEmail,
+						inviteToken: teamCoaches.inviteToken,
+						createdAt: teamCoaches.createdAt
+					})
+					.from(teamCoaches)
+					.innerJoin(teams, eq(teamCoaches.teamId, teams.id))
+					.where(
+						and(
+							or(...coachConditions),
+							eq(teamCoaches.approvalStatus, 'pending')
+						)
+					)
+			: []
 	]);
 
 	// Admin-only: load pending tags with entity context
@@ -140,43 +161,74 @@ export const actions: Actions = {
 	respond: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
-		const userProfile = await getProfileByUserId(locals.user.id);
-		if (!userProfile) return fail(404, { error: 'Profile not found' });
-
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString();
 		const type = formData.get('type')?.toString();
 		const action = formData.get('action')?.toString();
+		const inviteToken = formData.get('inviteToken')?.toString() || null;
 
 		if (!id || (type !== 'membership' && type !== 'coach') || (action !== 'approve' && action !== 'reject')) {
 			return fail(400, { error: 'Invalid request' });
 		}
 
 		const approvalStatus = action === 'approve' ? 'approved' : 'rejected';
+		const userProfile = await getProfileByUserId(locals.user.id);
 
 		if (type === 'membership') {
 			const row = await db
-				.select({ id: teamMembers.id })
+				.select({
+					id: teamMembers.id,
+					profileId: teamMembers.profileId,
+					memberName: teamMembers.memberName,
+					inviteEmail: teamMembers.inviteEmail,
+					inviteToken: teamMembers.inviteToken
+				})
 				.from(teamMembers)
-				.where(and(eq(teamMembers.id, id), eq(teamMembers.profileId, userProfile.id)))
+				.where(eq(teamMembers.id, id))
 				.limit(1);
-			if (!row[0]) return fail(403, { error: 'Not authorized' });
+			if (!row[0]) return fail(404, { error: 'Request not found' });
+
+			const isAuthorized =
+				(userProfile && row[0].profileId === userProfile.id) ||
+				row[0].inviteEmail === locals.user.email.toLowerCase() ||
+				(userProfile?.contactEmail ? row[0].inviteEmail === userProfile.contactEmail.toLowerCase() : false) ||
+				(inviteToken && row[0].inviteToken === inviteToken);
+			if (!isAuthorized) return fail(403, { error: 'Not authorized' });
+
+			const profileId =
+				action === 'approve' ? await ensureUserProfile(locals.user.id, locals.user.email, row[0].memberName) : row[0].profileId;
 
 			await db
 				.update(teamMembers)
-				.set({ approvalStatus, updatedAt: new Date() })
+				.set({ approvalStatus, profileId: profileId ?? undefined, updatedAt: new Date() })
 				.where(eq(teamMembers.id, id));
 		} else {
 			const row = await db
-				.select({ id: teamCoaches.id })
+				.select({
+					id: teamCoaches.id,
+					profileId: teamCoaches.profileId,
+					coachName: teamCoaches.coachName,
+					inviteEmail: teamCoaches.inviteEmail,
+					inviteToken: teamCoaches.inviteToken
+				})
 				.from(teamCoaches)
-				.where(and(eq(teamCoaches.id, id), eq(teamCoaches.profileId, userProfile.id)))
+				.where(eq(teamCoaches.id, id))
 				.limit(1);
-			if (!row[0]) return fail(403, { error: 'Not authorized' });
+			if (!row[0]) return fail(404, { error: 'Request not found' });
+
+			const isAuthorized =
+				(userProfile && row[0].profileId === userProfile.id) ||
+				row[0].inviteEmail === locals.user.email.toLowerCase() ||
+				(userProfile?.contactEmail ? row[0].inviteEmail === userProfile.contactEmail.toLowerCase() : false) ||
+				(inviteToken && row[0].inviteToken === inviteToken);
+			if (!isAuthorized) return fail(403, { error: 'Not authorized' });
+
+			const profileId =
+				action === 'approve' ? await ensureUserProfile(locals.user.id, locals.user.email, row[0].coachName) : row[0].profileId;
 
 			await db
 				.update(teamCoaches)
-				.set({ approvalStatus, updatedAt: new Date() })
+				.set({ approvalStatus, profileId: profileId ?? undefined, updatedAt: new Date() })
 				.where(eq(teamCoaches.id, id));
 		}
 

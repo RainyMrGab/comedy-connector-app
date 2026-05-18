@@ -28,13 +28,11 @@ export const handler: Handler = async () => {
 	const feedbackEmail = process.env.FEEDBACK_EMAIL;
 
 	if (!dbUrl) return { statusCode: 500, body: 'NETLIFY_DATABASE_URL not set' };
-	if (!resendKey) return { statusCode: 500, body: 'RESEND_API_KEY not set' };
 
 	const sql = neon(dbUrl);
 	const db = drizzle(sql);
-	const resend = new Resend(resendKey);
-	const hostname = new URL(siteUrl).hostname;
-	const fromAddress = `Comedy Connector <noreply@${hostname}>`;
+
+	const { emailService } = await import('../../src/lib/services/email.js');
 
 	const { dailyEmailLimit, pollingWindowDays } = reminderConfig;
 	const dayOfMonth = new Date().getDate(); // 1–7
@@ -49,17 +47,17 @@ export const handler: Handler = async () => {
 
 	// ---- Send emails ----
 	for (const recipient of recipients) {
-		try {
-			await resend.emails.send({
-				from: fromAddress,
-				to: recipient.email,
-				subject: FRESHNESS_EMAIL_SUBJECT,
-				html: buildFreshnessEmailHtml(recipient, siteUrl),
-				text: buildFreshnessEmailText(recipient, siteUrl)
-			});
+		const { success, error } = await emailService.send({
+			to: recipient.email,
+			subject: FRESHNESS_EMAIL_SUBJECT,
+			html: buildFreshnessEmailHtml(recipient, siteUrl),
+			text: buildFreshnessEmailText(recipient, siteUrl)
+		});
+
+		if (success) {
 			sent++;
-		} catch (e) {
-			console.error(`Freshness reminder failed for ${recipient.email}:`, e);
+		} else {
+			console.error(`Freshness reminder failed for ${recipient.email}:`, error);
 			errors++;
 		}
 	}
@@ -70,14 +68,12 @@ export const handler: Handler = async () => {
 
 	// ---- Backstop: alert admin if eligible users remain after the last polling day ----
 	if (dayOfMonth === pollingWindowDays && feedbackEmail) {
-		try {
-			const remaining = await countRemainingRecipients(db, offset + dailyEmailLimit, inactiveSince);
-			if (remaining > 0) {
-				await resend.emails.send({
-					from: fromAddress,
-					to: feedbackEmail,
-					subject: `⚠️ Comedy Connector: ${remaining} users not reached in freshness poll`,
-					html: `
+		const remaining = await countRemainingRecipients(db, offset + dailyEmailLimit, inactiveSince);
+		if (remaining > 0) {
+			const { success, error } = await emailService.send({
+				to: feedbackEmail,
+				subject: `⚠️ Comedy Connector: ${remaining} users not reached in freshness poll`,
+				html: `
 <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
   <h2 style="color:#7c3aed;">Freshness Poll Capacity Alert</h2>
   <p><strong>${remaining}</strong> eligible user(s) were not reached during this month's polling window
@@ -86,12 +82,14 @@ export const handler: Handler = async () => {
   in <code>src/lib/config/reminders.ts</code> and update the cron schedule in <code>netlify.toml</code> accordingly.</p>
   <p style="color:#9ca3af;font-size:12px;">Sent by the Comedy Connector freshness-reminder function.</p>
 </div>`,
-					text: `Freshness Poll Capacity Alert\n\n${remaining} user(s) were not reached during this month's polling window (${pollingWindowDays} days × ${dailyEmailLimit}/day = ${pollingWindowDays * dailyEmailLimit} max).\n\nIncrease dailyEmailLimit or pollingWindowDays in src/lib/config/reminders.ts.`
-				});
+				text: `Freshness Poll Capacity Alert\n\n${remaining} user(s) were not reached during this month's polling window (${pollingWindowDays} days × ${dailyEmailLimit}/day = ${pollingWindowDays * dailyEmailLimit} max).\n\nIncrease dailyEmailLimit or pollingWindowDays in src/lib/config/reminders.ts.`
+			});
+
+			if (success) {
 				console.log(`Backstop alert sent: ${remaining} users not reached`);
+			} else {
+				console.error('Failed to send backstop alert:', error);
 			}
-		} catch (e) {
-			console.error('Failed to send backstop alert:', e);
 		}
 	}
 

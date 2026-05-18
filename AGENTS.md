@@ -117,6 +117,7 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 - **Dynamic Tailwind classes**: ternary literals only — `x ? 'class-a' : 'class-b'` (no string interpolation)
 - **Modal backdrops**: `<button class="fixed inset-0 ..." onclick={close}>` — NOT a `<div>` (avoids a11y warning)
 - **Toast store**: `toastStore.success(msg)` / `toastStore.error(msg)` — NOT `.add({message, type})`
+- **Services**: Abstract 3rd party integrations in `src/lib/services/`. Use these services to centralize logic like initialization and fallback behavior (e.g., logging to console if an API key is missing).
 - **`import type` from `$server/*`** is safe in `.svelte` components (TypeScript erases types)
 - **Env vars (server)**: use `$env/dynamic/private` (not static) in server modules
 - **Netlify function imports**: use relative `.js` paths, e.g. `../../src/lib/server/db/schema/foo.js`
@@ -125,7 +126,9 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 
 - Schema-first with Drizzle — edit schema files, then `pnpm db:push` (prod Neon, via `netlify env:run`) or server
   auto-applies locally
-- Migrations: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (
+- **Migrations**: When adding drizzle migrations, ALWAYS update the schema first, then run `pnpm db:generate` to
+  create the migration files. NEVER add migration SQL files directly to `src/lib/server/db/migrations/`.
+- Migrations location: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (
   FTS)
 - PGLite local DB auto-applies migrations on first server request (idempotent via `__drizzle_migrations` table)
 - FTS: `tsvector` generated columns + GIN indexes on `personal_profiles`, `teams`, `coach_profiles`

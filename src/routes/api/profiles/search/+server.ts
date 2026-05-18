@@ -1,8 +1,8 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$server/db';
-import { personalProfiles, performerProfiles, coachProfiles } from '$server/db/schema';
-import { ilike, eq } from 'drizzle-orm';
+import { personalProfiles, performerProfiles, coachProfiles, users } from '$server/db/schema';
+import { ilike, eq, or } from 'drizzle-orm';
 
 /**
  * GET /api/profiles/search?q=<query>&type=performer|coach
@@ -26,7 +26,14 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			})
 			.from(coachProfiles)
 			.innerJoin(personalProfiles, eq(coachProfiles.profileId, personalProfiles.id))
-			.where(ilike(personalProfiles.name, `%${q}%`))
+			.innerJoin(users, eq(personalProfiles.userId, users.id))
+			.where(
+				or(
+					ilike(personalProfiles.name, `%${q}%`),
+					ilike(personalProfiles.contactEmail, `%${q}%`),
+					ilike(users.email, `%${q}%`)
+				)
+			)
 			.limit(10);
 		return json(results);
 	}
@@ -41,7 +48,14 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		})
 		.from(performerProfiles)
 		.innerJoin(personalProfiles, eq(performerProfiles.profileId, personalProfiles.id))
-		.where(ilike(personalProfiles.name, `%${q}%`))
+		.innerJoin(users, eq(personalProfiles.userId, users.id))
+		.where(
+			or(
+				ilike(personalProfiles.name, `%${q}%`),
+				ilike(personalProfiles.contactEmail, `%${q}%`),
+				ilike(users.email, `%${q}%`)
+			)
+		)
 		.limit(10);
 
 	return json(results);

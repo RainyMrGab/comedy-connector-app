@@ -1,6 +1,6 @@
 import { db } from '$server/db';
 import { personalProfiles, users } from '$server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import { generateSlug, uniquifySlug } from '$utils/slug';
 
 /** Resolve or create a unique slug for a profile name. */
@@ -42,4 +42,30 @@ export async function getProfileBySlug(slug: string) {
 		.where(eq(personalProfiles.slug, slug))
 		.limit(1);
 	return result[0] ?? null;
+}
+
+/** Find a profile ID by user email or contact email. */
+export async function findProfileIdByEmail(email: string): Promise<string | null> {
+	const normalized = email.trim().toLowerCase();
+	const result = await db
+		.select({ id: personalProfiles.id })
+		.from(personalProfiles)
+		.leftJoin(users, eq(personalProfiles.userId, users.id))
+		.where(or(eq(users.email, normalized), eq(personalProfiles.contactEmail, normalized)))
+		.limit(1);
+	return result[0]?.id ?? null;
+}
+
+/** Get or create a profile for a user if it doesn't exist. */
+export async function ensureUserProfile(userId: string, email: string, fallbackName?: string | null): Promise<string> {
+	const existing = await getProfileByUserId(userId);
+	if (existing) return existing.id;
+
+	const name = fallbackName?.trim() || email.split('@')[0];
+	const slug = await resolveProfileSlug(name);
+	const [inserted] = await db
+		.insert(personalProfiles)
+		.values({ userId, name, slug })
+		.returning({ id: personalProfiles.id });
+	return inserted.id;
 }
