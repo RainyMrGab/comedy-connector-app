@@ -1,18 +1,17 @@
 import { Resend } from 'resend';
 import { env } from '$env/dynamic/private';
+import * as contactTemplate from './email-templates/contact';
+import * as feedbackTemplate from './email-templates/feedback';
+import * as teamInviteTemplate from './email-templates/team-invite';
 
 function getResend() {
 	if (!env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
 	return new Resend(env.RESEND_API_KEY);
 }
 
-function escapeHtml(value: string): string {
-	return value
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
+function getFromAddress(siteUrl: string) {
+	const url = new URL(siteUrl);
+	return `Comedy Connector <noreply@${url.hostname}>`;
 }
 
 export interface ContactEmailParams {
@@ -27,31 +26,15 @@ export interface ContactEmailParams {
 
 export async function sendContactMessage(params: ContactEmailParams): Promise<void> {
 	const resend = getResend();
-	const { to, replyTo, senderName, recipientName, subject, message, siteUrl } = params;
+	const { to, replyTo, siteUrl } = params;
 
 	await resend.emails.send({
-		from: `${siteUrl.replace(/https?:\/\//, '')} <noreply@${new URL(siteUrl).hostname}>`,
+		from: getFromAddress(siteUrl),
 		to,
 		replyTo,
-		subject: `[Comedy Connector] ${subject}`,
-		html: `
-<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-  <p style="color: #6b7280; font-size: 14px;">
-    Message via Comedy Connector — reply directly to respond to ${senderName}.
-  </p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;" />
-  <p><strong>To:</strong> ${recipientName}</p>
-  <p><strong>From:</strong> ${senderName}</p>
-  <p><strong>Subject:</strong> ${subject}</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;" />
-  <div style="white-space: pre-line; line-height: 1.6;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-  <p style="color: #9ca3af; font-size: 12px;">
-    This message was sent via <a href="${siteUrl}" style="color: #7c3aed;">${siteUrl}</a>.
-    Reply to this email to respond directly to ${senderName}.
-  </p>
-</div>`,
-		text: `Message via Comedy Connector — reply directly to respond to ${senderName}.\n\nTo: ${recipientName}\nFrom: ${senderName}\nSubject: ${subject}\n\n${message}\n\n---\nSent via ${siteUrl}`
+		subject: contactTemplate.subject(params),
+		html: contactTemplate.html(params),
+		text: contactTemplate.text(params)
 	});
 }
 
@@ -65,28 +48,16 @@ export interface FeedbackEmailParams {
 
 export async function sendFeedback(params: FeedbackEmailParams): Promise<void> {
 	const resend = getResend();
-	const { to, message, name, email, siteUrl } = params;
-
-	const fromLabel = name ?? email ?? 'Anonymous';
+	const { to, email, siteUrl } = params;
 	const replyTo = email ?? undefined;
 
 	const { error } = await resend.emails.send({
-		from: `Comedy Connector <noreply@${new URL(siteUrl).hostname}>`,
+		from: getFromAddress(siteUrl),
 		to,
 		...(replyTo ? { replyTo } : {}),
-		subject: `[Comedy Connector] Feedback from ${fromLabel}`,
-		html: `
-<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-  <p style="color: #6b7280; font-size: 14px;">Feedback submitted via Comedy Connector.</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;" />
-  ${name ? `<p><strong>Name:</strong> ${name}</p>` : ''}
-  ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;" />
-  <div style="white-space: pre-line; line-height: 1.6;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-  <p style="color: #9ca3af; font-size: 12px;">Sent via <a href="${siteUrl}" style="color: #7c3aed;">${siteUrl}</a></p>
-</div>`,
-		text: `Feedback via Comedy Connector\n\n${name ? `Name: ${name}\n` : ''}${email ? `Email: ${email}\n` : ''}\n${message}\n\n---\nSent via ${siteUrl}`
+		subject: feedbackTemplate.subject(params),
+		html: feedbackTemplate.html(params),
+		text: feedbackTemplate.text(params)
 	});
 
 	if (error) throw new Error(`Resend error: ${error.message}`);
@@ -104,30 +75,20 @@ export interface TeamInviteEmailParams {
 
 export async function sendTeamInvite(params: TeamInviteEmailParams): Promise<void> {
 	const resend = getResend();
-	const { to, inviteeName, teamName, role, inviterName, siteUrl, inviteToken } = params;
+	const { to, siteUrl, inviteToken } = params;
 	const approvalsUrl = `${siteUrl.replace(/\/$/, '')}/approvals${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ''}`;
-	const hostname = new URL(siteUrl).hostname;
-	const safeInviteeName = escapeHtml(inviteeName);
-	const safeTeamName = escapeHtml(teamName);
-	const safeInviterName = escapeHtml(inviterName);
-	const roleLabel = role === 'coach' ? 'coach' : 'performer';
+
+	const templateParams = {
+		...params,
+		approvalsUrl
+	};
 
 	const { error } = await resend.emails.send({
-		from: `Comedy Connector <noreply@${hostname}>`,
+		from: getFromAddress(siteUrl),
 		to,
-		subject: `${safeInviterName} invited you to join ${safeTeamName} on Comedy Connector`,
-		html: `
-<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-  <p>Hi ${safeInviteeName},</p>
-  <p>${safeInviterName} invited you to use Comedy Connector and confirm your ${roleLabel} listing with <strong>${safeTeamName}</strong>.</p>
-  <p style="margin: 28px 0;">
-    <a href="${approvalsUrl}" style="background: #1c1c1c; color: #fff; padding: 12px 18px; text-decoration: none; font-weight: 700;">Join the Scene</a>
-  </p>
-  <p>If you already have an account under another email, log in with that account and visit your approvals page.</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-  <p style="color: #9ca3af; font-size: 12px;">Sent via <a href="${siteUrl}" style="color: #7c3aed;">Comedy Connector</a>.</p>
-</div>`,
-		text: `Hi ${inviteeName},\n\n${inviterName} invited you to use Comedy Connector and confirm your ${roleLabel} listing with ${teamName}.\n\nJoin the Scene: ${approvalsUrl}\n\nIf you already have an account under another email, log in with that account and visit your approvals page.\n\nSent via Comedy Connector.`
+		subject: teamInviteTemplate.subject(templateParams),
+		html: teamInviteTemplate.html(templateParams),
+		text: teamInviteTemplate.text(templateParams)
 	});
 
 	if (error) throw new Error(`Resend error: ${error.message}`);
