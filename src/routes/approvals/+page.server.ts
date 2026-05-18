@@ -1,9 +1,9 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { teamMembers, teamCoaches, teams, tags, entityTags, users, personalProfiles, performerProfiles, coachProfiles } from '$server/db/schema';
+import { teamMembers, teamCoaches, teams, tags, entityTags, users, performerProfiles, coachProfiles, personalProfiles } from '$server/db/schema';
 import { eq, and, inArray, or, type SQL } from 'drizzle-orm';
-import { getProfileByUserId, resolveProfileSlug } from '$server/profiles';
+import { getProfileByUserId, ensureUserProfile } from '$server/profiles';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname + url.search)}`);
@@ -172,19 +172,7 @@ export const actions: Actions = {
 		}
 
 		const approvalStatus = action === 'approve' ? 'approved' : 'rejected';
-		let userProfile = await getProfileByUserId(locals.user.id);
-
-		async function ensureProfile(fallbackName: string | null): Promise<string> {
-			if (userProfile) return userProfile.id;
-			const name = fallbackName?.trim() || locals.user!.email.split('@')[0];
-			const slug = await resolveProfileSlug(name);
-			const inserted = await db
-				.insert(personalProfiles)
-				.values({ userId: locals.user!.id, name, slug })
-				.returning({ id: personalProfiles.id });
-			userProfile = await getProfileByUserId(locals.user!.id);
-			return inserted[0].id;
-		}
+		const userProfile = await getProfileByUserId(locals.user.id);
 
 		if (type === 'membership') {
 			const row = await db
@@ -208,7 +196,7 @@ export const actions: Actions = {
 			if (!isAuthorized) return fail(403, { error: 'Not authorized' });
 
 			const profileId =
-				action === 'approve' ? await ensureProfile(row[0].memberName) : row[0].profileId;
+				action === 'approve' ? await ensureUserProfile(locals.user.id, locals.user.email, row[0].memberName) : row[0].profileId;
 
 			await db
 				.update(teamMembers)
@@ -236,7 +224,7 @@ export const actions: Actions = {
 			if (!isAuthorized) return fail(403, { error: 'Not authorized' });
 
 			const profileId =
-				action === 'approve' ? await ensureProfile(row[0].coachName) : row[0].profileId;
+				action === 'approve' ? await ensureUserProfile(locals.user.id, locals.user.email, row[0].coachName) : row[0].profileId;
 
 			await db
 				.update(teamCoaches)

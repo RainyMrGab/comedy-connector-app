@@ -195,7 +195,6 @@
 			<p class="subsection-title">ADD MEMBER</p>
 			<ProfileSearch
 				type="performer"
-				label="SEARCH APP USERS"
 				inputId="memberSearch"
 				placeholder="Type a name or email..."
 				fieldName="profileId"

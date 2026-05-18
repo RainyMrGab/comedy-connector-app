@@ -125,7 +125,9 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 
 - Schema-first with Drizzle — edit schema files, then `pnpm db:push` (prod Neon, via `netlify env:run`) or server
   auto-applies locally
-- Migrations: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (
+- **Migrations**: When adding drizzle migrations, ALWAYS update the schema first, then run `pnpm db:generate` to
+  create the migration files. NEVER add migration SQL files directly to `src/lib/server/db/migrations/`.
+- Migrations location: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (
   FTS)
 - PGLite local DB auto-applies migrations on first server request (idempotent via `__drizzle_migrations` table)
 - FTS: `tsvector` generated columns + GIN indexes on `personal_profiles`, `teams`, `coach_profiles`

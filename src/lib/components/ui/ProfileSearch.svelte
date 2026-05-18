@@ -13,7 +13,7 @@
 		onInvite
 	}: {
 		type: 'performer' | 'coach';
-		label: string;
+		label?: string;
 		inputId?: string;
 		placeholder?: string;
 		fieldName?: string;
@@ -29,22 +29,28 @@
 	let focusedIndex = $state(-1);
 	let wrapEl = $state<HTMLElement | null>(null);
 	let listEl = $state<HTMLElement | null>(null);
+	let searchTimeout: ReturnType<typeof setTimeout>;
+
 	const trimmedQuery = $derived(query.trim());
 	const hasStaticOptions = $derived(trimmedQuery.length > 0);
 	const optionCount = $derived(results.length + (hasStaticOptions ? 2 : 0));
 
 	async function search(q: string) {
+		clearTimeout(searchTimeout);
 		if (!q.trim()) {
 			results = [];
 			isOpen = false;
 			return;
 		}
-		const res = await fetch(`/api/profiles/search?q=${encodeURIComponent(q)}&type=${type}`);
-		if (res.ok) {
-			results = await res.json();
-			isOpen = query.trim().length > 0;
-			focusedIndex = -1;
-		}
+
+		searchTimeout = setTimeout(async () => {
+			const res = await fetch(`/api/profiles/search?q=${encodeURIComponent(q)}&type=${type}`);
+			if (res.ok) {
+				results = await res.json();
+				isOpen = query.trim().length > 0;
+				focusedIndex = -1;
+			}
+		}, 300);
 	}
 
 	function selectProfile(profile: Profile) {
@@ -123,7 +129,7 @@
 </script>
 
 <div class="ps-wrap" bind:this={wrapEl}>
-	<label for={inputId} class="ps-label">{label}</label>
+	{#if label}<label for={inputId} class="ps-label">{label}</label>{/if}
 	<div class="ps-input-wrap">
 		<input
 			id={inputId}

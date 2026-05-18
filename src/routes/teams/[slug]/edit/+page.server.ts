@@ -2,29 +2,14 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
 import { db } from '$server/db';
-import { teams, teamMembers, teamCoaches, personalProfiles, tags, entityTags, users } from '$server/db/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { teams, teamMembers, teamCoaches, tags, entityTags, personalProfiles } from '$server/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { getTeamBySlug, getTeamMembers, getOrCreateStubTeam, resolveTeamSlug } from '$server/teams';
-import { getProfileByUserId } from '$server/profiles';
+import { getProfileByUserId, findProfileIdByEmail } from '$server/profiles';
 import { sendTeamInvite } from '$server/email';
 import { teamSchema } from '$utils/validation';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function normalizeEmail(email: string): string {
-	return email.trim().toLowerCase();
-}
-
-async function findProfileByEmail(email: string) {
-	const normalized = normalizeEmail(email);
-	const result = await db
-		.select({ id: personalProfiles.id })
-		.from(personalProfiles)
-		.innerJoin(users, eq(personalProfiles.userId, users.id))
-		.where(or(eq(users.email, normalized), eq(personalProfiles.contactEmail, normalized)))
-		.limit(1);
-	return result[0]?.id ?? null;
-}
 
 async function getInviterName(userId: string): Promise<string> {
 	const profile = await getProfileByUserId(userId);
@@ -177,12 +162,12 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const inviteName = String(formData.get('inviteName') ?? '').trim();
-		const inviteEmail = normalizeEmail(String(formData.get('inviteEmail') ?? ''));
+		const inviteEmail = String(formData.get('inviteEmail') ?? '').trim().toLowerCase();
 		if (inviteName.length < 2) return fail(400, { error: 'Name must be at least 2 characters' });
 		if (!emailPattern.test(inviteEmail)) return fail(400, { error: 'Enter a valid email address' });
 
 		const inviteToken = crypto.randomUUID();
-		const profileId = await findProfileByEmail(inviteEmail);
+		const profileId = await findProfileIdByEmail(inviteEmail);
 		await db.insert(teamMembers).values({
 			teamId: team.id,
 			profileId: profileId ?? undefined,
@@ -251,12 +236,12 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const inviteName = String(formData.get('inviteName') ?? '').trim();
-		const inviteEmail = normalizeEmail(String(formData.get('inviteEmail') ?? ''));
+		const inviteEmail = String(formData.get('inviteEmail') ?? '').trim().toLowerCase();
 		if (inviteName.length < 2) return fail(400, { error: 'Name must be at least 2 characters' });
 		if (!emailPattern.test(inviteEmail)) return fail(400, { error: 'Enter a valid email address' });
 
 		const inviteToken = crypto.randomUUID();
-		const profileId = await findProfileByEmail(inviteEmail);
+		const profileId = await findProfileIdByEmail(inviteEmail);
 		await db.insert(teamCoaches).values({
 			teamId: team.id,
 			profileId: profileId ?? undefined,
