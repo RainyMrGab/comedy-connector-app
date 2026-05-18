@@ -117,6 +117,7 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 - **Dynamic Tailwind classes**: ternary literals only — `x ? 'class-a' : 'class-b'` (no string interpolation)
 - **Modal backdrops**: `<button class="fixed inset-0 ..." onclick={close}>` — NOT a `<div>` (avoids a11y warning)
 - **Toast store**: `toastStore.success(msg)` / `toastStore.error(msg)` — NOT `.add({message, type})`
+- **Services**: Abstract 3rd party integrations in `src/lib/services/`. Use these services to centralize logic like initialization and fallback behavior (e.g., logging to console if an API key is missing).
 - **`import type` from `$server/*`** is safe in `.svelte` components (TypeScript erases types)
 - **Env vars (server)**: use `$env/dynamic/private` (not static) in server modules
 - **Netlify function imports**: use relative `.js` paths, e.g. `../../src/lib/server/db/schema/foo.js`

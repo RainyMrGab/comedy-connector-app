@@ -24,8 +24,7 @@ async function sendInviteEmail(params: {
 	inviterName: string;
 	inviteToken: string;
 }): Promise<string> {
-	if (!env.RESEND_API_KEY) return 'Invite saved. Email is not configured for this environment.';
-	const siteUrl = env.PUBLIC_SITE_URL ?? 'https://comedyconnector.app';
+	const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 	await sendTeamInvite({ ...params, siteUrl });
 	return `Invitation sent to ${params.to}.`;
 }

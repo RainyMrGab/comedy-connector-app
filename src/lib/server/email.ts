@@ -1,18 +1,7 @@
-import { Resend } from 'resend';
-import { env } from '$env/dynamic/private';
+import { emailService } from '$lib/services/email';
 import * as contactTemplate from './email-templates/contact';
 import * as feedbackTemplate from './email-templates/feedback';
 import * as teamInviteTemplate from './email-templates/team-invite';
-
-function getResend() {
-	if (!env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
-	return new Resend(env.RESEND_API_KEY);
-}
-
-function getFromAddress(siteUrl: string) {
-	const url = new URL(siteUrl);
-	return `Comedy Connector <noreply@${url.hostname}>`;
-}
 
 export interface ContactEmailParams {
 	to: string;
@@ -25,17 +14,17 @@ export interface ContactEmailParams {
 }
 
 export async function sendContactMessage(params: ContactEmailParams): Promise<void> {
-	const resend = getResend();
-	const { to, replyTo, siteUrl } = params;
+	const { to, replyTo } = params;
 
-	await resend.emails.send({
-		from: getFromAddress(siteUrl),
+	const { success, error } = await emailService.send({
 		to,
 		replyTo,
 		subject: contactTemplate.subject(params),
 		html: contactTemplate.html(params),
 		text: contactTemplate.text(params)
 	});
+
+	if (!success) throw new Error(error || 'Failed to send contact email');
 }
 
 export interface FeedbackEmailParams {
@@ -47,20 +36,18 @@ export interface FeedbackEmailParams {
 }
 
 export async function sendFeedback(params: FeedbackEmailParams): Promise<void> {
-	const resend = getResend();
-	const { to, email, siteUrl } = params;
+	const { to, email } = params;
 	const replyTo = email ?? undefined;
 
-	const { error } = await resend.emails.send({
-		from: getFromAddress(siteUrl),
+	const { success, error } = await emailService.send({
 		to,
-		...(replyTo ? { replyTo } : {}),
+		replyTo,
 		subject: feedbackTemplate.subject(params),
 		html: feedbackTemplate.html(params),
 		text: feedbackTemplate.text(params)
 	});
 
-	if (error) throw new Error(`Resend error: ${error.message}`);
+	if (!success) throw new Error(error || 'Failed to send feedback email');
 }
 
 export interface TeamInviteEmailParams {
@@ -68,13 +55,13 @@ export interface TeamInviteEmailParams {
 	inviteeName: string;
 	teamName: string;
 	role: 'performer' | 'coach';
+	// roleLabel?: string;
 	inviterName: string;
 	siteUrl: string;
 	inviteToken?: string;
 }
 
 export async function sendTeamInvite(params: TeamInviteEmailParams): Promise<void> {
-	const resend = getResend();
 	const { to, siteUrl, inviteToken } = params;
 	const approvalsUrl = `${siteUrl.replace(/\/$/, '')}/approvals${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ''}`;
 
@@ -83,15 +70,14 @@ export async function sendTeamInvite(params: TeamInviteEmailParams): Promise<voi
 		approvalsUrl
 	};
 
-	const { error } = await resend.emails.send({
-		from: getFromAddress(siteUrl),
+	const { success, error } = await emailService.send({
 		to,
 		subject: teamInviteTemplate.subject(templateParams),
 		html: teamInviteTemplate.html(templateParams),
 		text: teamInviteTemplate.text(templateParams)
 	});
 
-	if (error) throw new Error(`Resend error: ${error.message}`);
+	if (!success) throw new Error(error || 'Failed to send team invite email');
 }
 
 // Freshness reminder emails are now sent via src/lib/server/reminders.ts

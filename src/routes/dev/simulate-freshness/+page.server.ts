@@ -45,26 +45,20 @@ export const actions: Actions = {
 		const errors: string[] = [];
 		let sent = 0;
 
-		if (!dryRun) {
-			const { Resend } = await import('resend');
-			const resend = new Resend(privateEnv.RESEND_API_KEY);
-			const hostname = new URL(siteUrl).hostname;
-			const fromAddress = `Comedy Connector <noreply@${hostname}>`;
+		const { emailService } = await import('$lib/services/email');
 
-			for (const recipient of recipients) {
-				try {
-					await resend.emails.send({
-						from: fromAddress,
-						to: recipient.email,
-						subject: `[Comedy Connector] Is your profile still accurate? (1 min check)`,
-						html: buildFreshnessEmailHtml(recipient, siteUrl),
-						text: buildFreshnessEmailText(recipient, siteUrl)
-					});
-					sent++;
-				} catch (e) {
-					const msg = e instanceof Error ? e.message : String(e);
-					errors.push(`${recipient.email}: ${msg}`);
-				}
+		for (const recipient of recipients) {
+			const { success, error } = await emailService.send({
+				to: recipient.email,
+				subject: `[Comedy Connector] Is your profile still accurate? (1 min check)`,
+				html: buildFreshnessEmailHtml(recipient, siteUrl),
+				text: buildFreshnessEmailText(recipient, siteUrl)
+			});
+
+			if (success) {
+				sent++;
+			} else {
+				errors.push(`${recipient.email}: ${error}`);
 			}
 		}
 
