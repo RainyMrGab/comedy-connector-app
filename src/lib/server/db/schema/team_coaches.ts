@@ -12,6 +12,9 @@ export const teamCoaches = pgTable('team_coaches', {
 	profileId: uuid('profile_id').references(() => personalProfiles.id, { onDelete: 'set null' }),
 	// Used when profileId is null (non-app coach)
 	coachName: text('coach_name'),
+	// Used for email invitations before the invited user has a profile.
+	inviteEmail: text('invite_email'),
+	inviteToken: text('invite_token'),
 	startYear: integer('start_year'),
 	startMonth: integer('start_month'),
 	endYear: integer('end_year'),

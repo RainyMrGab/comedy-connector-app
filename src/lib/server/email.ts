@@ -6,6 +6,15 @@ function getResend() {
 	return new Resend(env.RESEND_API_KEY);
 }
 
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+
 export interface ContactEmailParams {
 	to: string;
 	replyTo: string;
@@ -78,6 +87,47 @@ export async function sendFeedback(params: FeedbackEmailParams): Promise<void> {
   <p style="color: #9ca3af; font-size: 12px;">Sent via <a href="${siteUrl}" style="color: #7c3aed;">${siteUrl}</a></p>
 </div>`,
 		text: `Feedback via Comedy Connector\n\n${name ? `Name: ${name}\n` : ''}${email ? `Email: ${email}\n` : ''}\n${message}\n\n---\nSent via ${siteUrl}`
+	});
+
+	if (error) throw new Error(`Resend error: ${error.message}`);
+}
+
+export interface TeamInviteEmailParams {
+	to: string;
+	inviteeName: string;
+	teamName: string;
+	role: 'performer' | 'coach';
+	inviterName: string;
+	siteUrl: string;
+	inviteToken?: string;
+}
+
+export async function sendTeamInvite(params: TeamInviteEmailParams): Promise<void> {
+	const resend = getResend();
+	const { to, inviteeName, teamName, role, inviterName, siteUrl, inviteToken } = params;
+	const approvalsUrl = `${siteUrl.replace(/\/$/, '')}/approvals${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ''}`;
+	const hostname = new URL(siteUrl).hostname;
+	const safeInviteeName = escapeHtml(inviteeName);
+	const safeTeamName = escapeHtml(teamName);
+	const safeInviterName = escapeHtml(inviterName);
+	const roleLabel = role === 'coach' ? 'coach' : 'performer';
+
+	const { error } = await resend.emails.send({
+		from: `Comedy Connector <noreply@${hostname}>`,
+		to,
+		subject: `${safeInviterName} invited you to join ${safeTeamName} on Comedy Connector`,
+		html: `
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <p>Hi ${safeInviteeName},</p>
+  <p>${safeInviterName} invited you to use Comedy Connector and confirm your ${roleLabel} listing with <strong>${safeTeamName}</strong>.</p>
+  <p style="margin: 28px 0;">
+    <a href="${approvalsUrl}" style="background: #1c1c1c; color: #fff; padding: 12px 18px; text-decoration: none; font-weight: 700;">Join the Scene</a>
+  </p>
+  <p>If you already have an account under another email, log in with that account and visit your approvals page.</p>
+  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+  <p style="color: #9ca3af; font-size: 12px;">Sent via <a href="${siteUrl}" style="color: #7c3aed;">Comedy Connector</a>.</p>
+</div>`,
+		text: `Hi ${inviteeName},\n\n${inviterName} invited you to use Comedy Connector and confirm your ${roleLabel} listing with ${teamName}.\n\nJoin the Scene: ${approvalsUrl}\n\nIf you already have an account under another email, log in with that account and visit your approvals page.\n\nSent via Comedy Connector.`
 	});
 
 	if (error) throw new Error(`Resend error: ${error.message}`);

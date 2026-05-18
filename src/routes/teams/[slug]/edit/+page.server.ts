@@ -1,11 +1,49 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { env } from '$env/dynamic/private';
 import { db } from '$server/db';
-import { teams, teamMembers, teamCoaches, personalProfiles, tags, entityTags } from '$server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { teams, teamMembers, teamCoaches, personalProfiles, tags, entityTags, users } from '$server/db/schema';
+import { eq, and, or } from 'drizzle-orm';
 import { getTeamBySlug, getTeamMembers, getOrCreateStubTeam, resolveTeamSlug } from '$server/teams';
 import { getProfileByUserId } from '$server/profiles';
+import { sendTeamInvite } from '$server/email';
 import { teamSchema } from '$utils/validation';
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeEmail(email: string): string {
+	return email.trim().toLowerCase();
+}
+
+async function findProfileByEmail(email: string) {
+	const normalized = normalizeEmail(email);
+	const result = await db
+		.select({ id: personalProfiles.id })
+		.from(personalProfiles)
+		.innerJoin(users, eq(personalProfiles.userId, users.id))
+		.where(or(eq(users.email, normalized), eq(personalProfiles.contactEmail, normalized)))
+		.limit(1);
+	return result[0]?.id ?? null;
+}
+
+async function getInviterName(userId: string): Promise<string> {
+	const profile = await getProfileByUserId(userId);
+	return profile?.name ?? 'A Comedy Connector user';
+}
+
+async function sendInviteEmail(params: {
+	to: string;
+	inviteeName: string;
+	teamName: string;
+	role: 'performer' | 'coach';
+	inviterName: string;
+	inviteToken: string;
+}): Promise<string> {
+	if (!env.RESEND_API_KEY) return 'Invite saved. Email is not configured for this environment.';
+	const siteUrl = env.PUBLIC_SITE_URL ?? 'https://comedyconnector.app';
+	await sendTeamInvite({ ...params, siteUrl });
+	return `Invitation sent to ${params.to}.`;
+}
 
 export const load: PageServerLoad = async ({ params, locals, url }) => {
 	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
@@ -132,6 +170,40 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
+	inviteMember: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const team = await getTeamBySlug(params.slug);
+		if (!team) return fail(404, { error: 'Not found' });
+
+		const formData = await request.formData();
+		const inviteName = String(formData.get('inviteName') ?? '').trim();
+		const inviteEmail = normalizeEmail(String(formData.get('inviteEmail') ?? ''));
+		if (inviteName.length < 2) return fail(400, { error: 'Name must be at least 2 characters' });
+		if (!emailPattern.test(inviteEmail)) return fail(400, { error: 'Enter a valid email address' });
+
+		const inviteToken = crypto.randomUUID();
+		const profileId = await findProfileByEmail(inviteEmail);
+		await db.insert(teamMembers).values({
+			teamId: team.id,
+			profileId: profileId ?? undefined,
+			memberName: inviteName,
+			inviteEmail,
+			inviteToken,
+			isCurrent: true,
+			approvalStatus: 'pending'
+		});
+
+		const message = await sendInviteEmail({
+			to: inviteEmail,
+			inviteeName: inviteName,
+			teamName: team.name,
+			role: 'performer',
+			inviterName: await getInviterName(locals.user.id),
+			inviteToken
+		});
+		return { success: true, message };
+	},
+
 	// Remove a member
 	removeMember: async ({ request, params, locals }) => {
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
@@ -170,6 +242,40 @@ export const actions: Actions = {
 		});
 
 		return { success: true };
+	},
+
+	inviteCoach: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const team = await getTeamBySlug(params.slug);
+		if (!team) return fail(404, { error: 'Not found' });
+
+		const formData = await request.formData();
+		const inviteName = String(formData.get('inviteName') ?? '').trim();
+		const inviteEmail = normalizeEmail(String(formData.get('inviteEmail') ?? ''));
+		if (inviteName.length < 2) return fail(400, { error: 'Name must be at least 2 characters' });
+		if (!emailPattern.test(inviteEmail)) return fail(400, { error: 'Enter a valid email address' });
+
+		const inviteToken = crypto.randomUUID();
+		const profileId = await findProfileByEmail(inviteEmail);
+		await db.insert(teamCoaches).values({
+			teamId: team.id,
+			profileId: profileId ?? undefined,
+			coachName: inviteName,
+			inviteEmail,
+			inviteToken,
+			isCurrent: true,
+			approvalStatus: 'pending'
+		});
+
+		const message = await sendInviteEmail({
+			to: inviteEmail,
+			inviteeName: inviteName,
+			teamName: team.name,
+			role: 'coach',
+			inviterName: await getInviterName(locals.user.id),
+			inviteToken
+		});
+		return { success: true, message };
 	},
 
 	// Toggle isCurrent for a member

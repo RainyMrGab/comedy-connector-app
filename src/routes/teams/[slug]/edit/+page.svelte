@@ -3,6 +3,7 @@
 	import type { PageData, ActionData } from './$types';
 	import ProfileSearch from '$components/ui/ProfileSearch.svelte';
 	import TagEditor from '$components/ui/TagEditor.svelte';
+	import { toastStore } from '$stores/toast.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let team = $derived(data.team);
@@ -15,6 +16,49 @@
 
 	let selectedMember = $state<{ id: string; name: string; slug: string; photoUrl: string | null } | null>(null);
 	let selectedCoach = $state<{ id: string; name: string; slug: string; photoUrl: string | null } | null>(null);
+	let memberNameOnly = $state('');
+	let coachNameOnly = $state('');
+	let inviteDialog = $state<{ open: boolean; role: 'member' | 'coach'; name: string; email: string; saving: boolean }>({
+		open: false,
+		role: 'member',
+		name: '',
+		email: '',
+		saving: false
+	});
+
+	type EnhanceResult = {
+		type: string;
+		data?: { message?: string; error?: string };
+	};
+
+	function splitInviteQuery(query: string) {
+		const trimmed = query.trim();
+		if (trimmed.includes('@')) return { name: '', email: trimmed };
+		return { name: trimmed, email: '' };
+	}
+
+	function openInvite(role: 'member' | 'coach', query: string) {
+		const parsed = splitInviteQuery(query);
+		inviteDialog = { open: true, role, name: parsed.name, email: parsed.email, saving: false };
+	}
+
+	function closeInvite() {
+		inviteDialog.open = false;
+	}
+
+	function feedbackEnhance(successMessage: string, afterSuccess?: () => void) {
+		return () => {
+			return async ({ result, update }: { result: EnhanceResult; update: () => Promise<void> }) => {
+				if (result.type === 'success') {
+					toastStore.success(result.data?.message ?? successMessage);
+					afterSuccess?.();
+				} else if (result.type === 'failure') {
+					toastStore.error(result.data?.error ?? 'Something went wrong.');
+				}
+				await update();
+			};
+		};
+	}
 </script>
 
 <svelte:head>
@@ -39,7 +83,11 @@
 			action="?/updateTeam"
 			use:enhance={() => {
 				savingTeam = true;
-				return async ({ update }) => { await update(); savingTeam = false; };
+				return async ({ result, update }: { result: EnhanceResult; update: () => Promise<void> }) => {
+					if (result.type === 'failure') toastStore.error(result.data?.error ?? 'Could not save team.');
+					await update();
+					savingTeam = false;
+				};
 			}}
 			class="zine-form"
 		>
@@ -111,7 +159,7 @@
 					</div>
 					<div class="roster-actions">
 						{#if member.approvalStatus === 'approved'}
-							<form method="POST" action="?/setMemberStatus" use:enhance>
+							<form method="POST" action="?/setMemberStatus" use:enhance={feedbackEnhance('Member status updated.')}>
 								<input type="hidden" name="memberId" value={member.id} />
 								<input type="hidden" name="isCurrent" value={member.isCurrent ? 'false' : 'true'} />
 								<button type="submit" class="btn-toggle">
@@ -119,7 +167,7 @@
 								</button>
 							</form>
 						{/if}
-						<form method="POST" action="?/removeMember" use:enhance>
+						<form method="POST" action="?/removeMember" use:enhance={feedbackEnhance('Member removed.')}>
 							<input type="hidden" name="memberId" value={member.id} />
 							<button type="submit" class="btn-remove">REMOVE</button>
 						</form>
@@ -133,10 +181,13 @@
 			action="?/addMember"
 			use:enhance={() => {
 				addingMember = true;
-				return async ({ update }) => {
+				return async ({ result, update }: { result: EnhanceResult; update: () => Promise<void> }) => {
 					await update();
 					addingMember = false;
 					selectedMember = null;
+					memberNameOnly = '';
+					if (result.type === 'success') toastStore.success('Member added.');
+					else if (result.type === 'failure') toastStore.error(result.data?.error ?? 'Could not add member.');
 				};
 			}}
 			class="subsection zine-form"
@@ -146,20 +197,13 @@
 				type="performer"
 				label="SEARCH APP USERS"
 				inputId="memberSearch"
-				placeholder="Type a name to search performers..."
+				placeholder="Type a name or email..."
 				fieldName="profileId"
+				nameOnlyFieldName="memberName"
 				bind:selected={selectedMember}
+				bind:nameOnly={memberNameOnly}
+				onInvite={(query) => openInvite('member', query)}
 			/>
-			<div class="form-field">
-				<label for="memberName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
-				<input
-					id="memberName"
-					name="memberName"
-					type="text"
-					placeholder="Full name..."
-					oninput={() => { selectedMember = null; }}
-				/>
-			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={addingMember}>
 					{addingMember ? 'ADDING…' : 'ADD MEMBER'}
@@ -184,7 +228,7 @@
 					</div>
 					<div class="roster-actions">
 						{#if coach.approvalStatus === 'approved'}
-							<form method="POST" action="?/setCoachStatus" use:enhance>
+							<form method="POST" action="?/setCoachStatus" use:enhance={feedbackEnhance('Coach status updated.')}>
 								<input type="hidden" name="coachId" value={coach.id} />
 								<input type="hidden" name="isCurrent" value={coach.isCurrent ? 'false' : 'true'} />
 								<button type="submit" class="btn-toggle">
@@ -192,7 +236,7 @@
 								</button>
 							</form>
 						{/if}
-						<form method="POST" action="?/removeCoach" use:enhance>
+						<form method="POST" action="?/removeCoach" use:enhance={feedbackEnhance('Coach removed.')}>
 							<input type="hidden" name="coachId" value={coach.id} />
 							<button type="submit" class="btn-remove">REMOVE</button>
 						</form>
@@ -206,10 +250,13 @@
 			action="?/addCoach"
 			use:enhance={() => {
 				addingCoach = true;
-				return async ({ update }) => {
+				return async ({ result, update }: { result: EnhanceResult; update: () => Promise<void> }) => {
 					await update();
 					addingCoach = false;
 					selectedCoach = null;
+					coachNameOnly = '';
+					if (result.type === 'success') toastStore.success('Coach added.');
+					else if (result.type === 'failure') toastStore.error(result.data?.error ?? 'Could not add coach.');
 				};
 			}}
 			class="subsection zine-form"
@@ -219,20 +266,13 @@
 				type="coach"
 				label="SEARCH COACHES"
 				inputId="coachSearch"
-				placeholder="Type a name to search coaches..."
+				placeholder="Type a name or email..."
 				fieldName="profileId"
+				nameOnlyFieldName="coachName"
 				bind:selected={selectedCoach}
+				bind:nameOnly={coachNameOnly}
+				onInvite={(query) => openInvite('coach', query)}
 			/>
-			<div class="form-field">
-				<label for="coachName">OR ADD BY NAME ONLY <small class="field-hint">(non-app user)</small></label>
-				<input
-					id="coachName"
-					name="coachName"
-					type="text"
-					placeholder="Full name..."
-					oninput={() => { selectedCoach = null; }}
-				/>
-			</div>
 			<div>
 				<button type="submit" class="btn-accent" disabled={addingCoach}>
 					{addingCoach ? 'ADDING…' : 'ADD COACH'}
@@ -241,6 +281,48 @@
 		</form>
 	</section>
 </div>
+
+{#if inviteDialog.open}
+	<button class="modal-backdrop" onclick={closeInvite} aria-label="Close invite dialog"></button>
+	<div class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="invite-title">
+		<form
+			method="POST"
+			action={inviteDialog.role === 'member' ? '?/inviteMember' : '?/inviteCoach'}
+			class="modal-panel zine-form"
+			use:enhance={() => {
+				inviteDialog.saving = true;
+				return async ({ result, update }: { result: EnhanceResult; update: () => Promise<void> }) => {
+					if (result.type === 'success') {
+						toastStore.success(result.data?.message ?? 'Invitation sent.');
+						closeInvite();
+					} else if (result.type === 'failure') {
+						toastStore.error(result.data?.error ?? 'Could not send invitation.');
+					}
+					await update();
+					inviteDialog.saving = false;
+				};
+			}}
+		>
+			<h2 id="invite-title" class="modal-title">
+				INVITE {inviteDialog.role === 'member' ? 'PERFORMER' : 'COACH'}
+			</h2>
+			<div class="form-field">
+				<label for="inviteName">NAME <span class="required">*</span></label>
+				<input id="inviteName" name="inviteName" type="text" bind:value={inviteDialog.name} required />
+			</div>
+			<div class="form-field">
+				<label for="inviteEmail">EMAIL <span class="required">*</span></label>
+				<input id="inviteEmail" name="inviteEmail" type="text" inputmode="email" autocomplete="email" bind:value={inviteDialog.email} required />
+			</div>
+			<div class="modal-actions">
+				<button type="button" class="btn-outline" onclick={closeInvite}>CANCEL</button>
+				<button type="submit" class="btn-accent" disabled={inviteDialog.saving}>
+					{inviteDialog.saving ? 'SENDING…' : 'SEND INVITE'}
+				</button>
+			</div>
+		</form>
+	</div>
+{/if}
 
 <style>
 	.required { color: var(--zine-accent); }
@@ -265,5 +347,10 @@
 	.subsection { border: var(--zine-border); padding: 20px; background: var(--zine-surface); }
 	.subsection-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); margin-bottom: 16px; }
 	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
+	.modal-backdrop { position: fixed; inset: 0; z-index: 50; width: 100%; border: none; background: rgba(28, 28, 28, 0.75); cursor: default; }
+	.modal-wrap { position: fixed; inset: 0; z-index: 51; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none; }
+	.modal-panel { width: min(100%, 420px); padding: 24px; border: var(--zine-border); background: var(--zine-bg); box-shadow: var(--zine-shadow); pointer-events: auto; }
+	.modal-title { font-family: var(--font-heading); font-size: 24px; color: var(--zine-primary); margin: 0 0 18px; }
+	.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
 </style>

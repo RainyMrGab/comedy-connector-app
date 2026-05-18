@@ -7,14 +7,20 @@
 		inputId = 'profile-search',
 		placeholder = 'Type a name to search...',
 		fieldName = 'profileId',
-		selected = $bindable<Profile | null>(null)
+		nameOnlyFieldName,
+		selected = $bindable<Profile | null>(null),
+		nameOnly = $bindable(''),
+		onInvite
 	}: {
 		type: 'performer' | 'coach';
 		label: string;
 		inputId?: string;
 		placeholder?: string;
 		fieldName?: string;
+		nameOnlyFieldName?: string;
 		selected?: Profile | null;
+		nameOnly?: string;
+		onInvite?: (query: string) => void;
 	} = $props();
 
 	let query = $state('');
@@ -23,11 +29,9 @@
 	let focusedIndex = $state(-1);
 	let wrapEl = $state<HTMLElement | null>(null);
 	let listEl = $state<HTMLElement | null>(null);
-
-	// When selection is cleared externally, clear the query too
-	$effect(() => {
-		if (!selected) query = '';
-	});
+	const trimmedQuery = $derived(query.trim());
+	const hasStaticOptions = $derived(trimmedQuery.length > 0);
+	const optionCount = $derived(results.length + (hasStaticOptions ? 2 : 0));
 
 	async function search(q: string) {
 		if (!q.trim()) {
@@ -38,33 +42,62 @@
 		const res = await fetch(`/api/profiles/search?q=${encodeURIComponent(q)}&type=${type}`);
 		if (res.ok) {
 			results = await res.json();
-			isOpen = results.length > 0;
+			isOpen = query.trim().length > 0;
 			focusedIndex = -1;
 		}
 	}
 
 	function selectProfile(profile: Profile) {
 		selected = profile;
+		nameOnly = '';
 		query = profile.name;
 		results = [];
 		isOpen = false;
 		focusedIndex = -1;
 	}
 
+	function selectNameOnly() {
+		if (!trimmedQuery) return;
+		selected = null;
+		nameOnly = trimmedQuery;
+		query = trimmedQuery;
+		results = [];
+		isOpen = false;
+		focusedIndex = -1;
+	}
+
+	function invite() {
+		if (!trimmedQuery) return;
+		onInvite?.(trimmedQuery);
+		isOpen = false;
+		focusedIndex = -1;
+	}
+
+	function chooseFocused() {
+		if (focusedIndex < 0) return;
+		if (focusedIndex < results.length && results[focusedIndex]) {
+			selectProfile(results[focusedIndex]);
+			return;
+		}
+		const staticIndex = focusedIndex - results.length;
+		if (staticIndex === 0) invite();
+		else if (staticIndex === 1) selectNameOnly();
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if (!isOpen && e.key !== 'ArrowDown') return;
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
+			focusedIndex = Math.min(focusedIndex + 1, optionCount - 1);
 			isOpen = true;
 			scrollOptionIntoView();
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			focusedIndex = Math.max(focusedIndex - 1, 0);
 			scrollOptionIntoView();
-		} else if (e.key === 'Enter' && focusedIndex >= 0 && results[focusedIndex]) {
+		} else if (e.key === 'Enter' && focusedIndex >= 0) {
 			e.preventDefault();
-			selectProfile(results[focusedIndex]);
+			chooseFocused();
 		} else if (e.key === 'Escape') {
 			isOpen = false;
 			focusedIndex = -1;
@@ -99,6 +132,7 @@
 			bind:value={query}
 			oninput={() => {
 				selected = null;
+				nameOnly = '';
 				search(query);
 			}}
 			onkeydown={handleKeydown}
@@ -110,7 +144,7 @@
 			aria-controls="{inputId}-listbox"
 			class="ps-input"
 		/>
-		{#if isOpen && results.length > 0}
+		{#if isOpen && optionCount > 0}
 			<ul
 				id="{inputId}-listbox"
 				class="ps-dropdown"
@@ -134,11 +168,38 @@
 						</button>
 					</li>
 				{/each}
+				{#if hasStaticOptions}
+					<li
+						role="option"
+						aria-selected={focusedIndex === results.length}
+						data-index={results.length}
+						class="ps-option {focusedIndex === results.length ? 'ps-option-focused' : ''}"
+					>
+						<button type="button" onclick={invite}>
+							<span class="ps-static-icon">@</span>
+							<span>Invite {trimmedQuery} to use Comedy Connector</span>
+						</button>
+					</li>
+					<li
+						role="option"
+						aria-selected={focusedIndex === results.length + 1}
+						data-index={results.length + 1}
+						class="ps-option {focusedIndex === results.length + 1 ? 'ps-option-focused' : ''}"
+					>
+						<button type="button" onclick={selectNameOnly}>
+							<span class="ps-static-icon">+</span>
+							<span>Add {trimmedQuery} by name only</span>
+						</button>
+					</li>
+				{/if}
 			</ul>
 		{/if}
 	</div>
 	{#if selected}
 		<input type="hidden" name={fieldName} value={selected.id} />
+	{/if}
+	{#if nameOnlyFieldName && nameOnly}
+		<input type="hidden" name={nameOnlyFieldName} value={nameOnly} />
 	{/if}
 </div>
 
@@ -229,5 +290,18 @@
 		color: var(--zine-bg);
 		font-size: 11px;
 		font-weight: 700;
+	}
+
+	.ps-static-icon {
+		width: 28px;
+		height: 28px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--zine-primary);
+		background: var(--zine-bg);
+		font-size: 12px;
+		font-weight: 700;
+		flex-shrink: 0;
 	}
 </style>

@@ -13,6 +13,9 @@ export const teamMembers = pgTable('team_members', {
 	profileId: uuid('profile_id').references(() => personalProfiles.id, { onDelete: 'set null' }),
 	// Used when profileId is null (non-app member) or as display name override
 	memberName: text('member_name'),
+	// Used for email invitations before the invited user has a profile.
+	inviteEmail: text('invite_email'),
+	inviteToken: text('invite_token'),
 	// Date range — year/month as integers, is_current for "to present"
 	startYear: integer('start_year'),
 	startMonth: integer('start_month'),
