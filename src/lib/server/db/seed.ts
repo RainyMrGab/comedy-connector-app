@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/pglite';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from './schema/index.js';
 import {
 	users,
@@ -13,9 +13,10 @@ import {
 	entityTags
 } from './schema/index.js';
 
-type LocalDb = ReturnType<typeof drizzle<typeof schema>>;
+type Db = PostgresJsDatabase<typeof schema>;
 
-// Fixed UUIDs so dev sessions survive DB resets (deleting .local-db/ and restarting)
+// Fixed UUIDs so dev sessions survive DB resets.
+// These match the IDs in src/lib/config/devUsers.ts.
 const PERFORMER_USER_ID = '00000000-0000-0000-0000-000000000001';
 const COACH_USER_ID = '00000000-0000-0000-0000-000000000002';
 const NEWUSER_USER_ID = '00000000-0000-0000-0000-000000000003';
@@ -24,7 +25,6 @@ const COACH_PROFILE_ID = '00000000-0000-0000-0000-000000000012';
 const MUPPET_ALL_STARS_TEAM_ID = '00000000-0000-0000-0000-000000000021';
 const RAINBOW_CONNECTION_TEAM_ID = '00000000-0000-0000-0000-000000000022';
 
-// Muppet users (IDs 4-13, skipping 11-12 which are profile IDs above)
 const KERMIT_USER_ID = '00000000-0000-0000-0000-000000000004';
 const MISSPIGGY_USER_ID = '00000000-0000-0000-0000-000000000005';
 const FOZZIE_USER_ID = '00000000-0000-0000-0000-000000000006';
@@ -34,7 +34,6 @@ const GONZO_USER_ID = '00000000-0000-0000-0000-000000000009';
 const ANIMAL_USER_ID = '00000000-0000-0000-0000-000000000010';
 const SCOOTER_USER_ID = '00000000-0000-0000-0000-000000000013';
 
-// Profile IDs for muppets with profiles (14-17)
 const KERMIT_PROFILE_ID = '00000000-0000-0000-0000-000000000014';
 const MISSPIGGY_PROFILE_ID = '00000000-0000-0000-0000-000000000015';
 const FOZZIE_PROFILE_ID = '00000000-0000-0000-0000-000000000016';
@@ -60,71 +59,11 @@ const IMAGE_URLS = {
 } as const;
 
 /**
- * Seeded test users available on the /dev-login page.
+ * Seeds the staging Supabase DB with Muppets test data.
+ * Idempotent: uses onConflictDoNothing or existence checks throughout.
+ * Called by scripts/seed-staging.ts.
  */
-export const DEV_USERS = [
-	{
-		id: PERFORMER_USER_ID,
-		email: 'performer@dev.local',
-		label: 'Dev Performer (Admin) — has performer profile'
-	},
-	{
-		id: COACH_USER_ID,
-		email: 'coach@dev.local',
-		label: 'Dev Coach — has coach profile'
-	},
-	{
-		id: NEWUSER_USER_ID,
-		email: 'newuser@dev.local',
-		label: 'New User — no profile (tests onboarding)'
-	},
-	{
-		id: KERMIT_USER_ID,
-		email: 'kermit@dev.local',
-		label: 'Kermit the Frog — performer profile'
-	},
-	{
-		id: MISSPIGGY_USER_ID,
-		email: 'misspiggy@dev.local',
-		label: 'Miss Piggy — performer profile'
-	},
-	{
-		id: FOZZIE_USER_ID,
-		email: 'fozzie@dev.local',
-		label: 'Fozzie Bear — performer profile'
-	},
-	{
-		id: STATLER_USER_ID,
-		email: 'statler@dev.local',
-		label: 'Statler — coach profile'
-	},
-	{
-		id: WALDORF_USER_ID,
-		email: 'waldorf@dev.local',
-		label: 'Waldorf — no profile'
-	},
-	{
-		id: GONZO_USER_ID,
-		email: 'gonzo@dev.local',
-		label: 'Gonzo — no profile'
-	},
-	{
-		id: ANIMAL_USER_ID,
-		email: 'animal@dev.local',
-		label: 'Animal — no profile'
-	},
-	{
-		id: SCOOTER_USER_ID,
-		email: 'scooter@dev.local',
-		label: 'Scooter — no profile'
-	}
-] as const;
-
-/**
- * Seeds the local PGLite DB with test users.
- * Idempotent: checks for existing data before inserting each group.
- */
-export async function seedLocalDb(db: LocalDb): Promise<void> {
+export async function seedDb(db: Db): Promise<void> {
 	// Seed base 3 users (original dev accounts)
 	const existingBase = await db
 		.select({ id: users.id })
@@ -133,7 +72,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		.limit(1);
 
 	if (existingBase.length === 0) {
-		// User 1: performer with full profile (admin)
 		await db.insert(users).values({
 			id: PERFORMER_USER_ID,
 			identityId: 'dev-performer-identity',
@@ -156,7 +94,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			lookingForIndieTeam: true
 		});
 
-		// User 2: coach with full profile
 		await db.insert(users).values({
 			id: COACH_USER_ID,
 			identityId: 'dev-coach-identity',
@@ -179,7 +116,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			availability: 'Weekends preferred'
 		});
 
-		// User 3: new user with no profile (tests onboarding flow)
 		await db.insert(users).values({
 			id: NEWUSER_USER_ID,
 			identityId: 'dev-newuser-identity',
@@ -187,7 +123,7 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		});
 	}
 
-	// Keep existing local DBs aligned as demo data evolves.
+	// Keep existing staging DBs aligned as demo data evolves.
 	await db.update(users).set({ admin: true }).where(eq(users.id, PERFORMER_USER_ID));
 	await db.update(users).set({ admin: true }).where(eq(users.id, KERMIT_USER_ID));
 	await db
@@ -215,7 +151,7 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		.set({ photoUrl: IMAGE_URLS.statler })
 		.where(eq(personalProfiles.id, STATLER_PROFILE_ID));
 
-	// Seed muppet users (separate idempotency check so existing DBs get them without a full reset)
+	// Seed muppet users
 	const existingMuppets = await db
 		.select({ id: users.id })
 		.from(users)
@@ -223,7 +159,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		.limit(1);
 
 	if (existingMuppets.length === 0) {
-		// Kermit the Frog — performer
 		await db.insert(users).values({
 			id: KERMIT_USER_ID,
 			identityId: 'dev-kermit-identity',
@@ -246,7 +181,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			lookingForIndieTeam: true
 		});
 
-		// Miss Piggy — performer
 		await db.insert(users).values({
 			id: MISSPIGGY_USER_ID,
 			identityId: 'dev-misspiggy-identity',
@@ -268,7 +202,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			lookingForIndieTeam: true
 		});
 
-		// Fozzie Bear — performer
 		await db.insert(users).values({
 			id: FOZZIE_USER_ID,
 			identityId: 'dev-fozzie-identity',
@@ -290,7 +223,6 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			lookingForIndieTeam: false
 		});
 
-		// Statler — coach
 		await db.insert(users).values({
 			id: STATLER_USER_ID,
 			identityId: 'dev-statler-identity',
@@ -314,28 +246,21 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 			availability: 'Thursday evenings'
 		});
 
-		// Waldorf — no profile
 		await db.insert(users).values({
 			id: WALDORF_USER_ID,
 			identityId: 'dev-waldorf-identity',
 			email: 'waldorf@dev.local'
 		});
-
-		// Gonzo — no profile
 		await db.insert(users).values({
 			id: GONZO_USER_ID,
 			identityId: 'dev-gonzo-identity',
 			email: 'gonzo@dev.local'
 		});
-
-		// Animal — no profile
 		await db.insert(users).values({
 			id: ANIMAL_USER_ID,
 			identityId: 'dev-animal-identity',
 			email: 'animal@dev.local'
 		});
-
-		// Scooter — no profile
 		await db.insert(users).values({
 			id: SCOOTER_USER_ID,
 			identityId: 'dev-scooter-identity',
@@ -343,27 +268,10 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		});
 	}
 
-	// Seed approved tags for each domain.
-	const performerTagNames = [
-		'long-form',
-		'short-form',
-		'arcade',
-		'ucb',
-		'5-years',
-		'10-years',
-		'15-years',
-		'20-years'
-	];
+	// Seed approved tags
+	const performerTagNames = ['long-form', 'short-form', 'arcade', 'ucb', '5-years', '10-years', '15-years', '20-years'];
 	const coachTagNames = ['long-form', 'short-form', 'harold'];
-	const teamTagNames = [
-		'long-form',
-		'short-form',
-		'arcade',
-		'ucb',
-		'house-team',
-		'indie',
-		'city-paper-best-of-pgh'
-	];
+	const teamTagNames = ['long-form', 'short-form', 'arcade', 'ucb', 'house-team', 'indie', 'city-paper-best-of-pgh'];
 
 	for (const name of performerTagNames) {
 		await db.insert(tags).values({ name, domain: 'performer', status: 'approved' }).onConflictDoNothing();
@@ -375,6 +283,7 @@ export async function seedLocalDb(db: LocalDb): Promise<void> {
 		await db.insert(tags).values({ name, domain: 'team', status: 'approved' }).onConflictDoNothing();
 	}
 
+	// Seed teams
 	const [muppetAllStars] = await db
 		.select({ id: teams.id })
 		.from(teams)

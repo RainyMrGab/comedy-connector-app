@@ -1,6 +1,6 @@
 import type { Handler } from '@netlify/functions';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { users } from '../../src/lib/server/db/schema/users.js';
 import { eq, or } from 'drizzle-orm';
 
@@ -34,8 +34,8 @@ export const handler: Handler = async (event) => {
 	const authProvider = user.app_metadata?.provider ?? 'email';
 
 	try {
-		const sql = neon(process.env.NETLIFY_DATABASE_URL!);
-		const db = drizzle(sql);
+		const client = postgres(process.env.SUPABASE_DATABASE_URL!, { max: 1, prepare: false });
+		const db = drizzle(client);
 
 		// Look up by identityId OR email — handles both idempotent re-fires and
 		// account merges where the same email was previously registered via a

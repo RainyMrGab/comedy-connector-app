@@ -2,13 +2,9 @@ import type { Handle } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 import { resolveUser } from '$server/auth';
-import { db, IS_LOCAL, ensureDatabaseReady } from '$server/db';
+import { db, IS_LOCAL } from '$server/db';
 import { users } from '$server/db/schema';
 
-/**
- * If INITIAL_ADMIN_EMAIL is set and matches the logged-in user who isn't yet an admin,
- * promote them. Allows first-deploy bootstrap without a DB GUI.
- */
 async function bootstrapAdminIfNeeded(user: (typeof users.$inferSelect) | null): Promise<void> {
 	if (!user || user.admin || !env.INITIAL_ADMIN_EMAIL) return;
 	if (user.email !== env.INITIAL_ADMIN_EMAIL) return;
@@ -16,14 +12,9 @@ async function bootstrapAdminIfNeeded(user: (typeof users.$inferSelect) | null):
 	user.admin = true;
 }
 
-/**
- * Fire-and-forget update of lastSeenAt for freshness poll eligibility.
- * Debounced: only writes if lastSeenAt is null or older than 24 hours,
- * to avoid excessive DB writes on every request.
- */
 function touchLastSeen(userId: string, lastSeenAt: Date | null): void {
 	const oneDayAgo = new Date(Date.now() - 86_400_000);
-	if (lastSeenAt && lastSeenAt > oneDayAgo) return; // already updated today
+	if (lastSeenAt && lastSeenAt > oneDayAgo) return;
 	db.update(users)
 		.set({ lastSeenAt: new Date() })
 		.where(eq(users.id, userId))
@@ -31,10 +22,6 @@ function touchLastSeen(userId: string, lastSeenAt: Date | null): void {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// Initialize database on first request (PGLite locally, Neon in production)
-	// This ensures proper synchronization to prevent race conditions
-	await ensureDatabaseReady();
-
 	if (IS_LOCAL) {
 		// Local dev: auth via dev_session cookie set by /dev-login
 		const userId = event.cookies.get('dev_session');
@@ -50,7 +37,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	} else {
 		// Production: resolve user from Netlify Identity JWT
-		// (nf_jwt cookie set by the Identity widget, or Authorization: Bearer header)
 		const cookieToken = event.cookies.get('nf_jwt');
 		const authHeader = event.request.headers.get('authorization');
 		event.locals.user = await resolveUser(cookieToken, authHeader);

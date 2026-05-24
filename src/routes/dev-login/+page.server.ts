@@ -1,7 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { IS_LOCAL } from '$server/db';
-import { DEV_USERS } from '$server/db/seed.js';
+import { DEV_USERS } from '$config/devUsers.js';
 
 export const load: PageServerLoad = async ({ url }) => {
 	if (!IS_LOCAL) redirect(302, '/');

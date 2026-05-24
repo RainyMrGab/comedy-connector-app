@@ -1,6 +1,6 @@
 import type { Handler } from '@netlify/functions';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { Resend } from 'resend';
 import { reminderConfig } from '../../src/lib/config/reminders.js';
 import {
@@ -22,15 +22,15 @@ import {
  * On day 7 (last day of window), sends an admin alert if any eligible users were not reached.
  */
 export const handler: Handler = async () => {
-	const dbUrl = process.env.NETLIFY_DATABASE_URL;
+	const dbUrl = process.env.SUPABASE_DATABASE_URL;
 	const resendKey = process.env.RESEND_API_KEY;
 	const siteUrl = process.env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 	const feedbackEmail = process.env.FEEDBACK_EMAIL;
 
-	if (!dbUrl) return { statusCode: 500, body: 'NETLIFY_DATABASE_URL not set' };
+	if (!dbUrl) return { statusCode: 500, body: 'SUPABASE_DATABASE_URL not set' };
 
-	const sql = neon(dbUrl);
-	const db = drizzle(sql);
+	const client = postgres(dbUrl, { max: 1, prepare: false });
+	const db = drizzle(client);
 
 	const { emailService } = await import('../../src/lib/services/email.js');
 

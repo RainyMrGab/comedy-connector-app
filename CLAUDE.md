@@ -25,16 +25,15 @@ Use `toastStore.success(msg)` / `toastStore.error(msg)` for inline feedback, com
 ## Commands
 
 ```bash
-pnpm dev               # local dev server — uses PGLite (no external DB needed)
-pnpm dev:netlify       # dev server via Netlify CLI — uses production Neon DB + Identity
+pnpm dev               # local dev server — connects to Supabase staging DB
 pnpm build             # production build
 pnpm check             # TypeScript + Svelte type checking (run after changes)
-pnpm db:setup          # push schema + run all migrations (production Neon DB)
+pnpm db:setup          # push schema + run all migrations (requires SUPABASE_DATABASE_URL in .env)
 pnpm db:push           # push schema changes only (no migration files)
 pnpm db:migrate        # apply SQL migration files only
 pnpm db:generate       # generate migration files from schema changes (no DB connection needed)
-pnpm db:studio         # Drizzle Studio GUI (production Neon DB)
-pnpm db:studio:local   # Drizzle Studio GUI (local PGLite DB at .local-db/)
+pnpm db:studio         # Drizzle Studio GUI (requires SUPABASE_DATABASE_URL in .env)
+pnpm db:seed:staging   # seed the Supabase staging DB with Muppets test data
 ```
 
 ## Agent Environment Notes
@@ -54,31 +53,27 @@ pnpm db:studio:local   # Drizzle Studio GUI (local PGLite DB at .local-db/)
 - macOS process inspection commands such as `ps` may be blocked by permissions. Track server sessions started by the
   agent and stop those sessions directly when possible.
 
-**Note on `db:*` commands**: These require `NETLIFY_DATABASE_URL` to be set. Add it to your `.env` file (it's
-gitignored). When using `pnpm dev:netlify`, Netlify CLI injects it automatically — but drizzle-kit commands run outside
-that context and read from `.env` directly.
+**Note on `db:*` commands**: These require `SUPABASE_DATABASE_URL` to be set in `.env` (pointing to the Supabase staging or
+production Transaction Pooler URL). The env var is gitignored.
 
-**Local Development (no Netlify account needed):**
+**Local Development:**
 
-1. `cp .env.example .env` (leave `NETLIFY_DATABASE_URL` commented out — PGLite is used instead)
+1. `cp .env.example .env` and set `SUPABASE_DATABASE_URL` to the Supabase staging Transaction Pooler URL
 2. `pnpm install && pnpm dev`
-3. Navigate to `http://localhost:5173/dev-login` to pick a test user
-4. PGLite auto-creates `.local-db/` on first request and seeds 3 test users
+3. Navigate to `http://localhost:5173/dev-login` to pick a test user (seeded via `pnpm db:seed:staging`)
 
-To run `db:*` commands against the production Neon DB, uncomment and set `NETLIFY_DATABASE_URL` in `.env`.
-
-**⚠️ Production Auth Limitation:**
-Netlify Identity authentication does NOT work in local development (the `nf_jwt` cookie is domain-specific). Use
-`pnpm dev:netlify` to connect to the production Neon DB with real auth, or deploy previews for full auth testing.
+**⚠️ Auth note:**
+Netlify Identity auth only works in production (domain-specific JWT cookie). Local dev uses a `dev_session` cookie
+set by `/dev-login`. Phase 2 of the Supabase migration will replace Netlify Identity with Supabase Auth.
 
 ## Tech Stack
 
 - **SvelteKit 2 + Svelte 5 runes** — `$state`, `$derived`, `$effect`, `$bindable`, `untrack()`
 - **Tailwind v4 + Skeleton UI v4** — `@skeletonlabs/skeleton` + `@skeletonlabs/skeleton-svelte`
-- **Drizzle ORM** on Neon Postgres (prod) or PGLite (local dev)
-- **Netlify Identity** — JWT auth; decoded in `hooks.server.ts` → `event.locals.user`
+- **Drizzle ORM** on Supabase Postgres (staging + prod) via `postgres` package
+- **Netlify Identity** — JWT auth (production only); decoded in `hooks.server.ts` → `event.locals.user`
 - **Resend** — transactional email (contact form + monthly freshness reminders)
-- **netlify-cli** — devDependency, accessed via `pnpm netlify <cmd>` or `pnpm dev:netlify`
+- **netlify-cli** — devDependency, accessed via `pnpm netlify <cmd>`
 
 ## Path Aliases (svelte.config.js)
 
@@ -94,20 +89,21 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 
 ## Key Files
 
-| File                                      | Purpose                                                        |
-|-------------------------------------------|----------------------------------------------------------------|
-| `src/hooks.server.ts`                     | Auth: PGLite dev_session cookie (local) or `nf_jwt` JWT (prod) |
-| `src/lib/server/db/index.ts`              | Drizzle client — PGLite locally, Neon in production            |
-| `src/lib/server/db/local.ts`              | PGLite initialization + migration runner                       |
-| `src/lib/server/db/seed.ts`               | 3 local dev test users (performer, coach, new user)            |
-| `src/lib/server/db/schema/`               | One file per entity + `relations.ts`                           |
-| `src/lib/server/search.ts`                | Full-text search with cursor pagination                        |
-| `src/lib/server/email.ts`                 | Resend helpers                                                 |
-| `src/lib/server/teams.ts`                 | Stub team creation + claim flow                                |
-| `src/lib/config/city.ts`                  | City name, domain, resource links (uses `$env/dynamic/public`) |
-| `netlify/functions/identity-signup.ts`    | Creates DB user on Netlify Identity signup                     |
-| `netlify/functions/freshness-reminder.ts` | Monthly email cron (1st of month, 9am EST)                     |
-| `src/routes/dev-login/`                   | Local-only auth page — redirects to `/` in production          |
+| File                                      | Purpose                                                              |
+|-------------------------------------------|----------------------------------------------------------------------|
+| `src/hooks.server.ts`                     | Auth: `dev_session` cookie (local) or `nf_jwt` JWT (prod)            |
+| `src/lib/server/db/index.ts`              | Drizzle client — Supabase Postgres via `postgres` package            |
+| `src/lib/server/db/seed.ts`               | Muppets test dataset seeding logic (called by scripts/seed-staging.ts) |
+| `src/lib/config/devUsers.ts`              | DEV_USERS list for /dev-login picker                                 |
+| `src/lib/server/db/schema/`               | One file per entity + `relations.ts`                                 |
+| `src/lib/server/search.ts`                | Full-text search with cursor pagination                              |
+| `src/lib/server/email.ts`                 | Resend helpers                                                       |
+| `src/lib/server/teams.ts`                 | Stub team creation + claim flow                                      |
+| `src/lib/config/city.ts`                  | City name, domain, resource links (uses `$env/dynamic/public`)       |
+| `netlify/functions/identity-signup.ts`    | Creates DB user on Netlify Identity signup (Phase 2: will be removed) |
+| `netlify/functions/freshness-reminder.ts` | Monthly email cron (1st of month, 9am EST)                           |
+| `scripts/seed-staging.ts`                 | CLI script: seed staging Supabase DB with Muppets data               |
+| `src/routes/dev-login/`                   | Dev auth picker — redirects to `/` in production                     |
 
 ## Svelte 5 Patterns & Gotchas
 
@@ -124,35 +120,35 @@ Netlify Identity authentication does NOT work in local development (the `nf_jwt`
 
 ## Database Notes
 
-- Schema-first with Drizzle — edit schema files, then `pnpm db:push` (prod Neon, via `netlify env:run`) or server
-  auto-applies locally
-- Migrations: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (
-  FTS)
-- PGLite local DB auto-applies migrations on first server request (idempotent via `__drizzle_migrations` table)
+- Schema-first with Drizzle — edit schema files, then `pnpm db:push` (requires `SUPABASE_DATABASE_URL` in `.env`)
+- Migrations: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (FTS)
 - FTS: `tsvector` generated columns + GIN indexes on `personal_profiles`, `teams`, `coach_profiles`
-- Team stub/claim lifecycle: `status = 'stub'` → performer references unknown team → any user can claim →
-  `status = 'active'`
+- Team stub/claim lifecycle: `status = 'stub'` → performer references unknown team → any user can claim → `status = 'active'`
 - Approval flow: team adds member/coach → `approval_status = 'pending'` → target user approves/rejects
+- Supabase connection: use Transaction Pooler URL (port 6543) with `prepare: false` for serverless compatibility
 
 ## Env Vars
 
-| Variable                | Scope  | Notes                                                                                                                                                                            |
-|-------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `NETLIFY_DATABASE_URL`  | Server | Add to `.env` to use Neon DB (for `db:*` commands). If unset, PGLite is used. Netlify CLI also injects it automatically during `dev:netlify`. Set in Netlify dashboard for prod. |
-| `RESEND_API_KEY`        | Server | Resend dashboard — not needed for local dev                                                                                                                                      |
-| `FEEDBACK_EMAIL`        | Server | Destination address for `/feedback` form submissions                                                                                                                             |
-| `PUBLIC_CITY_NAME`      | Public | Defaults to `Pittsburgh`                                                                                                                                                         |
-| `PUBLIC_CITY_DOMAIN`    | Public | Defaults to `pittsburgh.comedyconnector.app`                                                                                                                                     |
-| `PUBLIC_SITE_URL`       | Public | Full URL for email links                                                                                                                                                         |
-| `PUBLIC_DEPLOY_CONTEXT` | Public | Set per-context in `netlify.toml` — drives the EnvironmentBanner                                                                                                                 |
+| Variable                | Scope  | Notes                                                                                      |
+|-------------------------|--------|--------------------------------------------------------------------------------------------|
+| `SUPABASE_DATABASE_URL`     | Server | Transaction Pooler URL (port 6543) — used by the app at runtime. Auto-set by Netlify–Supabase extension for prod/deploy-preview. Set staging URL in `.env` for local dev and in Netlify branch-deploy context. |
+| `SUPABASE_DIRECT_URL`       | Server | Direct connection URL (port 5432) — used by drizzle-kit only (`db:push`, `db:studio`). Falls back to `SUPABASE_DATABASE_URL` if unset. Not needed in Netlify (drizzle-kit never runs there). |
+| `SUPABASE_ANON_KEY`         | Server | Set automatically by Netlify–Supabase extension. Used by supabase-js (Phase 2+).          |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server | Set automatically by Netlify–Supabase extension. Server-only admin key (Phase 2+).        |
+| `SUPABASE_JWT_SECRET`       | Server | Set automatically by Netlify–Supabase extension. Used for auth (Phase 2+).                |
+| `RESEND_API_KEY`        | Server | Resend dashboard — not needed for local dev                                                |
+| `FEEDBACK_EMAIL`        | Server | Destination address for `/feedback` form submissions                                       |
+| `PUBLIC_CITY_NAME`      | Public | Defaults to `Pittsburgh`                                                                   |
+| `PUBLIC_CITY_DOMAIN`    | Public | Defaults to `pittsburgh.comedyconnector.app`                                               |
+| `PUBLIC_SITE_URL`       | Public | Full URL for email links                                                                   |
+| `PUBLIC_DEPLOY_CONTEXT` | Public | Set per-context in `netlify.toml` — drives the EnvironmentBanner                          |
 
 ## Local Dev Auth
 
-`IS_LOCAL` = `!NETLIFY_DATABASE_URL && NODE_ENV !== 'production'` (both guards required).
+`IS_LOCAL` = `NODE_ENV !== 'production'`.
 
 When `IS_LOCAL`:
 
-- `hooks.server.ts` reads `dev_session` cookie instead of Netlify JWT
-- `/dev-login` page (auto-redirects to `/` in production) lets you pick one of 3 seeded test users
-- Test users: `performer@dev.local`, `coach@dev.local`, `newuser@dev.local`
-- `.local-db/` is gitignored — each developer's local data is private
+- `hooks.server.ts` reads `dev_session` cookie set by `/dev-login`
+- `/dev-login` page (auto-redirects to `/` in production) shows the Muppets test user picker
+- Test users are seeded via `pnpm db:seed:staging` into the Supabase staging DB
