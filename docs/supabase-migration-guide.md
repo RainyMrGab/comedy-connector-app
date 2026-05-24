@@ -117,19 +117,40 @@ After verifying production is working on Supabase, shut down the Neon project:
 
 ## Phase 2: Auth Migration (Netlify Identity → Supabase Auth)
 
-*This section will be filled in when Phase 2 implementation begins.*
+### What changed in code
+- Added `@supabase/supabase-js` and `@supabase/ssr`
+- Removed `netlify-identity-widget`
+- New `src/lib/server/supabase.ts` — per-request Supabase server client factory
+- `hooks.server.ts` — replaced JWT decoding with `supabase.auth.getUser()` (validates server-side)
+- New `src/routes/auth/callback/+server.ts` — OAuth code exchange
+- `src/routes/login/` — replaced GoTrue API calls with `locals.supabase.auth.signIn/signUp`; added email signup toggle; Google button uses `?/loginWithGoogle` action
+- `src/routes/dev-login/` — replaced `dev_session` cookie with `supabase.auth.signInWithPassword` + `DEV_USER_PASSWORD`
+- `src/routes/api/auth/logout/` — replaced cookie delete with `supabase.auth.signOut()`
+- `src/routes/+layout.svelte` — removed Netlify Identity widget init; auth state now purely from server data
+- `scripts/seed-staging.ts` — also creates Supabase Auth users via admin API (requires `DEV_USER_PASSWORD`)
+- Deleted `netlify/functions/identity-signup.ts`
 
-### What will change in code
-- Add `@supabase/supabase-js` and `@supabase/ssr`
-- Remove `netlify-identity-widget`
-- Replace `hooks.server.ts` JWT decoding with Supabase session management
-- Add `src/routes/auth/callback/+server.ts` for OAuth redirects
-- Replace login page with Supabase auth (email/password + Google OAuth)
-- Delete `netlify/functions/identity-signup.ts`
+### Manual steps
 
-### Manual steps (to be done during Phase 2)
+#### 1. Set SUPABASE_URL in Netlify env vars
 
-#### 1. Apply the auth trigger SQL
+The Netlify–Supabase extension does NOT set `SUPABASE_URL` automatically. Add it manually:
+- Netlify dashboard → Site configuration → Environment variables → Add variable
+- Key: `SUPABASE_URL`
+- Set per-context:
+  - **Production**: `https://PROD_PROJECT_REF.supabase.co`
+  - **Branch deploys**: `https://STAGING_PROJECT_REF.supabase.co`
+  - **Deploy previews**: `https://PROD_PROJECT_REF.supabase.co` (inherits from production)
+
+Also add to your local `.env`:
+```
+SUPABASE_URL=https://STAGING_PROJECT_REF.supabase.co
+SUPABASE_ANON_KEY=<staging anon key>
+SUPABASE_SERVICE_ROLE_KEY=<staging service role key>
+DEV_USER_PASSWORD=<choose a strong shared password for test users>
+```
+
+#### 2. Apply the auth trigger SQL
 
 Run in Supabase SQL editor for **both** staging and production projects:
 
@@ -158,33 +179,46 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
 ```
 
-#### 2. Enable Google OAuth in Supabase
+#### 3. Enable Google OAuth in Supabase
 
 For **both** staging and production projects:
 1. Supabase dashboard → Authentication → Providers → Google → Enable
 2. Paste your Google OAuth Client ID and Client Secret
 3. Note the Supabase callback URL shown (e.g. `https://PROJECTREF.supabase.co/auth/v1/callback`)
 
-#### 3. Update Google Cloud Console
+Also add your app's `/auth/callback` route to Supabase's Redirect URLs allow list:
+- Supabase dashboard → Authentication → URL Configuration → Redirect URLs
+- Add: `http://localhost:5173/auth/callback` (staging, local dev)
+- Add: `https://yourapp.netlify.app/auth/callback` (production)
+
+#### 4. Update Google Cloud Console
 
 In your Google Cloud project → APIs & Services → Credentials → OAuth 2.0 Client:
 - Add both Supabase callback URLs (staging + production) to Authorized redirect URIs
 
-#### 4. Create staging test users
+#### 5. Enable auto-confirm for email signups (optional but recommended for a community app)
+
+- Supabase dashboard → Authentication → Email → Confirm email → **disable** (set to off)
+- This lets users sign up and use the app immediately without email confirmation
+
+#### 6. Seed staging test users
 
 ```bash
-DEV_USER_PASSWORD=<your-dev-password> pnpm db:seed:staging
+pnpm db:seed:staging
 ```
 
-This creates Supabase Auth users for each Muppets test user with the shared dev password.
+With `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `DEV_USER_PASSWORD` set in `.env`, this
+also creates Supabase Auth accounts for each Muppets test user.
 
-#### 5. Set DEV_USER_PASSWORD in .env
+#### 7. Verify local dev
 
+```bash
+pnpm dev
+# navigate to http://localhost:5173/dev-login
+# pick a test user → should sign in via Supabase and redirect to /profile
 ```
-DEV_USER_PASSWORD=<same-password-as-above>
-```
 
-#### 6. Announce to existing users
+#### 8. Announce to existing users
 
 Existing production users' Netlify Identity accounts will not transfer. They need to re-register.
 Their profile data will be preserved (linked by email via the DB trigger).

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { enhance } from '$app/forms';
 	import { authStore } from '$stores/auth.svelte';
 	import { toastStore } from '$stores/toast.svelte';
 	import { cityConfig } from '$config/city';
@@ -8,17 +7,22 @@
 
 	let { isLocal = false }: { isLocal?: boolean } = $props();
 	let mobileMenuOpen = $state(false);
+	let signingOut = $state(false);
 
 	function openLogin() {
 		goto('/login');
 	}
 
-	function handleLogoutEnhance() {
-		return async ({ update }: { update: () => Promise<void> }) => {
+	async function handleSignOut() {
+		signingOut = true;
+		try {
+			await fetch('/api/auth/logout', { method: 'POST' });
 			authStore.clearUser();
 			toastStore.info('You have been signed out.');
-			await update();
-		};
+			goto('/');
+		} finally {
+			signingOut = false;
+		}
 	}
 
 	function closeMobileMenu() {
@@ -58,9 +62,9 @@
 				{#if isLocal}
 					<a href="/dev-login" class="btn-outline">SWITCH USER</a>
 				{:else}
-					<form method="POST" action="/api/auth/logout" use:enhance={handleLogoutEnhance}>
-						<button type="submit" class="btn-outline">SIGN OUT</button>
-					</form>
+					<button class="btn-outline" onclick={handleSignOut} disabled={signingOut}>
+						{signingOut ? 'SIGNING OUT…' : 'SIGN OUT'}
+					</button>
 				{/if}
 			{:else if isLocal}
 				<a href="/dev-login" class="btn-accent">DEV LOGIN</a>
@@ -113,9 +117,9 @@
 					{#if isLocal}
 						<a href="/dev-login" class="btn-outline">SWITCH USER</a>
 					{:else}
-						<form method="POST" action="/api/auth/logout" use:enhance={handleLogoutEnhance}>
-							<button type="submit" class="btn-outline" onclick={closeMobileMenu}>SIGN OUT</button>
-						</form>
+						<button class="btn-outline" onclick={() => { closeMobileMenu(); handleSignOut(); }} disabled={signingOut}>
+							{signingOut ? 'SIGNING OUT…' : 'SIGN OUT'}
+						</button>
 					{/if}
 				{:else if isLocal}
 					<a href="/dev-login" onclick={closeMobileMenu} class="btn-accent">DEV LOGIN</a>

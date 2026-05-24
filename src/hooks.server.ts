@@ -1,9 +1,10 @@
 import type { Handle } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
-import { resolveUser } from '$server/auth';
-import { db, IS_LOCAL } from '$server/db';
+import { db } from '$server/db';
 import { users } from '$server/db/schema';
+import { getUserByIdentityId } from '$server/auth';
+import { createSupabaseServerClient } from '$server/supabase';
 
 async function bootstrapAdminIfNeeded(user: (typeof users.$inferSelect) | null): Promise<void> {
 	if (!user || user.admin || !env.INITIAL_ADMIN_EMAIL) return;
@@ -22,28 +23,25 @@ function touchLastSeen(userId: string, lastSeenAt: Date | null): void {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
-	if (IS_LOCAL) {
-		// Local dev: auth via dev_session cookie set by /dev-login
-		const userId = event.cookies.get('dev_session');
-		if (userId) {
-			const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-			event.locals.user = user ?? null;
-			if (user) {
-				await bootstrapAdminIfNeeded(user);
-				touchLastSeen(user.id, user.lastSeenAt ?? null);
-			}
-		} else {
-			event.locals.user = null;
+	// Create a per-request Supabase client that reads/writes session cookies.
+	const supabase = createSupabaseServerClient(event.cookies);
+	event.locals.supabase = supabase;
+
+	// getUser() validates the JWT server-side against Supabase — safe against
+	// stale or tampered sessions (unlike getSession() which only reads the cookie).
+	const {
+		data: { user: authUser }
+	} = await supabase.auth.getUser();
+
+	if (authUser) {
+		const dbUser = await getUserByIdentityId(authUser.id);
+		event.locals.user = dbUser;
+		if (dbUser) {
+			await bootstrapAdminIfNeeded(dbUser);
+			touchLastSeen(dbUser.id, dbUser.lastSeenAt ?? null);
 		}
 	} else {
-		// Production: resolve user from Netlify Identity JWT
-		const cookieToken = event.cookies.get('nf_jwt');
-		const authHeader = event.request.headers.get('authorization');
-		event.locals.user = await resolveUser(cookieToken, authHeader);
-		if (event.locals.user) {
-			await bootstrapAdminIfNeeded(event.locals.user);
-			touchLastSeen(event.locals.user.id, event.locals.user.lastSeenAt ?? null);
-		}
+		event.locals.user = null;
 	}
 
 	try {

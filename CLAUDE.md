@@ -58,20 +58,16 @@ production Transaction Pooler URL). The env var is gitignored.
 
 **Local Development:**
 
-1. `cp .env.example .env` and set `SUPABASE_DATABASE_URL` to the Supabase staging Transaction Pooler URL
+1. `cp .env.example .env` and fill in the staging Supabase values (see Env Vars below)
 2. `pnpm install && pnpm dev`
 3. Navigate to `http://localhost:5173/dev-login` to pick a test user (seeded via `pnpm db:seed:staging`)
-
-**⚠️ Auth note:**
-Netlify Identity auth only works in production (domain-specific JWT cookie). Local dev uses a `dev_session` cookie
-set by `/dev-login`. Phase 2 of the Supabase migration will replace Netlify Identity with Supabase Auth.
 
 ## Tech Stack
 
 - **SvelteKit 2 + Svelte 5 runes** — `$state`, `$derived`, `$effect`, `$bindable`, `untrack()`
 - **Tailwind v4 + Skeleton UI v4** — `@skeletonlabs/skeleton` + `@skeletonlabs/skeleton-svelte`
 - **Drizzle ORM** on Supabase Postgres (staging + prod) via `postgres` package
-- **Netlify Identity** — JWT auth (production only); decoded in `hooks.server.ts` → `event.locals.user`
+- **Supabase Auth** — email/password + Google OAuth; session managed via `@supabase/ssr` cookies
 - **Resend** — transactional email (contact form + monthly freshness reminders)
 - **netlify-cli** — devDependency, accessed via `pnpm netlify <cmd>`
 
@@ -91,7 +87,9 @@ set by `/dev-login`. Phase 2 of the Supabase migration will replace Netlify Iden
 
 | File                                      | Purpose                                                              |
 |-------------------------------------------|----------------------------------------------------------------------|
-| `src/hooks.server.ts`                     | Auth: `dev_session` cookie (local) or `nf_jwt` JWT (prod)            |
+| `src/hooks.server.ts`                     | Auth: validates Supabase session, sets `event.locals.user`           |
+| `src/lib/server/supabase.ts`              | Supabase server client factory (`createSupabaseServerClient`)        |
+| `src/lib/server/auth.ts`                  | `getUserByIdentityId` — looks up DB user by Supabase Auth UUID       |
 | `src/lib/server/db/index.ts`              | Drizzle client — Supabase Postgres via `postgres` package            |
 | `src/lib/server/db/seed.ts`               | Muppets test dataset seeding logic (called by scripts/seed-staging.ts) |
 | `src/lib/config/devUsers.ts`              | DEV_USERS list for /dev-login picker                                 |
@@ -100,10 +98,16 @@ set by `/dev-login`. Phase 2 of the Supabase migration will replace Netlify Iden
 | `src/lib/server/email.ts`                 | Resend helpers                                                       |
 | `src/lib/server/teams.ts`                 | Stub team creation + claim flow                                      |
 | `src/lib/config/city.ts`                  | City name, domain, resource links (uses `$env/dynamic/public`)       |
-| `netlify/functions/identity-signup.ts`    | Creates DB user on Netlify Identity signup (Phase 2: will be removed) |
 | `netlify/functions/freshness-reminder.ts` | Monthly email cron (1st of month, 9am EST)                           |
-| `scripts/seed-staging.ts`                 | CLI script: seed staging Supabase DB with Muppets data               |
-| `src/routes/dev-login/`                   | Dev auth picker — redirects to `/` in production                     |
+| `scripts/seed-staging.ts`                 | CLI script: seed staging DB + create Supabase Auth test users        |
+| `src/routes/dev-login/`                   | Dev auth picker (IS_LOCAL only) — signs in via Supabase Auth         |
+| `src/routes/auth/callback/`               | OAuth callback — exchanges code for Supabase session                 |
+| `docs/supabase-triggers.sql`              | DB trigger: auto-create app user on Supabase Auth signup             |
+
+## SvelteKit Patterns & Gotchas
+
+- **`use:enhance` is for page actions only** — only use it on forms that POST to a `+page.server.ts` action. Never use it on forms pointing to a `+server.ts` endpoint (e.g. `/api/auth/logout`). If the endpoint calls `redirect()`, `fetch` follows the redirect, receives the HTML page, and `use:enhance` tries to parse that HTML as JSON → `"Unexpected token '<'"`. For API endpoints, use a plain `fetch()` call + `goto()` instead.
+- **`$env/dynamic/public` for runtime PUBLIC_ vars** — never use `process.env.PUBLIC_*` in server modules. SvelteKit's Netlify adapter doesn't expose `PUBLIC_*` vars through raw `process.env`; use `import { env } from '$env/dynamic/public'` so the value is read at request time, not baked in at build time.
 
 ## Svelte 5 Patterns & Gotchas
 
@@ -133,9 +137,11 @@ set by `/dev-login`. Phase 2 of the Supabase migration will replace Netlify Iden
 |-------------------------|--------|--------------------------------------------------------------------------------------------|
 | `SUPABASE_DATABASE_URL`     | Server | Transaction Pooler URL (port 6543) — used by the app at runtime. Auto-set by Netlify–Supabase extension for prod/deploy-preview. Set staging URL in `.env` for local dev and in Netlify branch-deploy context. |
 | `SUPABASE_DIRECT_URL`       | Server | Direct connection URL (port 5432) — used by drizzle-kit only (`db:push`, `db:studio`). Falls back to `SUPABASE_DATABASE_URL` if unset. Not needed in Netlify (drizzle-kit never runs there). |
-| `SUPABASE_ANON_KEY`         | Server | Set automatically by Netlify–Supabase extension. Used by supabase-js (Phase 2+).          |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server | Set automatically by Netlify–Supabase extension. Server-only admin key (Phase 2+).        |
-| `SUPABASE_JWT_SECRET`       | Server | Set automatically by Netlify–Supabase extension. Used for auth (Phase 2+).                |
+| `SUPABASE_URL`              | Server | Supabase project API URL (`https://xxxx.supabase.co`). Set manually in `.env` (staging) and Netlify env vars (prod). NOT auto-set by the Netlify extension. |
+| `SUPABASE_ANON_KEY`         | Server | Auto-set by Netlify–Supabase extension. Also set manually in `.env` for local dev.        |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server | Auto-set by Netlify–Supabase extension. Server-only admin key. Also set in `.env` for `pnpm db:seed:staging`. |
+| `SUPABASE_JWT_SECRET`       | Server | Auto-set by Netlify–Supabase extension.                                                    |
+| `DEV_USER_PASSWORD`         | Server | Shared password for all test Supabase Auth users. Set in `.env` only. Used by `/dev-login` and `pnpm db:seed:staging`. |
 | `RESEND_API_KEY`        | Server | Resend dashboard — not needed for local dev                                                |
 | `FEEDBACK_EMAIL`        | Server | Destination address for `/feedback` form submissions                                       |
 | `PUBLIC_CITY_NAME`      | Public | Defaults to `Pittsburgh`                                                                   |
@@ -149,6 +155,10 @@ set by `/dev-login`. Phase 2 of the Supabase migration will replace Netlify Iden
 
 When `IS_LOCAL`:
 
-- `hooks.server.ts` reads `dev_session` cookie set by `/dev-login`
-- `/dev-login` page (auto-redirects to `/` in production) shows the Muppets test user picker
-- Test users are seeded via `pnpm db:seed:staging` into the Supabase staging DB
+- `/login` redirects to `/dev-login` (the test user picker)
+- `/dev-login` signs in via `supabase.auth.signInWithPassword` using the user's email + `DEV_USER_PASSWORD`
+- `hooks.server.ts` uses `supabase.auth.getUser()` — same code path as production
+- Test users are seeded via `pnpm db:seed:staging` into the Supabase staging project
+
+**Auth trigger**: The `handle_new_auth_user` DB trigger (in `docs/supabase-triggers.sql`) must be applied in
+both Supabase projects' SQL editors. It links Supabase Auth UUIDs to app `users` rows by email.

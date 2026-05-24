@@ -1,16 +1,13 @@
 import type { AuthUser } from '$types/auth';
 
-// Svelte 5 rune-based auth state — shared across all components
+// Svelte 5 rune-based auth state — shared across all components.
+// The server is the source of truth; this store reflects the SSR-resolved user.
 let _user = $state<AuthUser | null>(null);
-let _token = $state<string | null>(null);
 let _loading = $state(true);
 
 export const authStore = {
 	get user() {
 		return _user;
-	},
-	get token() {
-		return _token;
 	},
 	get loading() {
 		return _loading;
@@ -19,15 +16,13 @@ export const authStore = {
 		return _user !== null;
 	},
 
-	setUser(user: AuthUser | null, token: string | null) {
+	setUser(user: AuthUser | null) {
 		_user = user;
-		_token = token;
 		_loading = false;
 	},
 
 	clearUser() {
 		_user = null;
-		_token = null;
 		_loading = false;
 	},
 

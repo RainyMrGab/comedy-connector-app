@@ -114,9 +114,9 @@
 					<Mail size={16} /> CONTACT
 				</button>
 			{:else}
-				<button onclick={() => {const m = import('netlify-identity-widget'); m.then(i => i.default.open('login'));}} class="btn-outline">
+				<a href="/login" class="btn-outline">
 					LOG IN TO CONTACT
-				</button>
+				</a>
 			{/if}
 		</div>
 	</div>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { authStore } from '$stores/auth.svelte';
 	import { toastStore } from '$stores/toast.svelte';
 	import { X, Send } from 'lucide-svelte';
 
@@ -47,12 +46,10 @@
 
 		submitting = true;
 		try {
+			// Session is carried automatically via Supabase session cookies (same-origin).
 			const res = await fetch('/api/contact', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					...(authStore.token ? { Authorization: `Bearer ${authStore.token}` } : {})
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ recipientId, recipientType, subject: subject.trim(), message: message.trim() })
 			});
 
