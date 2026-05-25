@@ -8,10 +8,12 @@
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
 	import { toastStore } from '$stores/toast.svelte';
+	import { normalizeHighlights } from '$utils/highlights';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
 	let performer = $derived(data.performer);
+	let highlights = $derived(normalizeHighlights(performer?.videoHighlights));
 	let memberships = $derived(data.memberships);
 	let profileTags = $derived(data.profileTags);
 	let isViewerAdmin = $derived(data.isViewerAdmin);
@@ -172,28 +174,32 @@
 		</section>
 	{/if}
 
-	{#if performer?.videoHighlights && performer.videoHighlights.length > 0}
+	{#if highlights.length > 0}
 		<section class="detail-section">
 			<h2 class="section-label">HIGHLIGHTS</h2>
 			<div class="highlights-list">
-				{#each performer.videoHighlights as url}
-					{@const embedUrl = getYoutubeEmbedUrl(url)}
-					{#if embedUrl}
-						<div class="embed-wrap">
-							<iframe
-								src={embedUrl}
-								title="Video highlight"
-								frameborder="0"
-								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-								allowfullscreen
-							></iframe>
-						</div>
-					{:else if isImageUrl(url)}
-						<img src={url} alt="Highlight" class="highlight-img" />
+				{#each highlights as highlight}
+					{#if highlight.type === 'image'}
+						<img src={highlight.url} alt={highlight.label ?? 'Highlight'} class="highlight-img" />
 					{:else}
-						<a href={url} target="_blank" rel="noopener noreferrer" class="highlight-link">
-							<Globe size={14} /> {url}
-						</a>
+						{@const embedUrl = getYoutubeEmbedUrl(highlight.url)}
+						{#if embedUrl}
+							<div class="embed-wrap">
+								<iframe
+									src={embedUrl}
+									title={highlight.label ?? 'Video highlight'}
+									frameborder="0"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+									allowfullscreen
+								></iframe>
+							</div>
+						{:else if isImageUrl(highlight.url)}
+							<img src={highlight.url} alt={highlight.label ?? 'Highlight'} class="highlight-img" />
+						{:else}
+							<a href={highlight.url} target="_blank" rel="noopener noreferrer" class="highlight-link">
+								<Globe size={14} /> {highlight.label ?? highlight.url}
+							</a>
+						{/if}
 					{/if}
 				{/each}
 			</div>

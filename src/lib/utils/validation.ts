@@ -18,8 +18,14 @@ export const personalProfileSchema = z.object({
 	socialLinks: socialLinksSchema.optional()
 });
 
+export const highlightSchema = z.object({
+	type: z.enum(['link', 'image']),
+	url: z.string().url('Each highlight must be a valid URL'),
+	label: z.string().max(200).optional()
+});
+
 export const performerProfileSchema = z.object({
-	videoHighlights: z.array(z.string().url()).max(5).optional(),
+	highlights: z.array(highlightSchema).max(5).optional(),
 	lookingForPracticeGroup: z.boolean().optional(),
 	lookingForSmallGroup: z.boolean().optional(),
 	lookingForIndieTeam: z.boolean().optional(),
@@ -54,6 +60,7 @@ export const contactMessageSchema = z.object({
 
 export type PersonalProfileInput = z.infer<typeof personalProfileSchema>;
 export type PerformerProfileInput = z.infer<typeof performerProfileSchema>;
+export type HighlightInput = z.infer<typeof highlightSchema>;
 export type CoachProfileInput = z.infer<typeof coachProfileSchema>;
 export type TeamInput = z.infer<typeof teamSchema>;
 export type ContactMessageInput = z.infer<typeof contactMessageSchema>;

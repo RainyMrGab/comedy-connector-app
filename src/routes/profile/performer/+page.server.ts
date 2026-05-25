@@ -5,6 +5,7 @@ import { personalProfiles, performerProfiles, tags, entityTags } from '$server/d
 import { eq, and } from 'drizzle-orm';
 import { getProfileByUserId } from '$server/profiles';
 import { performerProfileSchema } from '$utils/validation';
+import { normalizeHighlights, type Highlight } from '$utils/highlights';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
@@ -44,13 +45,18 @@ export const actions: Actions = {
 		if (!profile) return fail(400, { error: 'Create a profile first' });
 
 		const formData = await request.formData();
-		const videoHighlights = formData
-			.getAll('videoHighlights')
-			.map(String)
-			.filter((v) => v.trim());
+
+		// Highlights are sent as a single JSON blob from the client-side editor
+		let highlights: Highlight[];
+		try {
+			const raw = String(formData.get('highlights') ?? '[]');
+			highlights = normalizeHighlights(JSON.parse(raw));
+		} catch {
+			highlights = [];
+		}
 
 		const raw = {
-			videoHighlights,
+			highlights,
 			lookingForPracticeGroup: formData.get('lookingForPracticeGroup') === 'true',
 			lookingForSmallGroup: formData.get('lookingForSmallGroup') === 'true',
 			lookingForIndieTeam: formData.get('lookingForIndieTeam') === 'true',
@@ -69,13 +75,22 @@ export const actions: Actions = {
 			.where(eq(performerProfiles.profileId, profile.id))
 			.limit(1);
 
+		// Store highlights in the videoHighlights column (same column, new format)
+		const dbData = {
+			videoHighlights: data.highlights ?? [],
+			lookingForPracticeGroup: data.lookingForPracticeGroup ?? false,
+			lookingForSmallGroup: data.lookingForSmallGroup ?? false,
+			lookingForIndieTeam: data.lookingForIndieTeam ?? false,
+			lookingFor: data.lookingFor ?? ''
+		};
+
 		if (existing.length > 0) {
 			await db
 				.update(performerProfiles)
-				.set({ ...data, updatedAt: new Date() })
+				.set({ ...dbData, updatedAt: new Date() })
 				.where(eq(performerProfiles.profileId, profile.id));
 		} else {
-			await db.insert(performerProfiles).values({ profileId: profile.id, ...data });
+			await db.insert(performerProfiles).values({ profileId: profile.id, ...dbData });
 		}
 
 		redirect(302, '/profile');

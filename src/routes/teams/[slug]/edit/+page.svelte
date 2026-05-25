@@ -3,6 +3,7 @@
 	import type { PageData, ActionData } from './$types';
 	import ProfileSearch from '$components/ui/ProfileSearch.svelte';
 	import TagEditor from '$components/ui/TagEditor.svelte';
+	import PhotoPicker from '$components/ui/PhotoPicker.svelte';
 	import { toastStore } from '$stores/toast.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -100,8 +101,12 @@
 				<textarea id="description" name="description" rows="4">{team.description ?? ''}</textarea>
 			</div>
 			<div class="form-field">
-				<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
-				<input id="photoUrl" name="photoUrl" type="url" value={team.photoUrl ?? ''} placeholder="https://..." />
+				<PhotoPicker
+					fieldName="photoUrl"
+					initialValue={team.photoUrl ?? ''}
+					bucket="user-media"
+					label="PHOTO"
+				/>
 			</div>
 			<div class="two-col">
 				<div class="form-field">
@@ -345,8 +350,7 @@
 	.btn-remove:hover { background: var(--zine-accent); color: #fff; }
 	.subsection { border: var(--zine-border); padding: 20px; background: var(--zine-surface); }
 	.subsection-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--zine-muted); margin-bottom: 16px; }
-	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
-	.modal-backdrop { position: fixed; inset: 0; z-index: 50; width: 100%; border: none; background: rgba(28, 28, 28, 0.75); cursor: default; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; width: 100%; border: none; background: rgba(28, 28, 28, 0.75); cursor: default; }
 	.modal-wrap { position: fixed; inset: 0; z-index: 51; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none; }
 	.modal-panel { width: min(100%, 420px); padding: 24px; border: var(--zine-border); background: var(--zine-bg); box-shadow: var(--zine-shadow); pointer-events: auto; }
 	.modal-title { font-family: var(--font-heading); font-size: 24px; color: var(--zine-primary); margin: 0 0 18px; }

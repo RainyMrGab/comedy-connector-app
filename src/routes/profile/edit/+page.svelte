@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import PhotoPicker from '$components/ui/PhotoPicker.svelte';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -50,8 +51,12 @@
 			<input id="lookingFor" name="lookingFor" type="text" value={form?.values?.lookingFor ?? profile?.lookingFor ?? ''} placeholder="e.g. Team to join, coach, book opener gigs..." />
 		</div>
 		<div class="form-field">
-			<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
-			<input id="photoUrl" name="photoUrl" type="url" value={form?.values?.photoUrl ?? profile?.photoUrl ?? ''} placeholder="https://..." />
+			<PhotoPicker
+				fieldName="photoUrl"
+				initialValue={form?.values?.photoUrl ?? profile?.photoUrl ?? ''}
+				bucket="user-media"
+				label="PHOTO"
+			/>
 		</div>
 		<div class="form-field">
 			<label for="contactEmail">CONTACT EMAIL <small class="field-hint">(optional — used for in-app contact only, never shown publicly)</small></label>

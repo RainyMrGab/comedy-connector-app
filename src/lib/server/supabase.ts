@@ -1,6 +1,27 @@
 import { env } from '$env/dynamic/private';
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import type { Cookies } from '@sveltejs/kit';
+
+/**
+ * Create a Supabase admin client using the service role key.
+ * Bypasses RLS — use only in server-side code after verifying the user is authenticated.
+ * Use for storage uploads, admin queries, and seeding.
+ */
+export function createSupabaseAdminClient() {
+	const supabaseUrl = env.SUPABASE_URL;
+	const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+	if (!supabaseUrl || !serviceRoleKey) {
+		throw new Error(
+			'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set for admin operations.'
+		);
+	}
+
+	return createClient(supabaseUrl, serviceRoleKey, {
+		auth: { autoRefreshToken: false, persistSession: false }
+	});
+}
 
 /**
  * Create a Supabase server client that reads/writes session cookies via the

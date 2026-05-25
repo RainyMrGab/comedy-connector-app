@@ -1,5 +1,6 @@
 import { pgTable, text, uuid, timestamp, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { personalProfiles } from './personal_profiles';
+import type { Highlight } from '$utils/highlights';
 
 export const performerProfiles = pgTable('performer_profiles', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -8,8 +9,9 @@ export const performerProfiles = pgTable('performer_profiles', {
 		.notNull()
 		.unique()
 		.references(() => personalProfiles.id, { onDelete: 'cascade' }),
-	// Array of highlight URLs (video, image, or article links)
-	videoHighlights: jsonb('video_highlights').$type<string[]>().default([]),
+	// Highlight items: link (external URL) or image (Supabase Storage URL).
+	// Legacy data may be string[] — use normalizeHighlights() when reading.
+	videoHighlights: jsonb('video_highlights').$type<Highlight[]>().default([]),
 	// Interest flags
 	lookingForPracticeGroup: boolean('looking_for_practice_group').notNull().default(false),
 	lookingForSmallGroup: boolean('looking_for_small_group').notNull().default(false),

@@ -228,21 +228,37 @@ Send an email announcement before deploying Phase 2 to production.
 
 ## Phase 3: Image Uploads (Supabase Storage)
 
-*This section will be filled in when Phase 3 implementation begins.*
+### What changed in code
+- New `src/lib/utils/highlights.ts` — `Highlight` type + `normalizeHighlights()` (backward-compatible with legacy string[] data)
+- `performer_profiles.ts` schema — `videoHighlights` column type annotation updated to `Highlight[]`
+- `src/lib/server/supabase.ts` — added `createSupabaseAdminClient()` (service role, for server-side uploads)
+- New `src/routes/api/upload/+server.ts` — POST endpoint accepting `file` + `bucket`; validates, uploads to Supabase Storage, returns public URL
+- New `src/lib/components/ui/PhotoPicker.svelte` — reusable component: upload button + URL text fallback; emits selected URL via hidden form field
+- `src/routes/profile/edit/+page.svelte` — `photoUrl` text input replaced with `PhotoPicker`
+- `src/routes/teams/[slug]/edit/+page.svelte` — `photoUrl` text input replaced with `PhotoPicker`
+- `src/routes/profile/performer/+page.svelte` — highlights section replaced with mixed link/image editor (up to 5 items); highlights submitted as JSON blob
+- `src/routes/profile/performer/+page.server.ts` — reads highlights JSON blob; normalizes via `normalizeHighlights()`
+- `src/routes/performers/[slug]/+page.svelte` — view updated to render uploaded images directly (`type: 'image'`) vs links/embeds (`type: 'link'`); normalizes legacy data on read
 
-### Manual steps (to be done during Phase 3)
+### Manual steps
 
-#### 1. Create Storage buckets
+#### 1. Create Storage bucket
 
 In Supabase dashboard → Storage for **both** staging and production:
 
-1. Create bucket `profile-photos` — Public bucket, allowed MIME types: image/*
-2. Create bucket `team-photos` — Public bucket, allowed MIME types: image/*
-3. Create bucket `performer-highlights` — Public bucket, allowed MIME types: image/*
+1. Create bucket `user-media` — **Public** bucket, allowed MIME types: `image/*`
 
-#### 2. Set RLS policies
+Making the bucket public means anyone can read the files via their public URL (required for displaying images in the app). All three upload surfaces (profile photo, team photo, performer highlights) share this single bucket — files are separated by path (`userId/timestamp.ext`). Uploads go through your server using the service role key, so bucket RLS policies on INSERT are not needed for this architecture.
 
-For each bucket, add policies:
-- **SELECT (read)**: allow public (no auth required)
-- **INSERT (upload)**: require `auth.role() = 'authenticated'`
-- Optionally restrict upload paths to `userId/filename` for isolation
+#### 2. Verify uploads work
+
+After creating the buckets, test locally:
+
+1. `pnpm dev`
+2. Log in via `/dev-login`, go to `/profile/edit`
+3. Click "UPLOAD PHOTO" — select an image
+4. If upload fails, check that `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set in `.env`
+
+#### 3. Legacy data (existing `videoHighlights`)
+
+Existing performer `videoHighlights` data is stored as `string[]`. The `normalizeHighlights()` function transparently converts it to `Highlight[]` on read, so no data migration is needed. New saves will write in the `Highlight[]` format.
