@@ -7,7 +7,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"predev:prod": "rm -rf build",
-		"dev:prod": "PUBLIC_DEPLOY_CONTEXT=preview vite dev",
+		"dev:prod": "PUBLIC_DEPLOY_CONTEXT=deploy-preview vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

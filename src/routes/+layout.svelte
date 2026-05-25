@@ -30,7 +30,7 @@
 </script>
 
 <div class="flex min-h-screen flex-col">
-	<EnvironmentBanner />
+	<EnvironmentBanner deployContext={data.deployContext} />
 	<Header isLocal={data.isLocal} />
 	<main class="flex-1">
 		{@render children()}

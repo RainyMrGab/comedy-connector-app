@@ -30,10 +30,3 @@ export const db = new Proxy({} as DrizzleDb, {
 // No-op kept for call sites in hooks.server.ts — previously needed for PGLite async init.
 export async function ensureDatabaseReady(): Promise<void> {}
 
-// True only in local development (pnpm dev / pnpm netlify dev).
-// Relies on PUBLIC_DEPLOY_CONTEXT, which netlify.toml explicitly sets for every
-// Netlify context (production, deploy-preview, branch-deploy). Its absence means
-// we're running locally. NODE_ENV is NOT used because Netlify does not guarantee
-// it is set in function runtimes, causing IS_LOCAL to be incorrectly true on
-// deploy previews.
-export const IS_LOCAL = !process.env.PUBLIC_DEPLOY_CONTEXT;

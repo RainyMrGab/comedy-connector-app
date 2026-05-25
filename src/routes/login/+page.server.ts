@@ -1,6 +1,10 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { IS_LOCAL } from '$server/db';
+import { PUBLIC_DEPLOY_CONTEXT } from '$env/static/public';
+
+// Set by netlify.toml [context.*.environment] at build time — baked into the bundle.
+// Empty string locally; 'production' | 'deploy-preview' | 'branch-deploy' on Netlify.
+const IS_LOCAL = !PUBLIC_DEPLOY_CONTEXT;
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const returnTo = url.searchParams.get('returnTo') ?? '/profile';
@@ -10,7 +14,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Already authenticated — skip login
 	if (locals.user) redirect(302, safeReturnTo);
 
-	// Local dev — delegate to /dev-login (which has the test user picker)
+	// Local dev — delegate to /dev-login (which has the test user picker).
 	if (IS_LOCAL) redirect(302, `/dev-login?returnTo=${encodeURIComponent(safeReturnTo)}`);
 
 	return { returnTo: safeReturnTo };

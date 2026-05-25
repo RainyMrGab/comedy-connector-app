@@ -1,8 +1,12 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
-import { IS_LOCAL } from '$server/db';
+import { PUBLIC_DEPLOY_CONTEXT } from '$env/static/public';
 import { DEV_USERS } from '$config/devUsers.js';
+
+// Set by netlify.toml [context.*.environment] at build time — baked into the bundle.
+// Empty string locally; 'production' | 'deploy-preview' | 'branch-deploy' on Netlify.
+const IS_LOCAL = !PUBLIC_DEPLOY_CONTEXT;
 
 export const load: PageServerLoad = async ({ url }) => {
 	if (!IS_LOCAL) redirect(302, '/');

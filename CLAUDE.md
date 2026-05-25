@@ -108,6 +108,7 @@ production Transaction Pooler URL). The env var is gitignored.
 
 - **`use:enhance` is for page actions only** — only use it on forms that POST to a `+page.server.ts` action. Never use it on forms pointing to a `+server.ts` endpoint (e.g. `/api/auth/logout`). If the endpoint calls `redirect()`, `fetch` follows the redirect, receives the HTML page, and `use:enhance` tries to parse that HTML as JSON → `"Unexpected token '<'"`. For API endpoints, use a plain `fetch()` call + `goto()` instead.
 - **`$env/dynamic/public` for runtime PUBLIC_ vars** — never use `process.env.PUBLIC_*` in server modules. SvelteKit's Netlify adapter doesn't expose `PUBLIC_*` vars through raw `process.env`; use `import { env } from '$env/dynamic/public'` so the value is read at request time, not baked in at build time.
+- **`netlify.toml` context env vars are build-time only** — variables declared under `[context.*.environment]` in `netlify.toml` (e.g. `PUBLIC_DEPLOY_CONTEXT`) are available during the Netlify build but are NOT injected into the Netlify Function's `process.env` at runtime. `$env/dynamic/public` reads from runtime `process.env`, so these vars are always `undefined` in SSR handlers. There is no reliable Netlify-provided runtime variable for detecting deploy context (even `CONTEXT` is build-only per Netlify staff). The correct approach is **build-time injection** via `$env/static/public` — SvelteKit bakes the value into the server bundle at build time so no runtime lookup is needed. `PUBLIC_DEPLOY_CONTEXT` must be in `.env` (empty for local dev) so SvelteKit generates the TypeScript type for it.
 
 ## Svelte 5 Patterns & Gotchas
 
@@ -147,13 +148,13 @@ production Transaction Pooler URL). The env var is gitignored.
 | `PUBLIC_CITY_NAME`      | Public | Defaults to `Pittsburgh`                                                                   |
 | `PUBLIC_CITY_DOMAIN`    | Public | Defaults to `pittsburgh.comedyconnector.app`                                               |
 | `PUBLIC_SITE_URL`       | Public | Full URL for email links                                                                   |
-| `PUBLIC_DEPLOY_CONTEXT` | Public | Set per-context in `netlify.toml` — drives the EnvironmentBanner                          |
+| `PUBLIC_DEPLOY_CONTEXT` | Public | Set per-context in `netlify.toml` — baked into the bundle at build time via `$env/static/public`. Empty locally; `'production'` / `'deploy-preview'` / `'branch-deploy'` on Netlify. Drives `IS_LOCAL` guard and `EnvironmentBanner`. Must be declared (empty) in `.env` so SvelteKit generates the TypeScript type. |
 
 ## Local Dev Auth
 
-`IS_LOCAL` = `NODE_ENV !== 'production'`.
+"Local" = `PUBLIC_DEPLOY_CONTEXT` is empty (checked via `$env/static/public`). Set by `netlify.toml` at build time on all Netlify contexts; empty string in local `.env`.
 
-When `IS_LOCAL`:
+When local (no `CONTEXT`):
 
 - `/login` redirects to `/dev-login` (the test user picker)
 - `/dev-login` signs in via `supabase.auth.signInWithPassword` using the user's email + `DEV_USER_PASSWORD`
