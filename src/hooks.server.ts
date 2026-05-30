@@ -48,6 +48,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	} catch (err) {
 		console.error(`Error handling ${event.request.method} ${event.url.pathname}:`, err);
+		// Log the underlying cause if present (e.g. the real Postgres error wrapped by Drizzle).
+		if (err instanceof Error && err.cause) {
+			console.error('Caused by:', err.cause);
+		}
 		throw err;
 	}
 };
