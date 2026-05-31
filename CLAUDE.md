@@ -125,8 +125,8 @@ production Transaction Pooler URL). The env var is gitignored.
 
 ## Database Notes
 
-- Schema-first with Drizzle — edit schema files, then `pnpm db:push` (requires `SUPABASE_DATABASE_URL` in `.env`)
-- Migrations: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (tables) + `0001_add_fulltext_search.sql` (FTS)
+- Schema-first with Drizzle — edit schema files → `pnpm db:generate` → `pnpm db:migrate`
+- Migrations: `src/lib/server/db/migrations/` — `0000_initial_schema.sql` (applied manually on first setup; not in the drizzle journal) + `0001`–`0009` (tracked via `__drizzle_migrations`)
 - FTS: `tsvector` generated columns + GIN indexes on `personal_profiles`, `teams`, `coach_profiles`
 - Team stub/claim lifecycle: `status = 'stub'` → performer references unknown team → any user can claim → `status = 'active'`
 - Approval flow: team adds member/coach → `approval_status = 'pending'` → target user approves/rejects
@@ -137,7 +137,7 @@ production Transaction Pooler URL). The env var is gitignored.
 | Variable                | Scope  | Notes                                                                                      |
 |-------------------------|--------|--------------------------------------------------------------------------------------------|
 | `SUPABASE_DATABASE_URL`     | Server | Transaction Pooler URL (port 6543) — used by the app at runtime. Auto-set by Netlify–Supabase extension for prod/deploy-preview. Set staging URL in `.env` for local dev and in Netlify branch-deploy context. |
-| `SUPABASE_DIRECT_URL`       | Server | Direct connection URL (port 5432) — used by drizzle-kit only (`db:push`, `db:studio`). Falls back to `SUPABASE_DATABASE_URL` if unset. Not needed in Netlify (drizzle-kit never runs there). |
+| `SUPABASE_DIRECT_URL`       | Server | Session pooler or direct URL (port 5432) — used by drizzle-kit only (`db:migrate`, `db:push`, `db:studio`). Transaction Pooler (port 6543) does not work for DDL. Falls back to `SUPABASE_DATABASE_URL` if unset. Not needed in Netlify (drizzle-kit never runs there). |
 | `SUPABASE_URL`              | Server | Supabase project API URL (`https://xxxx.supabase.co`). Set manually in `.env` (staging) and Netlify env vars (prod). NOT auto-set by the Netlify extension. |
 | `SUPABASE_ANON_KEY`         | Server | Auto-set by Netlify–Supabase extension. Also set manually in `.env` for local dev.        |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server | Auto-set by Netlify–Supabase extension. Server-only admin key. Also set in `.env` for `pnpm db:seed:staging`. |

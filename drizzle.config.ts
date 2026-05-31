@@ -5,9 +5,8 @@ export default defineConfig({
 	out: './src/lib/server/db/migrations',
 	dialect: 'postgresql',
 	dbCredentials: {
-		// Use the direct connection URL (port 5432) for schema operations — the Transaction
-		// Pooler (port 6543) doesn't support the DDL queries drizzle-kit runs.
-		// Get it from: Supabase → Project Settings → Database → Direct connection.
+		// Use Session Pooler URL (port 5432)
+		// Get it from: Supabase → Project Settings → Database → Connection string → Session pooler.
 		url: (process.env.SUPABASE_DIRECT_URL ?? process.env.SUPABASE_DATABASE_URL)!
 	}
 });

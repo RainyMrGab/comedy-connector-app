@@ -68,15 +68,43 @@ SUPABASE_DIRECT_URL=postgresql://postgres.STAGINGREF:PASSWORD@db.STAGINGREF.supa
 > **Password with special characters:** If your password contains `#`, URL-encode it as `%23` in both
 > strings (no shell quoting needed). Other special chars: `@` → `%40`, `:` → `%3A`.
 
-#### 5. Push schema to both Supabase projects
+#### 5. Apply schema to both Supabase projects
+
+The drizzle-kit migration journal starts at `0001` — `0000_initial_schema.sql` predates migration
+tracking and was never added to the journal. A fresh Supabase project therefore requires a one-time
+manual bootstrap before `db:migrate` can run.
+
+**For each project (staging, then production):**
+
+**a) Drop any leftover custom types** (safe no-ops if they don't exist):
+
+```sql
+DROP TYPE IF EXISTS public.recipient_type CASCADE;
+DROP TYPE IF EXISTS public.team_status CASCADE;
+DROP TYPE IF EXISTS public.approval_status CASCADE;
+DROP TYPE IF EXISTS public.tag_domain CASCADE;
+DROP TYPE IF EXISTS public.tag_status CASCADE;
+```
+
+**b) Apply the base schema** — paste and run the full contents of
+`src/lib/server/db/migrations/0000_initial_schema.sql` in the Supabase SQL editor.
+
+**c) Run migrations:**
 
 ```bash
-# Push to staging (reads SUPABASE_DIRECT_URL from .env)
-pnpm db:push
+# Staging — reads SUPABASE_DIRECT_URL from .env
+pnpm db:migrate
 
-# Push to production (pass the production direct connection URL)
-SUPABASE_DIRECT_URL=<prod_direct_url> pnpm db:push
+# Production — temporarily override with the production session-pooler URL
+# (Session pooler: Project Settings → Database → Connection string → Session pooler, port 5432)
+SUPABASE_DIRECT_URL=<prod_session_pooler_url> pnpm db:migrate
 ```
+
+This creates `__drizzle_migrations` and applies entries `0001`–`0009`. Going forward, new schema
+changes follow the standard workflow:
+1. Edit schema files in `src/lib/server/db/schema/`
+2. `pnpm db:generate` — generates a new SQL migration file
+3. `pnpm db:migrate` — applies it (staging from `.env`; production via `SUPABASE_DIRECT_URL` override)
 
 #### 6. Migrate data from Neon to Supabase production
 
