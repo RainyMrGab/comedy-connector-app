@@ -5,7 +5,7 @@
  * - The SvelteKit dev simulator endpoint (app db singleton)
  */
 import { eq, or, isNull, lt, and, inArray, sql } from 'drizzle-orm';
-import type { drizzle } from 'drizzle-orm/neon-http';
+import type { drizzle } from 'drizzle-orm/postgres-js';
 import { personalProfiles } from './db/schema/personal_profiles';
 import { users } from './db/schema/users';
 import { performerProfiles } from './db/schema/performer_profiles';
@@ -14,7 +14,6 @@ import { teams } from './db/schema/teams';
 import { teamMembers } from './db/schema/team_members';
 import { teamCoaches } from './db/schema/team_coaches';
 
-// Type-compatible with both Neon and PGLite drizzle instances (db/index.ts casts PGLite to this)
 type Db = ReturnType<typeof drizzle>;
 
 // ---- Eligibility helper ----

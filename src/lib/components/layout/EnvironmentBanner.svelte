@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
-
-	const context = env.PUBLIC_DEPLOY_CONTEXT ?? '';
-	const isNonProduction = context !== '' && context !== 'production';
+	// deployContext comes from +layout.server.ts, which reads Netlify's CONTEXT runtime var.
+	// Values: '' (local dev), 'production', 'deploy-preview', 'branch-deploy'
+	let { deployContext = '' }: { deployContext?: string } = $props();
 
 	const labels: Record<string, string> = {
 		'deploy-preview': 'Deploy Preview',
@@ -10,7 +9,8 @@
 		dev: 'Local Dev'
 	};
 
-	const label = labels[context] ?? context.toUpperCase();
+	const isNonProduction = $derived(deployContext !== '' && deployContext !== 'production');
+	const label = $derived(labels[deployContext] ?? deployContext.toUpperCase());
 </script>
 
 {#if isNonProduction}

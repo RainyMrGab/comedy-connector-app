@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import PhotoPicker from '$components/ui/PhotoPicker.svelte';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -29,6 +30,7 @@
 			};
 		}}
 		class="zine-form"
+		novalidate
 	>
 		<div class="form-field">
 			<label for="name">DISPLAY NAME <span class="required">*</span></label>
@@ -40,22 +42,38 @@
 		<div class="form-field">
 			<label for="bio">BIO</label>
 			<textarea id="bio" name="bio" rows="4" placeholder="Tell the community about yourself...">{form?.values?.bio ?? profile?.bio ?? ''}</textarea>
+			{#if form?.errors?.bio}
+				<p class="error-msg">{form.errors.bio[0]}</p>
+			{/if}
 		</div>
 		<div class="form-field">
 			<label for="training">TRAINING &amp; EXPERIENCE</label>
 			<textarea id="training" name="training" rows="4" placeholder="Where have you trained? Any notable experience?">{form?.values?.training ?? profile?.training ?? ''}</textarea>
+			{#if form?.errors?.training}
+				<p class="error-msg">{form.errors.training[0]}</p>
+			{/if}
 		</div>
 		<div class="form-field">
 			<label for="lookingFor">LOOKING FOR</label>
 			<input id="lookingFor" name="lookingFor" type="text" value={form?.values?.lookingFor ?? profile?.lookingFor ?? ''} placeholder="e.g. Team to join, coach, book opener gigs..." />
+			{#if form?.errors?.lookingFor}
+				<p class="error-msg">{form.errors.lookingFor[0]}</p>
+			{/if}
 		</div>
 		<div class="form-field">
-			<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
-			<input id="photoUrl" name="photoUrl" type="url" value={form?.values?.photoUrl ?? profile?.photoUrl ?? ''} placeholder="https://..." />
+			<PhotoPicker
+				fieldName="photoUrl"
+				initialValue={form?.values?.photoUrl ?? profile?.photoUrl ?? ''}
+				bucket="user-media"
+				label="PHOTO"
+			/>
 		</div>
 		<div class="form-field">
 			<label for="contactEmail">CONTACT EMAIL <small class="field-hint">(optional — used for in-app contact only, never shown publicly)</small></label>
 			<input id="contactEmail" name="contactEmail" type="email" value={form?.values?.contactEmail ?? profile?.contactEmail ?? ''} placeholder="Different from your login email if desired" />
+			{#if form?.errors?.contactEmail}
+				<p class="error-msg">{form.errors.contactEmail[0]}</p>
+			{/if}
 		</div>
 		<fieldset>
 			<legend>SOCIAL LINKS</legend>

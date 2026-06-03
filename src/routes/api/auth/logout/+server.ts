@@ -1,13 +1,13 @@
-import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 /**
  * POST /api/auth/logout
- * Clears the nf_jwt session cookie and redirects to the home page.
- * Works regardless of whether the user signed in via the identity widget
- * or via the embedded email/password form.
+ * Signs the user out of Supabase Auth (clears session cookies).
+ * Returns 204 so the caller can handle navigation client-side.
+ * Not using redirect() here because use:enhance + a +server.ts redirect causes
+ * the client to follow the redirect, receive HTML, and try to parse it as JSON.
  */
-export const POST: RequestHandler = async ({ cookies }) => {
-	cookies.delete('nf_jwt', { path: '/' });
-	redirect(302, '/');
+export const POST: RequestHandler = async ({ locals }) => {
+	await locals.supabase.auth.signOut();
+	return new Response(null, { status: 204 });
 };

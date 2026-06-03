@@ -1,6 +1,10 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { IS_LOCAL } from '$server/db';
+import { PUBLIC_DEPLOY_CONTEXT } from '$env/static/public';
+
+// Set by netlify.toml [context.*.environment] at build time — baked into the bundle.
+// Empty string locally; 'production' | 'deploy-preview' | 'branch-deploy' on Netlify.
+const IS_LOCAL = !PUBLIC_DEPLOY_CONTEXT;
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const returnTo = url.searchParams.get('returnTo') ?? '/profile';
@@ -10,14 +14,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Already authenticated — skip login
 	if (locals.user) redirect(302, safeReturnTo);
 
-	// Local dev — delegate to /dev-login (which has the test user picker)
+	// Local dev — delegate to /dev-login (which has the test user picker).
 	if (IS_LOCAL) redirect(302, `/dev-login?returnTo=${encodeURIComponent(safeReturnTo)}`);
 
 	return { returnTo: safeReturnTo };
 };
 
 export const actions: Actions = {
-	login: async ({ request, cookies }) => {
+	login: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const email = String(formData.get('email') ?? '').trim();
 		const password = String(formData.get('password') ?? '');
@@ -25,42 +29,73 @@ export const actions: Actions = {
 		const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
 
 		if (!email || !password) {
-			return fail(400, { error: 'Email and password are required', returnTo: safeReturnTo });
+			return fail(400, { error: 'Email and password are required', returnTo: safeReturnTo, mode: 'signin' });
 		}
 
-		// Call GoTrue token endpoint using the current request's origin so this
-		// works correctly on preview deploys as well as production.
-		const origin = new URL(request.url).origin;
-		let response: Response;
-		try {
-			response = await fetch(`${origin}/.netlify/identity/token`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams({ grant_type: 'password', username: email, password })
-			});
-		} catch {
-			return fail(500, { error: 'Unable to reach the authentication service. Try again.', returnTo: safeReturnTo });
+		const { error } = await locals.supabase.auth.signInWithPassword({ email, password });
+		if (error) {
+			return fail(400, { error: error.message, returnTo: safeReturnTo, mode: 'signin' });
 		}
-
-		if (!response.ok) {
-			const err = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-			const message =
-				typeof err.error_description === 'string' ? err.error_description : 'Invalid email or password';
-			return fail(400, { error: message, returnTo: safeReturnTo });
-		}
-
-		const data = (await response.json()) as { access_token: string; expires_in: number };
-
-		// Set the nf_jwt cookie — must NOT be httpOnly so the identity widget can
-		// read it for token refresh. This mirrors how the widget itself sets it.
-		cookies.set('nf_jwt', data.access_token, {
-			path: '/',
-			httpOnly: false,
-			sameSite: 'lax',
-			maxAge: data.expires_in,
-			secure: true // HTTPS only in prod; Netlify always uses HTTPS
-		});
 
 		redirect(302, safeReturnTo);
+	},
+
+	signup: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const email = String(formData.get('email') ?? '').trim();
+		const password = String(formData.get('password') ?? '');
+		const returnTo = String(formData.get('returnTo') ?? '/profile');
+		const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
+
+		if (!email || !password) {
+			return fail(400, { error: 'Email and password are required', returnTo: safeReturnTo, mode: 'signup' });
+		}
+		if (password.length < 8) {
+			return fail(400, { error: 'Password must be at least 8 characters', returnTo: safeReturnTo, mode: 'signup' });
+		}
+
+		const { error } = await locals.supabase.auth.signUp({ email, password });
+		if (error) {
+			return fail(400, { error: error.message, returnTo: safeReturnTo, mode: 'signup' });
+		}
+
+		redirect(302, safeReturnTo);
+	},
+
+	forgotPassword: async ({ request, url, locals }) => {
+		const formData = await request.formData();
+		const email = String(formData.get('email') ?? '').trim();
+
+		if (!email) return fail(400, { error: 'Email is required', mode: 'forgot' as const });
+
+		// Redirect back through our callback so the session cookie is written,
+		// then on to the set-password page where they call updateUser({ password }).
+		const redirectTo = `${url.origin}/auth/callback?returnTo=${encodeURIComponent('/auth/set-password')}`;
+
+		// Supabase intentionally returns success even for unknown emails
+		// (prevents email-enumeration attacks), so we don't branch on the result.
+		await locals.supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+		return { forgotSent: true };
+	},
+
+	loginWithGoogle: async ({ request, locals, url }) => {
+		const formData = await request.formData();
+		const returnTo = String(formData.get('returnTo') ?? '/profile');
+		const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
+
+		const { data, error } = await locals.supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: {
+				// Pass returnTo through the OAuth round-trip so the callback can redirect correctly.
+				redirectTo: `${url.origin}/auth/callback?returnTo=${encodeURIComponent(safeReturnTo)}`
+			}
+		});
+
+		if (error || !data.url) {
+			return fail(500, { error: 'Could not initiate Google sign-in. Please try again.', returnTo: safeReturnTo, mode: 'signin' });
+		}
+
+		redirect(302, data.url);
 	}
 };

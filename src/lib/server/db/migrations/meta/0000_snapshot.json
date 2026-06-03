@@ -1,5 +1,5 @@
 {
-  "id": "5f99d8e9-7582-4adc-8600-6d2c4d3f60c0",
+  "id": "e7663b6a-3b6b-4339-acac-91382e295231",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -41,8 +41,8 @@
           "notNull": true,
           "default": false
         },
-        "available_for_workshops": {
-          "name": "available_for_workshops",
+        "available_for_practice_group": {
+          "name": "available_for_practice_group",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -171,6 +171,94 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.entity_tags": {
+      "name": "entity_tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "domain": {
+          "name": "domain",
+          "type": "tag_domain",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "added_by_user_id": {
+          "name": "added_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "entity_tags_tag_id_tags_id_fk": {
+          "name": "entity_tags_tag_id_tags_id_fk",
+          "tableFrom": "entity_tags",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "entity_tags_added_by_user_id_users_id_fk": {
+          "name": "entity_tags_added_by_user_id_users_id_fk",
+          "tableFrom": "entity_tags",
+          "tableTo": "users",
+          "columnsFrom": [
+            "added_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "entity_tags_tag_entity_unique": {
+          "name": "entity_tags_tag_entity_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tag_id",
+            "entity_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -193,6 +281,26 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "auth_provider": {
+          "name": "auth_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'email'"
+        },
+        "admin": {
+          "name": "admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -291,13 +399,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "freshness_reminders_enabled": {
-          "name": "freshness_reminders_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -374,22 +475,22 @@
           "notNull": false,
           "default": "'[]'::jsonb"
         },
-        "open_to_book_openers": {
-          "name": "open_to_book_openers",
+        "looking_for_practice_group": {
+          "name": "looking_for_practice_group",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "looking_for_team": {
-          "name": "looking_for_team",
+        "looking_for_small_group": {
+          "name": "looking_for_small_group",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "looking_for_coach": {
-          "name": "looking_for_coach",
+        "looking_for_indie_team": {
+          "name": "looking_for_indie_team",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -547,13 +648,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "freshness_reminders_enabled": {
-          "name": "freshness_reminders_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -637,6 +731,18 @@
         },
         "member_name": {
           "name": "member_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invite_email": {
+          "name": "invite_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invite_token": {
+          "name": "invite_token",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -759,6 +865,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "invite_email": {
+          "name": "invite_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invite_token": {
+          "name": "invite_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "start_year": {
           "name": "start_year",
           "type": "integer",
@@ -847,6 +965,96 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+    },
+    "public.tags": {
+      "name": "tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "domain": {
+          "name": "domain",
+          "type": "tag_domain",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "tag_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "suggested_by_user_id": {
+          "name": "suggested_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "suggested_on_entity_id": {
+          "name": "suggested_on_entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tags_suggested_by_user_id_users_id_fk": {
+          "name": "tags_suggested_by_user_id_users_id_fk",
+          "tableFrom": "tags",
+          "tableTo": "users",
+          "columnsFrom": [
+            "suggested_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tags_name_domain_unique": {
+          "name": "tags_name_domain_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "domain"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -868,6 +1076,24 @@
     },
     "public.approval_status": {
       "name": "approval_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.tag_domain": {
+      "name": "tag_domain",
+      "schema": "public",
+      "values": [
+        "performer",
+        "coach",
+        "team"
+      ]
+    },
+    "public.tag_status": {
+      "name": "tag_status",
       "schema": "public",
       "values": [
         "pending",

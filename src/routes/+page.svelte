@@ -3,6 +3,8 @@
   import { cityConfig } from '$config/city';
   import { Sparkles, GraduationCap, Handshake, Users, UserCheck, ArrowRight } from 'lucide-svelte';
 
+  const signupHref = '/login';
+
   const connectCards = [
     {
       icon: Sparkles,
@@ -45,10 +47,7 @@
     }
   ];
 
-  async function openSignup() {
-    const module = await import('netlify-identity-widget');
-    module.default.open('signup');
-  }
+
 </script>
 
 <svelte:head>
@@ -76,10 +75,10 @@
         </a>
         <a href="/performers" class="btn-outline">BROWSE</a>
       {:else}
-        <button onclick={openSignup} class="btn-accent">
+        <a href={signupHref} class="btn-accent">
           JOIN THE SCENE
           <ArrowRight size={18}/>
-        </button>
+        </a>
         <a href="/performers" class="btn-outline">BROWSE THE SCENE</a>
       {/if}
     </div>
@@ -129,10 +128,10 @@
     <div class="cta-inner">
       <!-- <p class="cta-eyebrow">— IT'S FREE, FOREVER —</p>-->
       <h2 class="cta-heading">READY TO GET INVOLVED?</h2>
-      <button onclick={openSignup} class="btn-accent">
+      <a href={signupHref} class="btn-accent">
         CREATE YOUR PROFILE
         <ArrowRight size={18}/>
-      </button>
+      </a>
     </div>
   </section>
 {/if}

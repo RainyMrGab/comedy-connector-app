@@ -1,7 +1,8 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { env } from '$env/dynamic/public';
 import { env as privateEnv } from '$env/dynamic/private';
+import { env as publicEnv } from '$env/dynamic/public';
+import { PUBLIC_DEPLOY_CONTEXT } from '$env/static/public';
 import { db } from '$server/db';
 import { reminderConfig } from '$config/reminders';
 import {
@@ -15,7 +16,7 @@ import {
 
 // Only available outside production
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (env.PUBLIC_DEPLOY_CONTEXT === 'production') redirect(302, '/');
+	if (PUBLIC_DEPLOY_CONTEXT === 'production') redirect(302, '/');
 	if (!locals.user) redirect(302, `/login?returnTo=${encodeURIComponent(url.pathname)}`);
 	return {};
 };
@@ -31,7 +32,7 @@ export interface SimulateResult {
 
 export const actions: Actions = {
 	default: async ({ locals }) => {
-		if (env.PUBLIC_DEPLOY_CONTEXT === 'production') return fail(403, { error: 'Not available in production' });
+		if (PUBLIC_DEPLOY_CONTEXT === 'production') return fail(403, { error: 'Not available in production' });
 		if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
 		const { dailyEmailLimit } = reminderConfig;
@@ -41,7 +42,7 @@ export const actions: Actions = {
 		const recipients = await getFreshnessRecipients(db, 0, dailyEmailLimit, inactiveSince);
 
 		const dryRun = !privateEnv.RESEND_API_KEY;
-		const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
+		const siteUrl = publicEnv.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 		const errors: string[] = [];
 		let sent = 0;
 

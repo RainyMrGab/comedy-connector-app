@@ -3,6 +3,12 @@
   publish = "build"
   functions = "netlify/functions"
 
+# Production deployments run pending DB migrations before building.
+# Requires SUPABASE_DATABASE_URL set in Netlify's production environment variables
+# (dashboard → Environment variables).
+[context.production]
+  command = "pnpm db:migrate && pnpm run build"
+
 [build.environment]
   NODE_VERSION = "22"
   PNPM_VERSION = "10"
