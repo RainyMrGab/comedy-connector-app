@@ -330,6 +330,7 @@
 
 <style>
 	.required { color: var(--zine-accent); }
+	.zine-form { display: flex; flex-direction: column; gap: 24px; }
 	.edit-page { max-width: 720px; margin: 0 auto; padding: 48px 32px; }
 	.page-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
 	.page-title { font-family: var(--font-heading); font-size: 36px; color: var(--zine-primary); transform: rotate(-1deg); display: inline-block; margin: 0; }

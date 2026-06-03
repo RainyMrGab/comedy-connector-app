@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <svelte:head>
@@ -12,6 +12,10 @@
 	<div class="login-card">
 		<h1 class="login-title">LOCAL DEV LOGIN</h1>
 		<p class="login-sub">Select a test user. Only available in local development.</p>
+
+		{#if form?.error}
+			<p class="error-msg">{form.error}</p>
+		{/if}
 
 		<form method="POST" action="?/login" class="zine-form">
 			<div class="form-field">
@@ -37,4 +41,5 @@
 	.login-card { background: var(--zine-surface); border: var(--zine-border); box-shadow: var(--zine-shadow); width: 100%; max-width: 380px; padding: 32px; }
 	.login-title { font-family: var(--font-heading); font-size: 24px; color: var(--zine-primary); margin: 0 0 8px; transform: rotate(-1deg); display: inline-block; }
 	.login-sub { font-size: 12px; opacity: 0.65; margin: 0 0 24px; }
+	.error-msg { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; font-size: 13px; padding: 10px 12px; margin-bottom: 16px; border-radius: 4px; }
 </style>

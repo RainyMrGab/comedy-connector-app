@@ -10,7 +10,7 @@ export const socialLinksSchema = z.object({
 
 export const personalProfileSchema = z.object({
 	name: z.string().min(2, 'Name must be at least 2 characters').max(100),
-	bio: z.string().max(1000).optional(),
+	bio: z.string().max(5000).optional(),
 	training: z.string().max(2000).optional(),
 	lookingFor: z.string().max(500).optional(),
 	contactEmail: z.string().email().optional().or(z.literal('')),

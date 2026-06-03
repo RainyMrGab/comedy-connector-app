@@ -96,19 +96,6 @@
 				UPLOAD PHOTO
 			{/if}
 		</button>
-
-		<span class="or-sep">or paste URL</span>
-
-		<!-- URL text fallback — syncs currentValue; no name= so it doesn't double-submit -->
-		<input
-			type="url"
-			class="url-input"
-			placeholder="https://..."
-			value={currentValue}
-			oninput={(e) => {
-				currentValue = (e.target as HTMLInputElement).value;
-			}}
-		/>
 	</div>
 
 	{#if uploadError}
@@ -123,7 +110,7 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--zine-primary);
-		margin: 0 0 6px;
+		margin: 0;
 	}
 
 	.photo-picker {
@@ -133,8 +120,8 @@
 	}
 
 	.photo-preview {
-		width: 80px;
-		height: 80px;
+		width: 100px;
+		height: 100px;
 		object-fit: cover;
 		border: var(--zine-border);
 	}
@@ -142,24 +129,12 @@
 	.picker-controls {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		flex-wrap: wrap;
+		gap: 12px;
 	}
 
 	.upload-btn {
 		flex-shrink: 0;
 		font-size: 11px;
-	}
-
-	.or-sep {
-		font-size: 11px;
-		opacity: 0.5;
-		white-space: nowrap;
-	}
-
-	.url-input {
-		flex: 1;
-		min-width: 180px;
 	}
 
 	.upload-error {

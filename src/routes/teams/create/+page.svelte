@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
+	import PhotoPicker from '$components/ui/PhotoPicker.svelte';
 
 	let { form }: { form: ActionData } = $props();
 	let saving = $state(false);
@@ -39,8 +40,12 @@
 			<textarea id="description" name="description" rows="4" placeholder="Tell us about your team...">{form?.values?.description ?? ''}</textarea>
 		</div>
 		<div class="form-field">
-			<label for="photoUrl">PHOTO URL <small class="field-hint">(optional)</small></label>
-			<input id="photoUrl" name="photoUrl" type="url" value={form?.values?.photoUrl ?? ''} placeholder="https://..." />
+			<PhotoPicker
+				fieldName="photoUrl"
+				initialValue={form?.values?.photoUrl ?? ''}
+				bucket="user-media"
+				label="PHOTO"
+			/>
 		</div>
 		<div class="two-col">
 			<div class="form-field">
@@ -85,6 +90,5 @@
 	.checks { display: flex; flex-direction: column; gap: 12px; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
 	.freshness-notice { font-size: 13px; color: var(--zine-muted); border: 1px solid var(--zine-border-color, #e5e7eb); border-left: 3px solid var(--zine-primary); padding: 12px 14px; margin: 0; }
-	.field-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.65; }
 	@media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
 </style>
