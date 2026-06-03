@@ -79,16 +79,21 @@ export const actions: Actions = {
 		return { forgotSent: true };
 	},
 
-	loginWithGoogle: async ({ locals, url }) => {
+	loginWithGoogle: async ({ request, locals, url }) => {
+		const formData = await request.formData();
+		const returnTo = String(formData.get('returnTo') ?? '/profile');
+		const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
+
 		const { data, error } = await locals.supabase.auth.signInWithOAuth({
 			provider: 'google',
 			options: {
-				redirectTo: `${url.origin}/auth/callback`
+				// Pass returnTo through the OAuth round-trip so the callback can redirect correctly.
+				redirectTo: `${url.origin}/auth/callback?returnTo=${encodeURIComponent(safeReturnTo)}`
 			}
 		});
 
 		if (error || !data.url) {
-			return fail(500, { error: 'Could not initiate Google sign-in. Please try again.', returnTo: '/profile', mode: 'signin' });
+			return fail(500, { error: 'Could not initiate Google sign-in. Please try again.', returnTo: safeReturnTo, mode: 'signin' });
 		}
 
 		redirect(302, data.url);
