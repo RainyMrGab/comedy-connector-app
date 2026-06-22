@@ -28,13 +28,13 @@ Use `toastStore.success(msg)` / `toastStore.error(msg)` for inline feedback, com
 pnpm dev               # local dev server — connects to Supabase staging DB
 pnpm build             # production build
 pnpm check             # TypeScript + Svelte type checking (run after changes)
-pnpm db:setup          # push schema + run all migrations (requires SUPABASE_DATABASE_URL in .env)
-pnpm db:push           # push schema changes only (no migration files)
-pnpm db:migrate        # apply SQL migration files only
 pnpm db:generate       # generate migration files from schema changes (no DB connection needed)
+pnpm db:migrate        # apply pending migrations to staging DB (staging only — see note below)
 pnpm db:studio         # Drizzle Studio GUI (requires SUPABASE_DATABASE_URL in .env)
 pnpm db:seed:staging   # seed the Supabase staging DB with Muppets test data
 ```
+
+**Schema change workflow**: edit schema → `pnpm db:generate` → `pnpm db:migrate` (staging) → apply the generated SQL file manually to prod via Supabase dashboard SQL editor or MCP `execute_sql`. Do NOT use `pnpm db:migrate` against prod — the `__drizzle_migrations` tracking tables diverged between environments and `db:migrate` will report "Nothing to migrate" even when changes are pending.
 
 ## Agent Environment Notes
 

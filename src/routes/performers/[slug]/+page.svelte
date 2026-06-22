@@ -7,6 +7,7 @@
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
+	import ReactionFooter from '$components/ui/ReactionFooter.svelte';
 	import { toastStore } from '$stores/toast.svelte';
 	import { normalizeHighlights } from '$utils/highlights';
 
@@ -234,6 +235,16 @@
 				{/each}
 			</div>
 		</section>
+	{/if}
+
+	{#if performer}
+		<ReactionFooter
+			entityId={performer.id}
+			entityType="performer"
+			reactionCounts={data.reactionCounts}
+			userReactions={data.userReactions}
+			isLoggedIn={authStore.isAuthenticated}
+		/>
 	{/if}
 </div>
 

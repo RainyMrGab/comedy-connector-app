@@ -7,6 +7,7 @@
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
+	import ReactionFooter from '$components/ui/ReactionFooter.svelte';
 	import { toastStore } from '$stores/toast.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -180,6 +181,14 @@
 			</div>
 		</section>
 	{/if}
+
+	<ReactionFooter
+		entityId={coach.id}
+		entityType="coach"
+		reactionCounts={data.reactionCounts}
+		userReactions={data.userReactions}
+		isLoggedIn={authStore.isAuthenticated}
+	/>
 </div>
 
 <style>

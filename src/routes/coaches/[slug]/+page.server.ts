@@ -1,8 +1,8 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$server/db';
-import { users, coachProfiles, teamCoaches, teams, tags, entityTags } from '$server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { users, coachProfiles, teamCoaches, teams, tags, entityTags, reactions } from '$server/db/schema';
+import { eq, and, count } from 'drizzle-orm';
 import { getProfileBySlug } from '$server/profiles';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -39,16 +39,42 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.innerJoin(tags, eq(entityTags.tagId, tags.id))
 		.where(and(eq(entityTags.entityId, coach[0].id), eq(entityTags.domain, 'coach'), eq(tags.status, 'approved')));
 
+	const entityId = coach[0].id;
+	const [reactionCounts, userReactions] = await Promise.all([
+		db
+			.select({ reactionType: reactions.reactionType, count: count() })
+			.from(reactions)
+			.where(and(eq(reactions.entityId, entityId), eq(reactions.entityType, 'coach')))
+			.groupBy(reactions.reactionType),
+		locals.user
+			? db
+					.select({ reactionType: reactions.reactionType })
+					.from(reactions)
+					.where(
+						and(
+							eq(reactions.entityId, entityId),
+							eq(reactions.entityType, 'coach'),
+							eq(reactions.userId, locals.user.id)
+						)
+					)
+			: Promise.resolve([])
+	]);
+
 	return {
 		profile,
 		coach: coach[0],
 		coachingRoles,
 		profileTags,
+		reactionCounts,
+		userReactions,
 		isViewerAdmin: locals.user?.admin ?? false,
 		isTargetAdmin: profileUser[0]?.admin ?? false,
 		targetUserId: profileUser[0]?.id ?? null
 	};
 };
+
+const VALID_REACTION_TYPES = ['like', 'love', 'celebrate'] as const;
+type ValidReactionType = (typeof VALID_REACTION_TYPES)[number];
 
 export const actions: Actions = {
 	makeAdmin: async ({ locals, params }) => {
@@ -58,6 +84,45 @@ export const actions: Actions = {
 		if (!profile) return fail(404, { error: 'Profile not found' });
 
 		await db.update(users).set({ admin: true }).where(eq(users.id, profile.userId));
+		return { success: true };
+	},
+
+	react: async ({ locals, request }) => {
+		if (!locals.user) return fail(401, { error: 'Sign in to react.' });
+
+		const data = await request.formData();
+		const entityId = data.get('entityId') as string;
+		const reactionType = data.get('reactionType') as ValidReactionType;
+
+		if (!VALID_REACTION_TYPES.includes(reactionType)) return fail(400, { error: 'Invalid reaction.' });
+
+		await db
+			.insert(reactions)
+			.values({ entityId, entityType: 'coach', reactionType, userId: locals.user.id })
+			.onConflictDoNothing();
+
+		return { success: true };
+	},
+
+	unreact: async ({ locals, request }) => {
+		if (!locals.user) return fail(401, { error: 'Sign in to react.' });
+
+		const data = await request.formData();
+		const entityId = data.get('entityId') as string;
+		const reactionType = data.get('reactionType') as ValidReactionType;
+
+		if (!VALID_REACTION_TYPES.includes(reactionType)) return fail(400, { error: 'Invalid reaction.' });
+
+		await db
+			.delete(reactions)
+			.where(
+				and(
+					eq(reactions.entityId, entityId),
+					eq(reactions.reactionType, reactionType),
+					eq(reactions.userId, locals.user.id)
+				)
+			);
+
 		return { success: true };
 	}
 };

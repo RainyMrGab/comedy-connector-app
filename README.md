@@ -108,7 +108,8 @@ pnpm dev               # local dev — connects to Supabase staging, /dev-login 
 pnpm dev:prod          # local dev in "prod mode" — real login flow, no /dev-login
 pnpm build             # production build
 pnpm check             # TypeScript + Svelte type checking
-pnpm db:push           # push schema changes to Supabase (uses SUPABASE_DIRECT_URL)
+pnpm db:generate       # generate a migration SQL file from schema changes
+pnpm db:migrate        # apply pending migrations to staging DB
 pnpm db:studio         # Drizzle Studio GUI (uses SUPABASE_DIRECT_URL)
 pnpm db:seed:staging   # seed staging DB + create Supabase Auth test users
 ```
@@ -135,17 +136,28 @@ pnpm db:seed:staging
    - `RESEND_API_KEY` — from [resend.com](https://resend.com)
    - `PUBLIC_CITY_NAME`, `PUBLIC_CITY_DOMAIN`, `PUBLIC_SITE_URL`
 6. **Apply the auth trigger SQL** in both Supabase projects' SQL editors (see `docs/supabase-triggers.sql`)
-7. **Push the schema** to both projects:
+7. **Push the initial schema** to both projects:
    ```bash
    # Staging (reads SUPABASE_DIRECT_URL from .env)
-   pnpm db:push
+   pnpm db:migrate
 
-   # Production (pass the prod direct URL)
-   SUPABASE_DIRECT_URL=<prod_direct_url> pnpm db:push
+   # Production — run the SQL from src/lib/server/db/migrations/0000_certain_famine.sql
+   # in the Supabase dashboard SQL editor for your prod project
    ```
 8. **Seed staging**: `pnpm db:seed:staging`
 
 Pushes to `main` auto-deploy to production. Deploy previews run against production Supabase data.
+
+### Deploying schema changes to production
+
+After making schema changes locally:
+
+1. Edit schema files in `src/lib/server/db/schema/`
+2. `pnpm db:generate` — generates a migration SQL file under `src/lib/server/db/migrations/`
+3. `pnpm db:migrate` — applies it to staging (verifies it works)
+4. **For prod**: copy the SQL from the generated migration file and run it in the **Supabase dashboard SQL editor** for your production project (or use the Supabase MCP `execute_sql` tool)
+
+> **Why not `pnpm db:migrate` against prod?** Drizzle's migration tracking table (`__drizzle_migrations`) can diverge between staging and prod if they were set up at different times or with different journal states. Applying the SQL directly bypasses tracking and is always reliable.
 
 See `docs/supabase-migration-guide.md` for the full step-by-step setup runbook.
 

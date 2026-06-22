@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { users } from './users';
+import { reactions } from './reactions';
 import { personalProfiles } from './personal_profiles';
 import { performerProfiles } from './performer_profiles';
 import { coachProfiles } from './coach_profiles';
@@ -107,6 +108,13 @@ export const entityTagsRelations = relations(entityTags, ({ one }) => ({
 	}),
 	addedBy: one(users, {
 		fields: [entityTags.addedByUserId],
+		references: [users.id]
+	})
+}));
+
+export const reactionsRelations = relations(reactions, ({ one }) => ({
+	user: one(users, {
+		fields: [reactions.userId],
 		references: [users.id]
 	})
 }));
