@@ -8,4 +8,5 @@ export * from './team_coaches';
 export * from './contact_messages';
 export * from './tags';
 export * from './entity_tags';
+export * from './reactions';
 export * from './relations';

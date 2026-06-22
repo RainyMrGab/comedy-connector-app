@@ -5,6 +5,7 @@
 	import { formatDateRange } from '$utils/dates';
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
+	import ReactionFooter from '$components/ui/ReactionFooter.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let team = $derived(data.team);
@@ -312,6 +313,14 @@
 			</div>
 		</section>
 	{/if}
+
+	<ReactionFooter
+		entityId={team.id}
+		entityType="team"
+		reactionCounts={data.reactionCounts}
+		userReactions={data.userReactions}
+		isLoggedIn={authStore.isAuthenticated}
+	/>
 </div>
 
 <style>
