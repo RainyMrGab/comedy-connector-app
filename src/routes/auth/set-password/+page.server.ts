@@ -12,7 +12,10 @@ import type { Actions, PageServerLoad } from './$types';
  * so locals.user is populated and locals.supabase.auth.updateUser() will succeed.
  */
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) {
+	const {
+		data: { user: authUser }
+	} = await locals.supabase.auth.getUser();
+	if (!authUser) {
 		const returnTo = encodeURIComponent(url.pathname);
 		redirect(302, `/login?returnTo=${returnTo}`);
 	}
@@ -21,7 +24,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		if (!locals.user) return fail(401, { error: 'Not authenticated' });
+		const {
+			data: { user: authUser }
+		} = await locals.supabase.auth.getUser();
+		if (!authUser) return fail(401, { error: 'Not authenticated' });
 
 		const formData = await request.formData();
 		const password = String(formData.get('password') ?? '');
