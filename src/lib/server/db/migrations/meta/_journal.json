@@ -15,6 +15,13 @@
       "when": 1782081005125,
       "tag": "0001_grey_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785073575379,
+      "tag": "0002_jittery_bastion",
+      "breakpoints": true
     }
   ]
 }
