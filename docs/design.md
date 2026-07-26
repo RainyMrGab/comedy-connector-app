@@ -10,6 +10,22 @@ signals authenticity: this is a tool built by and for the community, not a corpo
 
 ---
 
+## Logo
+
+The mark is two interlocking hand-inked "C" brush-strokes — a chain link standing in for "Connector," not just
+initials. Colors are teal (`--zine-muted`) and red (`--zine-accent`) only, no black, so it holds up on both light and
+dark backgrounds; a single rough hand-drawn ring hints at a rubber stamp without going full stamp-with-arced-text.
+Source file is `static/assets/brand/comedy-connector-mark.svg`, referenced from
+`src/lib/components/layout/Header.svelte` (`.wm-mark`) and reusable anywhere else it's needed. Also ships as the site
+favicon (`static/favicon.svg` + PNG fallbacks) and as a 120×120 flattened PNG for the Google OAuth consent screen
+(`static/assets/brand/google-oauth-logo-120x120.png` — see `docs/google-oauth-setup.md`).
+
+Four other directions were explored and set aside — see the
+[logo concepts review](https://claude.ai/code/artifact/eb985f46-68e8-4ec3-974d-468cce94532f) for the full set and
+the reasoning behind picking this one.
+
+---
+
 ## Dribbble Description (Landing Page)
 
 Off-white paper-textured background, slightly warm. Hero section slams a bold hand-lettered headline — "YOUR SCENE. YOUR
