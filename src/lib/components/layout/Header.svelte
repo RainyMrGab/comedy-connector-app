@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { authStore } from '$stores/auth.svelte';
 	import { toastStore } from '$stores/toast.svelte';
-	import { cityConfig } from '$config/city';
 	import { Menu, X } from 'lucide-svelte';
 
 	let { isLocal = false }: { isLocal?: boolean } = $props();
@@ -34,12 +33,7 @@
 	<div class="header-inner">
 		<!-- Wordmark -->
 		<a href="/" class="wordmark">
-			<svg class="wm-mark" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-				<rect x="3" y="3" width="34" height="34" fill="#1c1c1c"/>
-				<rect x="0" y="0" width="34" height="34" fill="#1c1c1c"/>
-				<text x="17" y="25" font-family="'Courier Prime',monospace" font-weight="700" font-size="19" fill="#f4efe6" text-anchor="middle" letter-spacing="-1">CC</text>
-			</svg>
-			<span class="wm-text">Comedy Connector</span>
+			<img class="wm-mark" src="/assets/brand/comedy-connector-mark.svg" alt="Comedy Connector" />
 		</a>
 
 		<!-- Desktop nav -->
@@ -94,12 +88,7 @@
 		<div class="mobile-menu">
 			<div class="mobile-top">
 				<a href="/" class="wordmark" onclick={closeMobileMenu}>
-				<svg class="wm-mark" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-					<rect x="3" y="3" width="34" height="34" fill="#1c1c1c"/>
-					<rect x="0" y="0" width="34" height="34" fill="#1c1c1c"/>
-					<text x="17" y="25" font-family="'Courier Prime',monospace" font-weight="700" font-size="19" fill="#f4efe6" text-anchor="middle" letter-spacing="-1">CC</text>
-				</svg>
-				<span class="wm-text">{cityConfig.name} Comedy Connector</span>
+				<img class="wm-mark" src="/assets/brand/comedy-connector-mark.svg" alt="Comedy Connector" />
 			</a>
 				<button class="mobile-close" onclick={closeMobileMenu} aria-label="Close menu">
 					<X size={24} />
@@ -163,13 +152,6 @@
 		height: 30px;
 		transform: rotate(-2deg);
 		flex-shrink: 0;
-	}
-
-	.wm-text {
-		font-family: var(--font-heading);
-		font-size: 18px;
-		line-height: 1;
-		color: var(--zine-primary);
 	}
 
 	/* Desktop nav */

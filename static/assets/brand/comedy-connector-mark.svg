@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 0 200 200" width="200" height="200" role="img" aria-labelledby="ccmark-title ccmark-desc">
+  <title id="ccmark-title">Comedy Connector mark</title>
+  <desc id="ccmark-desc">Two interlocking C brush-strokes in teal and red, inside a single rough hand-drawn ring.</desc>
+  <path d="M185,100 172,130 164,164 131,176 100,188 69,174 35,165 22,132 21,100 18,66 41,41 65,16 100,20 133,21 164,36 175,69 Z"
+        fill="none" stroke="#D93B2B" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M 138 62 C 95 40, 40 55, 32 100 C 25 145, 70 168, 118 150" stroke="#2E7D7D" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 92 138 C 135 160, 190 145, 198 100 C 205 55, 160 32, 112 50" stroke="#D93B2B" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
