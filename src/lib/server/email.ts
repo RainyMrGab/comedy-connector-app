@@ -2,6 +2,7 @@ import { emailService } from '$lib/services/email';
 import * as contactTemplate from './email-templates/contact';
 import * as feedbackTemplate from './email-templates/feedback';
 import * as teamInviteTemplate from './email-templates/team-invite';
+import * as teamRoleAddedTemplate from './email-templates/team-role-added';
 
 export interface ContactEmailParams {
 	to: string;
@@ -78,6 +79,34 @@ export async function sendTeamInvite(params: TeamInviteEmailParams): Promise<voi
 	});
 
 	if (!success) throw new Error(error || 'Failed to send team invite email');
+}
+
+export interface TeamRoleAddedEmailParams {
+	to: string;
+	name: string;
+	inviterName: string;
+	teamName: string;
+	role: 'performer' | 'coach';
+	siteUrl: string;
+}
+
+export async function sendTeamRoleAddedNotification(params: TeamRoleAddedEmailParams): Promise<void> {
+	const { to, siteUrl } = params;
+	const approvalsUrl = `${siteUrl.replace(/\/$/, '')}/approvals`;
+
+	const templateParams = {
+		...params,
+		approvalsUrl
+	};
+
+	const { success, error } = await emailService.send({
+		to,
+		subject: teamRoleAddedTemplate.subject(templateParams),
+		html: teamRoleAddedTemplate.html(templateParams),
+		text: teamRoleAddedTemplate.text(templateParams)
+	});
+
+	if (!success) throw new Error(error || 'Failed to send team role added notification email');
 }
 
 // Freshness reminder emails are now sent via src/lib/server/reminders.ts
