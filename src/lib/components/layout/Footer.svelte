@@ -44,6 +44,10 @@
 				·
 				<a href="/feedback">Feedback</a>
 				·
+				<a href="/privacy">Privacy</a>
+				·
+				<a href="/terms">Terms</a>
+				·
 				<a href="https://www.paypal.com/paypalme/bmgray84" target="_blank" rel="noopener noreferrer">Support this project</a>
 				·
 				<a href="https://github.com/RainyMrGab/comedy-connector-app#add-your-city" target="_blank" rel="noopener noreferrer">Add your city</a>

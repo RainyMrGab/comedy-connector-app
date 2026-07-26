@@ -49,9 +49,14 @@ Users can sign up and reset passwords directly from the Identity widget.
 
 ## Google OAuth
 
+> **Note**: This document predates the Supabase Auth migration and describes the old Netlify
+> Identity/GoTrue flow. Sign-in now goes through Supabase's `signInWithOAuth`
+> (`src/routes/login/+page.server.ts`), not `/.netlify/identity/*`. For current OAuth consent
+> screen branding/verification setup, see [`google-oauth-setup.md`](./google-oauth-setup.md).
+
 Google is the recommended social sign-in option for non-technical audiences.
 
-### Setup steps
+### Setup steps (outdated — see note above)
 
 1. **Create OAuth credentials** in the [Google Cloud Console](https://console.cloud.google.com/):
     - Create a new project (or use an existing one).
