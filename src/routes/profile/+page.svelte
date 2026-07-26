@@ -87,6 +87,11 @@
 			</p>
 			<span class="card-go">→</span>
 		</a>
+		<a href="/profile/notifications" class="zine-card-link">
+			<div class="card-tag">SETTINGS</div>
+			<p class="card-action-label">NOTIFICATIONS</p>
+			<span class="card-go">→</span>
+		</a>
 	</div>
 </div>
 
