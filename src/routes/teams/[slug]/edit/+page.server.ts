@@ -5,8 +5,9 @@ import { db } from '$server/db';
 import { teams, teamMembers, teamCoaches, tags, entityTags, personalProfiles } from '$server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getTeamBySlug, getTeamMembers, getOrCreateStubTeam, resolveTeamSlug } from '$server/teams';
-import { getProfileByUserId, findProfileIdByEmail } from '$server/profiles';
-import { sendTeamInvite } from '$server/email';
+import { getProfileByUserId, findProfileIdByEmail, getUserByProfileId } from '$server/profiles';
+import { sendTeamInvite, sendTeamRoleAddedNotification } from '$server/email';
+import { getNotificationPreferences } from '$server/notifications';
 import { teamSchema } from '$utils/validation';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,6 +28,37 @@ async function sendInviteEmail(params: {
 	const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
 	await sendTeamInvite({ ...params, siteUrl });
 	return `Invitation sent to ${params.to}.`;
+}
+
+// Notifies an existing app user that they were added to a team and need to approve it.
+// Best-effort: a failure here must not block the add itself, since that action already
+// succeeded (the pending row is created either way).
+async function notifyExistingUserAdded(params: {
+	profileId: string;
+	teamName: string;
+	role: 'performer' | 'coach';
+	inviterName: string;
+}): Promise<void> {
+	try {
+		const target = await getUserByProfileId(params.profileId);
+		if (!target) return;
+
+		const prefKey = params.role === 'coach' ? 'emailOnCoachAdded' : 'emailOnMemberAdded';
+		const preferences = getNotificationPreferences(target.user);
+		if (!preferences[prefKey]) return;
+
+		const siteUrl = env.PUBLIC_SITE_URL ?? 'https://pgh.comedyconnector.app';
+		await sendTeamRoleAddedNotification({
+			to: target.contactEmail ?? target.user.email,
+			name: target.name,
+			inviterName: params.inviterName,
+			teamName: params.teamName,
+			role: params.role,
+			siteUrl
+		});
+	} catch (err) {
+		console.error('Failed to send team-role-added notification:', err);
+	}
 }
 
 export const load: PageServerLoad = async ({ params, locals, url }) => {
@@ -151,6 +183,15 @@ export const actions: Actions = {
 			approvalStatus
 		});
 
+		if (profileId) {
+			await notifyExistingUserAdded({
+				profileId,
+				teamName: team.name,
+				role: 'performer',
+				inviterName: await getInviterName(locals.user.id)
+			});
+		}
+
 		return { success: true };
 	},
 
@@ -224,6 +265,15 @@ export const actions: Actions = {
 			isCurrent,
 			approvalStatus
 		});
+
+		if (profileId) {
+			await notifyExistingUserAdded({
+				profileId,
+				teamName: team.name,
+				role: 'coach',
+				inviterName: await getInviterName(locals.user.id)
+			});
+		}
 
 		return { success: true };
 	},

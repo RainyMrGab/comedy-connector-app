@@ -56,6 +56,17 @@ export async function findProfileIdByEmail(email: string): Promise<string | null
 	return result[0]?.id ?? null;
 }
 
+/** Get a profile's owning user row (email, notification preferences, etc.) by profile ID. */
+export async function getUserByProfileId(profileId: string) {
+	const result = await db
+		.select({ user: users, contactEmail: personalProfiles.contactEmail, name: personalProfiles.name })
+		.from(personalProfiles)
+		.innerJoin(users, eq(personalProfiles.userId, users.id))
+		.where(eq(personalProfiles.id, profileId))
+		.limit(1);
+	return result[0] ?? null;
+}
+
 /** Get or create a profile for a user if it doesn't exist. */
 export async function ensureUserProfile(userId: string, email: string, fallbackName?: string | null): Promise<string> {
 	const existing = await getProfileByUserId(userId);
