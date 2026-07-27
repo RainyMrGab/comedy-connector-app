@@ -9,6 +9,7 @@
 	import { authStore } from '$stores/auth.svelte';
 	import { cityConfig } from '$config/city';
 	import { Plus } from 'lucide-svelte';
+	import SEO from '$components/seo/SEO.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -18,10 +19,11 @@
 	let filters = $derived<SearchFilters>({ ...baseFilters, tags: selectedTags.map((t) => t.id) });
 </script>
 
-<svelte:head>
-	<title>Teams | {cityConfig.name} Comedy Connector</title>
-	<meta name="description" content="Browse improv and comedy teams in {cityConfig.name}." />
-</svelte:head>
+<SEO
+	title="Teams | {cityConfig.name} Comedy Connector"
+	description="Browse improv and comedy teams in {cityConfig.name}."
+	path="/teams"
+/>
 
 <div class="list-page">
 	<div class="page-header">

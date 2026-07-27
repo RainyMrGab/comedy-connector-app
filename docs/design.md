@@ -16,9 +16,14 @@ The mark is two interlocking hand-inked "C" brush-strokes — a chain link stand
 initials. Colors are teal (`--zine-muted`) and red (`--zine-accent`) only, no black, so it holds up on both light and
 dark backgrounds; a single rough hand-drawn ring hints at a rubber stamp without going full stamp-with-arced-text.
 Source file is `static/assets/brand/comedy-connector-mark.svg`, referenced from
-`src/lib/components/layout/Header.svelte` (`.wm-mark`) and reusable anywhere else it's needed. Also ships as the site
-favicon (`static/favicon.svg` + PNG fallbacks) and as a 120×120 flattened PNG for the Google OAuth consent screen
-(`static/assets/brand/google-oauth-logo-120x120.png` — see `docs/google-oauth-setup.md`).
+`src/lib/components/layout/Header.svelte` (`.wm-mark`) next to a plain HTML "Comedy Connector" wordmark (`.wm-text`,
+set in `--font-heading` / Permanent Marker via CSS) to form the header's combination mark, and reusable anywhere else
+it's needed. Also ships as the site favicon (`static/favicon.svg` + PNG fallbacks) and as a 120×120 flattened PNG for
+the Google OAuth consent screen (`static/assets/brand/google-oauth-logo-120x120.png` — see
+`docs/google-oauth-setup.md`).
+Standalone horizontal and stacked combination-mark SVGs (icon + baked-in hand-lettered wordmark, for contexts outside
+the header where a webfont can't be relied on — e.g. social/OG images, print) live at
+`static/assets/brand/comedy-connector-combo-horizontal.svg` and `comedy-connector-combo-stacked.svg`.
 
 Four other directions were explored and set aside — see the
 [logo concepts review](https://claude.ai/code/artifact/eb985f46-68e8-4ec3-974d-468cce94532f) for the full set and

@@ -2,6 +2,23 @@
   import { authStore } from '$stores/auth.svelte';
   import { cityConfig } from '$config/city';
   import { Sparkles, GraduationCap, Handshake, Users, UserCheck, ArrowRight } from 'lucide-svelte';
+  import SEO from '$components/seo/SEO.svelte';
+
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Comedy Connector',
+      url: cityConfig.siteUrl
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Comedy Connector',
+      url: cityConfig.siteUrl,
+      logo: `${cityConfig.siteUrl}/apple-touch-icon.png`
+    }
+  ];
 
   const signupHref = '/login';
 
@@ -50,11 +67,12 @@
 
 </script>
 
-<svelte:head>
-  <title>{cityConfig.name} Comedy Connector</title>
-  <meta name="description"
-        content="Connect with {cityConfig.name}'s improv and comedy community. Find performers, coaches, and teams."/>
-</svelte:head>
+<SEO
+  title="Comedy Connector"
+  description="Comedy Connector is an open directory that helps {cityConfig.name}'s comedy community connect. This is your online green room to discover groups, coaches, and teammates."
+  path="/"
+  {jsonLd}
+/>
 
 <!-- HERO -->
 <section class="hero">
@@ -65,7 +83,8 @@
       <h1 class="headline-line">COMEDY SCENE.</h1>
     </div>
     <p class="hero-sub">
-      {cityConfig.name}'s open directory for performers, coaches, and teams.
+      Comedy Connector is an open directory that helps {cityConfig.name}'s comedy community connect.
+      This is your online green room to discover groups, coaches, and teammates.
     </p>
     <div class="hero-actions">
       {#if authStore.isAuthenticated}
@@ -164,10 +183,11 @@
 
   .hero-sub {
     font-size: 16px;
+    font-weight: 600;
     line-height: 1.7;
-    color: var(--zine-primary);
+    color: color-mix(in srgb, var(--zine-primary) 65%, white);
     margin-bottom: 32px;
-    max-width: 480px;
+    max-width: 620px;
     opacity: 0.85;
   }
 
@@ -298,7 +318,6 @@
   /* Responsive */
   @media (max-width: 768px) {
     .hero {
-      flex-direction: column;
       padding: 36px 24px;
     }
 

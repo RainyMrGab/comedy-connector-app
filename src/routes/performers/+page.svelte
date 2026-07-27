@@ -6,6 +6,7 @@
 	import ResultsList from '$components/search/ResultsList.svelte';
 	import TagSearch from '$components/search/TagSearch.svelte';
 	import { cityConfig } from '$config/city';
+	import SEO from '$components/seo/SEO.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -15,10 +16,11 @@
 	let filters = $derived<SearchFilters>({ ...baseFilters, tags: selectedTags.map((t) => t.id) });
 </script>
 
-<svelte:head>
-	<title>Performers | {cityConfig.name} Comedy Connector</title>
-	<meta name="description" content="Browse {cityConfig.name} improv and comedy performers." />
-</svelte:head>
+<SEO
+	title="Performers | {cityConfig.name} Comedy Connector"
+	description="Browse {cityConfig.name} improv and comedy performers."
+	path="/performers"
+/>
 
 <div class="list-page">
 	<div class="page-header">

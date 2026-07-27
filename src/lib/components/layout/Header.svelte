@@ -33,7 +33,8 @@
 	<div class="header-inner">
 		<!-- Wordmark -->
 		<a href="/" class="wordmark">
-			<img class="wm-mark" src="/assets/brand/comedy-connector-mark.svg" alt="Comedy Connector" />
+			<img class="wm-mark" src="/assets/brand/comedy-connector-mark.svg" alt="" />
+			<span class="wm-text">Comedy Connector</span>
 		</a>
 
 		<!-- Desktop nav -->
@@ -88,8 +89,9 @@
 		<div class="mobile-menu">
 			<div class="mobile-top">
 				<a href="/" class="wordmark" onclick={closeMobileMenu}>
-				<img class="wm-mark" src="/assets/brand/comedy-connector-mark.svg" alt="Comedy Connector" />
-			</a>
+					<img class="wm-mark" src="/assets/brand/comedy-connector-mark.svg" alt="" />
+					<span class="wm-text">Comedy Connector</span>
+				</a>
 				<button class="mobile-close" onclick={closeMobileMenu} aria-label="Close menu">
 					<X size={24} />
 				</button>
@@ -152,6 +154,14 @@
 		height: 30px;
 		transform: rotate(-2deg);
 		flex-shrink: 0;
+	}
+
+	.wm-text {
+		font-family: var(--font-heading);
+		font-size: 20px;
+		line-height: 1;
+		color: var(--zine-primary);
+		transform: rotate(-1deg);
 	}
 
 	/* Desktop nav */
