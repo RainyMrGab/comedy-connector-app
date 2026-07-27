@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
 	import { toastStore } from '$stores/toast.svelte';
+	import { CalendarCheck, Sparkles, UserCheck } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -35,22 +36,25 @@
 	<form method="POST" use:enhance={saveEnhance} class="zine-form">
 		<label class="checkbox-label">
 			<input type="checkbox" checked disabled />
+			<span class="label-icon"><CalendarCheck size={20} /></span>
 			<span>
-				<strong>📬 Monthly freshness check</strong>
+				<strong>Monthly freshness check</strong>
 				<span class="field-hint">Keeps your listing accurate. Can't be turned off.</span>
 			</span>
 		</label>
 		<label class="checkbox-label">
 			<input type="checkbox" name="emailOnMemberAdded" value="true" bind:checked={emailOnMemberAdded} />
+			<span class="label-icon"><Sparkles size={20} /></span>
 			<span>
-				<strong>🎭 Someone adds me as a performer</strong>
+				<strong>Someone adds me as a performer</strong>
 				<span class="field-hint">Email me when a team adds me and I need to approve it.</span>
 			</span>
 		</label>
 		<label class="checkbox-label">
 			<input type="checkbox" name="emailOnCoachAdded" value="true" bind:checked={emailOnCoachAdded} />
+			<span class="label-icon"><UserCheck size={20} /></span>
 			<span>
-				<strong>🎓 Someone adds me as a coach</strong>
+				<strong>Someone adds me as a coach</strong>
 				<span class="field-hint">Email me when a team adds me and I need to approve it.</span>
 			</span>
 		</label>
@@ -68,7 +72,8 @@
 	.zine-form { display: flex; flex-direction: column; gap: 20px; }
 	.checkbox-label { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: var(--zine-border); background: var(--zine-surface); cursor: pointer; }
 	.checkbox-label input[type='checkbox'] { margin-top: 3px; flex-shrink: 0; }
-	.checkbox-label span { display: flex; flex-direction: column; gap: 4px; }
+	.label-icon { color: var(--zine-accent); flex-shrink: 0; margin-top: 1px; }
+	.checkbox-label > span:last-child { display: flex; flex-direction: column; gap: 4px; }
 	.field-hint { font-size: 12px; font-weight: 400; opacity: 0.65; }
 	.form-actions { display: flex; gap: 12px; padding-top: 8px; }
 </style>
