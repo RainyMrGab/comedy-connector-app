@@ -9,6 +9,7 @@
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
 	import ReactionFooter from '$components/ui/ReactionFooter.svelte';
 	import { toastStore } from '$stores/toast.svelte';
+	import SEO from '$components/seo/SEO.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
@@ -36,12 +37,25 @@
 		bluesky: Globe,
 		website: Globe
 	};
+
+	const jsonLd = $derived({
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: profile.name,
+		url: profileUrl,
+		...(profile.photoUrl ? { image: profile.photoUrl } : {}),
+		...(profile.bio ? { description: profile.bio } : {})
+	});
 </script>
 
-<svelte:head>
-	<title>{profile.name} — Coach | {cityConfig.name} Comedy Connector</title>
-	<meta name="description" content="{profile.name} — improv coach in {cityConfig.name}." />
-</svelte:head>
+<SEO
+	title="{profile.name} — Coach | {cityConfig.name} Comedy Connector"
+	description="{profile.name} — improv coach in {cityConfig.name}."
+	path="/coaches/{profile.slug}"
+	type="profile"
+	image={profile.photoUrl ?? undefined}
+	{jsonLd}
+/>
 
 <div class="detail-page">
 	<div class="profile-header">

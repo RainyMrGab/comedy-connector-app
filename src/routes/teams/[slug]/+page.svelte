@@ -6,6 +6,7 @@
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
 	import ReactionFooter from '$components/ui/ReactionFooter.svelte';
+	import SEO from '$components/seo/SEO.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let team = $derived(data.team);
@@ -25,12 +26,25 @@
 		if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
 		return null;
 	}
+
+	const jsonLd = $derived({
+		'@context': 'https://schema.org',
+		'@type': 'PerformingGroup',
+		name: team.name,
+		url: `${cityConfig.siteUrl}/teams/${team.slug}`,
+		...(team.photoUrl ? { image: team.photoUrl } : {}),
+		...(team.description ? { description: team.description } : {})
+	});
 </script>
 
-<svelte:head>
-	<title>{team.name} | {cityConfig.name} Comedy Connector</title>
-	<meta name="description" content="{team.name} — improv team in {cityConfig.name}." />
-</svelte:head>
+<SEO
+	title="{team.name} | {cityConfig.name} Comedy Connector"
+	description="{team.name} — improv team in {cityConfig.name}."
+	path="/teams/{team.slug}"
+	type="profile"
+	image={team.photoUrl ?? undefined}
+	{jsonLd}
+/>
 
 <div class="detail-page">
 	<!-- Header -->

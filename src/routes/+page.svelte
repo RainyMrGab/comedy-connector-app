@@ -51,9 +51,9 @@
 </script>
 
 <svelte:head>
-  <title>{cityConfig.name} Comedy Connector</title>
-  <meta name="description"
-        content="Connect with {cityConfig.name}'s improv and comedy community. Find performers, coaches, and teams."/>
+  title="Comedy Connector"
+  description="Comedy Connector is an open directory for {cityConfig.name}'s performers, coaches, and teams."
+  path="/"
 </svelte:head>
 
 <!-- HERO -->
