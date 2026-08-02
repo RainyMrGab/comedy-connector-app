@@ -74,6 +74,11 @@
 			<input id="availability" name="availability" type="text" value={coach?.availability ?? ''} placeholder="e.g. Weekends only, currently full, accepting new clients..." />
 		</div>
 
+		<div class="form-field">
+			<label for="payMeUrl">PAY ME LINK</label>
+			<input id="payMeUrl" name="payMeUrl" type="url" value={coach?.payMeUrl ?? ''} placeholder="https://paypal.me/yourname" />
+		</div>
+
 		<div class="form-actions">
 			<button type="submit" class="btn-accent" disabled={saving}>{saving ? 'SAVING…' : 'SAVE COACH PROFILE'}</button>
 			<a href="/profile" class="btn-outline">CANCEL</a>

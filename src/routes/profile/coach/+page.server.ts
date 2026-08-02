@@ -49,7 +49,8 @@ export const actions: Actions = {
 			availableForPrivate: formData.get('availableForPrivate') === 'true',
 			availableForTeams: formData.get('availableForTeams') === 'true',
 			availableForPracticeGroup: formData.get('availableForPracticeGroup') === 'true',
-			availability: String(formData.get('availability') ?? '')
+			availability: String(formData.get('availability') ?? ''),
+			payMeUrl: String(formData.get('payMeUrl') ?? '')
 		};
 
 		const result = coachProfileSchema.safeParse(raw);
