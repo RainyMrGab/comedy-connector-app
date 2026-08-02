@@ -22,6 +22,13 @@
       "when": 1785073575379,
       "tag": "0002_jittery_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785689249089,
+      "tag": "0003_magenta_naoko",
+      "breakpoints": true
     }
   ]
 }

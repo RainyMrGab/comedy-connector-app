@@ -14,6 +14,7 @@ export const coachProfiles = pgTable('coach_profiles', {
 	availableForTeams: boolean('available_for_teams').notNull().default(false),
 	availableForPracticeGroup: boolean('available_for_practice_group').notNull().default(false),
 	availability: text('availability'),
+	payMeUrl: text('pay_me_url'),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });

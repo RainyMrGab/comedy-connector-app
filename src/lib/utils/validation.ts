@@ -37,7 +37,8 @@ export const coachProfileSchema = z.object({
 	availableForPrivate: z.boolean().optional(),
 	availableForTeams: z.boolean().optional(),
 	availableForPracticeGroup: z.boolean().optional(),
-	availability: z.string().max(500).optional()
+	availability: z.string().max(500).optional(),
+	payMeUrl: z.string().url().optional().or(z.literal(''))
 });
 
 export const teamSchema = z.object({

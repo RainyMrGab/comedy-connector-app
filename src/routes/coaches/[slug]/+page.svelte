@@ -8,8 +8,11 @@
 	import { cityConfig } from '$config/city';
 	import ContactDialog from '$components/contact/ContactDialog.svelte';
 	import ReactionFooter from '$components/ui/ReactionFooter.svelte';
+	import BrandIcon from '$components/ui/BrandIcon.svelte';
 	import { toastStore } from '$stores/toast.svelte';
 	import SEO from '$components/seo/SEO.svelte';
+	import { detectPaymentPlatform } from '$utils/paymentPlatform';
+	import { paymentBrandIcons } from '$utils/paymentIcons';
 
 	let { data }: { data: PageData } = $props();
 	let profile = $derived(data.profile);
@@ -29,6 +32,10 @@
 		copied = true;
 		setTimeout(() => { copied = false; }, 2000);
 	}
+
+	const payPlatform = $derived(coach.payMeUrl ? detectPaymentPlatform(coach.payMeUrl) : null);
+	const payBrandIcon = $derived(payPlatform ? paymentBrandIcons[payPlatform] : null);
+	const firstName = $derived(profile.name.split(' ')[0]);
 
 	const socialIcons: Record<string, typeof Mail> = {
 		instagram: Instagram,
@@ -131,6 +138,18 @@
 			{:else}
 				<a href="/login" class="btn-outline">
 					LOG IN TO CONTACT
+				</a>
+			{/if}
+			{#if coach.payMeUrl}
+				<a href={coach.payMeUrl} target="_blank" rel="noopener noreferrer" class="pay-link">
+					{#if payPlatform === 'venmo'}
+						<span class="brand-letter">V</span>
+					{:else if payBrandIcon}
+						<BrandIcon path={payBrandIcon.path} size={12} />
+					{:else}
+						<Globe size={12} />
+					{/if}
+					Pay {firstName}
 				</a>
 			{/if}
 		</div>
@@ -278,7 +297,41 @@
 
 	.social-link:hover { opacity: 1; color: var(--zine-muted); border-color: var(--zine-muted); }
 
-	.header-actions { flex-shrink: 0; }
+	.header-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+
+	.pay-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--zine-highlight) 70%, black 15%);
+		text-decoration: none;
+		border: 1px solid color-mix(in srgb, var(--zine-highlight) 45%, white);
+		background: color-mix(in srgb, var(--zine-highlight) 10%, white);
+		padding: 4px 10px;
+	}
+
+	.pay-link:hover {
+		background: color-mix(in srgb, var(--zine-highlight) 25%, white);
+		border-color: var(--zine-highlight);
+	}
+
+	.brand-letter {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		border: 1.5px solid currentColor;
+		font-size: 8px;
+		font-weight: 700;
+		line-height: 1;
+	}
 
 	.profile-url-row {
 		display: flex;

@@ -113,7 +113,8 @@ export async function seedDb(db: Db): Promise<void> {
 			availableForPrivate: true,
 			availableForTeams: true,
 			availableForPracticeGroup: false,
-			availability: 'Weekends preferred'
+			availability: 'Weekends preferred',
+			payMeUrl: 'https://venmo.com/dev-coach'
 		});
 
 		await db.insert(users).values({
@@ -243,7 +244,8 @@ export async function seedDb(db: Db): Promise<void> {
 			availableForPrivate: true,
 			availableForTeams: true,
 			availableForPracticeGroup: false,
-			availability: 'Thursday evenings'
+			availability: 'Thursday evenings',
+			payMeUrl: 'https://paypal.me/statler'
 		});
 
 		await db.insert(users).values({
