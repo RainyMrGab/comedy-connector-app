@@ -1,2 +1,12 @@
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /api/
+Disallow: /login
+Disallow: /dev-login
+Disallow: /dev/
+Disallow: /preview/
+Disallow: /approvals
+Disallow: /profile
+Disallow: /auth
+
+Sitemap: https://pgh.comedyconnector.app/sitemap.xml
