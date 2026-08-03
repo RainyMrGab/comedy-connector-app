@@ -3,7 +3,8 @@ import type { RequestHandler } from './$types';
 
 /**
  * GET /auth/callback
- * Handles the OAuth redirect from Supabase (Google and other providers).
+ * Handles Supabase auth redirects: OAuth sign-in (Google and other providers),
+ * email confirmation links, and password-reset links.
  * Supabase sends a `code` query param which we exchange for a session.
  * The session cookies are written by the Supabase client in locals.supabase.
  */

@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const returnTo = url.searchParams.get('returnTo') ?? '/profile';
 	// Security: only allow relative paths
 	const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/profile';
+	const authError = url.searchParams.get('error');
 
 	// Already authenticated — skip login
 	if (locals.user) redirect(302, safeReturnTo);
@@ -17,7 +18,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Local dev — delegate to /dev-login (which has the test user picker).
 	if (IS_LOCAL) redirect(302, `/dev-login?returnTo=${encodeURIComponent(safeReturnTo)}`);
 
-	return { returnTo: safeReturnTo };
+	return { returnTo: safeReturnTo, error: authError };
 };
 
 export const actions: Actions = {
@@ -40,7 +41,7 @@ export const actions: Actions = {
 		redirect(302, safeReturnTo);
 	},
 
-	signup: async ({ request, locals }) => {
+	signup: async ({ request, locals, url }) => {
 		const formData = await request.formData();
 		const email = String(formData.get('email') ?? '').trim();
 		const password = String(formData.get('password') ?? '');
@@ -54,9 +55,21 @@ export const actions: Actions = {
 			return fail(400, { error: 'Password must be at least 8 characters', returnTo: safeReturnTo, mode: 'signup' });
 		}
 
-		const { error } = await locals.supabase.auth.signUp({ email, password });
+		const { data, error } = await locals.supabase.auth.signUp({
+			email,
+			password,
+			options: {
+				emailRedirectTo: `${url.origin}/auth/callback?returnTo=${encodeURIComponent(safeReturnTo)}`
+			}
+		});
 		if (error) {
 			return fail(400, { error: error.message, returnTo: safeReturnTo, mode: 'signup' });
+		}
+
+		// No session means email confirmation is required — Supabase already sent the
+		// confirmation email. Show a "check your email" state instead of redirecting.
+		if (!data.session) {
+			return { signupSent: true, mode: 'signup' as const, email };
 		}
 
 		redirect(302, safeReturnTo);
