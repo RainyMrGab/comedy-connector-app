@@ -37,8 +37,8 @@
 			{/if}
 		</p>
 
-		{#if form?.error}
-			<p class="login-error" role="alert">{form.error}</p>
+		{#if form?.error || data.error}
+			<p class="login-error" role="alert">{form?.error ?? data.error}</p>
 		{/if}
 
 		{#if mode === 'forgot'}
@@ -71,6 +71,16 @@
 			{/if}
 			<p class="mode-toggle">
 				<button onclick={() => (mode = 'signin')} class="toggle-link">Back to sign in</button>
+			</p>
+		{:else if mode === 'signup' && form?.signupSent}
+			<!-- ── Sign up: confirmation email sent ── -->
+			<p class="success-msg" role="status">
+				Check your email — we sent a confirmation link to <strong>{form.email}</strong>. Click it
+				to finish creating your account and sign you in.
+			</p>
+			<p class="mode-toggle">
+				Already have an account?
+				<button onclick={() => (mode = 'signin')} class="toggle-link">Sign in</button>
 			</p>
 		{:else}
 			<!-- ── Sign in / Sign up ── -->
