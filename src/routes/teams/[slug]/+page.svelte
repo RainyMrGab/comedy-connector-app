@@ -32,6 +32,10 @@
 		'@type': 'PerformingGroup',
 		name: team.name,
 		url: `${cityConfig.siteUrl}/teams/${team.slug}`,
+		areaServed: {
+			'@type': 'City',
+			name: cityConfig.name
+		},
 		...(team.photoUrl ? { image: team.photoUrl } : {}),
 		...(team.description ? { description: team.description } : {})
 	});
@@ -174,7 +178,7 @@
 					{#if isLinked}
 						<a href="/performers/{member.slug}" class="member-card">
 							{#if member.photoUrl}
-								<img src={member.photoUrl} alt={member.name} class="member-avatar" />
+								<img src={member.photoUrl} alt={member.name} class="member-avatar" loading="lazy" />
 							{:else}
 								<div class="member-avatar member-avatar-placeholder">
 									{(member.name ?? '?')[0].toUpperCase()}
@@ -218,7 +222,7 @@
 					{#if coach.profileId && coach.slug}
 						<a href="/coaches/{coach.slug}" class="member-row">
 							{#if coach.photoUrl}
-								<img src={coach.photoUrl} alt={coach.name} class="member-avatar" />
+								<img src={coach.photoUrl} alt={coach.name} class="member-avatar" loading="lazy" />
 							{:else}
 								<div class="member-avatar member-avatar-placeholder">
 									<UserCheck size={14} />
@@ -256,7 +260,7 @@
 					{#if isLinked}
 						<a href="/performers/{member.slug}" class="member-card member-card-alumni">
 							{#if member.photoUrl}
-								<img src={member.photoUrl} alt={member.name} class="member-avatar" />
+								<img src={member.photoUrl} alt={member.name} class="member-avatar" loading="lazy" />
 							{:else}
 								<div class="member-avatar member-avatar-placeholder">
 									{(member.name ?? '?')[0].toUpperCase()}
@@ -300,7 +304,7 @@
 					{#if coach.profileId && coach.slug}
 						<a href="/coaches/{coach.slug}" class="member-row member-row-alumni">
 							{#if coach.photoUrl}
-								<img src={coach.photoUrl} alt={coach.name} class="member-avatar" />
+								<img src={coach.photoUrl} alt={coach.name} class="member-avatar" loading="lazy" />
 							{:else}
 								<div class="member-avatar member-avatar-placeholder">
 									<UserCheck size={14} />

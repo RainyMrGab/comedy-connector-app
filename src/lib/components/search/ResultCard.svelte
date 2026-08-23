@@ -27,7 +27,7 @@
 
 	<div class="card-header">
 		{#if result.photoUrl}
-			<img src={result.photoUrl} alt={result.name} class="avatar" />
+			<img src={result.photoUrl} alt={result.name} class="avatar" loading="lazy" />
 		{:else}
 			<div class="avatar-placeholder">
 				{#if type === 'teams'}

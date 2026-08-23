@@ -50,6 +50,10 @@
 		'@type': 'Person',
 		name: profile.name,
 		url: profileUrl,
+		homeLocation: {
+			'@type': 'City',
+			name: cityConfig.name
+		},
 		...(profile.photoUrl ? { image: profile.photoUrl } : {}),
 		...(profile.bio ? { description: profile.bio } : {})
 	});

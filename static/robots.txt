@@ -8,5 +8,8 @@ Disallow: /preview/
 Disallow: /approvals
 Disallow: /profile
 Disallow: /auth
+Disallow: /teams/create
+Disallow: /teams/*/edit
+Disallow: /teams/*/claim
 
 Sitemap: https://pgh.comedyconnector.app/sitemap.xml

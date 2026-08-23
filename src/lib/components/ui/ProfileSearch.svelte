@@ -166,7 +166,7 @@
 					>
 						<button type="button" onclick={() => selectProfile(result)}>
 							{#if result.photoUrl}
-								<img src={result.photoUrl} alt="" class="ps-avatar" />
+								<img src={result.photoUrl} alt="" class="ps-avatar" loading="lazy" />
 							{:else}
 								<div class="ps-avatar ps-avatar-placeholder">{result.name[0]?.toUpperCase() ?? '?'}</div>
 							{/if}
