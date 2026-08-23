@@ -199,7 +199,7 @@
 			<div class="highlights-list">
 				{#each highlights as highlight}
 					{#if highlight.type === 'image'}
-						<img src={highlight.url} alt={highlight.label ?? 'Highlight'} class="highlight-img" />
+						<img src={highlight.url} alt={highlight.label ?? 'Highlight'} class="highlight-img" loading="lazy" />
 					{:else}
 						{@const embedUrl = getYoutubeEmbedUrl(highlight.url)}
 						{#if embedUrl}
@@ -213,7 +213,7 @@
 								></iframe>
 							</div>
 						{:else if isImageUrl(highlight.url)}
-							<img src={highlight.url} alt={highlight.label ?? 'Highlight'} class="highlight-img" />
+							<img src={highlight.url} alt={highlight.label ?? 'Highlight'} class="highlight-img" loading="lazy" />
 						{:else}
 							<a href={highlight.url} target="_blank" rel="noopener noreferrer" class="highlight-link">
 								<Globe size={14} /> {highlight.label ?? highlight.url}
@@ -232,7 +232,7 @@
 				{#each memberships as m}
 					<a href="/teams/{m.teamSlug}" class="member-row">
 						{#if m.teamPhotoUrl}
-							<img src={m.teamPhotoUrl} alt={m.teamName} class="team-thumb" />
+							<img src={m.teamPhotoUrl} alt={m.teamName} class="team-thumb" loading="lazy" />
 						{:else}
 							<div class="team-thumb team-thumb-placeholder">
 								<Users size={16} />
