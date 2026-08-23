@@ -32,6 +32,10 @@
 		'@type': 'PerformingGroup',
 		name: team.name,
 		url: `${cityConfig.siteUrl}/teams/${team.slug}`,
+		areaServed: {
+			'@type': 'City',
+			name: cityConfig.name
+		},
 		...(team.photoUrl ? { image: team.photoUrl } : {}),
 		...(team.description ? { description: team.description } : {})
 	});

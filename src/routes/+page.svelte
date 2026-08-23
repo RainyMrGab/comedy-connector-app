@@ -16,7 +16,11 @@
       '@type': 'Organization',
       name: 'Comedy Connector',
       url: cityConfig.siteUrl,
-      logo: `${cityConfig.siteUrl}/apple-touch-icon.png`
+      logo: `${cityConfig.siteUrl}/apple-touch-icon.png`,
+      areaServed: {
+        '@type': 'City',
+        name: cityConfig.name
+      }
     }
   ];
 
@@ -77,10 +81,12 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-headline" aria-label="Connecting your comedy scene">
-      <h1 class="headline-line">CONNECTING</h1>
-      <h1 class="headline-line indent">YOUR</h1>
-      <h1 class="headline-line">COMEDY SCENE.</h1>
+    <div class="hero-headline">
+      <h1 class="headline-h1">
+        <span class="headline-line">CONNECTING</span>
+        <span class="headline-line indent">YOUR</span>
+        <span class="headline-line">COMEDY SCENE.</span>
+      </h1>
     </div>
     <p class="hero-sub">
       Comedy Connector is an open directory that helps {cityConfig.name}'s comedy community connect.
@@ -166,6 +172,10 @@
     transform: rotate(-2deg);
     transform-origin: left center;
     margin-bottom: 20px;
+  }
+
+  .headline-h1 {
+    margin: 0;
   }
 
   .headline-line {
