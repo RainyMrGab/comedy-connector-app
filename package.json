@@ -22,7 +22,7 @@
 	"devDependencies": {
 		"@netlify/functions": "^2.8.2",
 		"@sveltejs/adapter-netlify": "^6.0.4",
-		"@sveltejs/kit": "^2.60.1",
+		"@sveltejs/kit": "^2.69.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.2.0",
 		"drizzle-kit": "^0.31.10",
